@@ -12,7 +12,7 @@ class Filters(BaseModel):
     bokeh: List[MultiSelect] = None
 
     @classmethod
-    def from_fews(cls, pi_filters: dict = None):
+    def from_fews(cls, pi_filters: dict = None, dashboard="bokeh"):
         def _pi_to_dict(fews_filter: dict) -> Filter:
             title = f'{fews_filter["name"]}'
             value = []
@@ -23,6 +23,7 @@ class Filters(BaseModel):
             return Filter(title=title, value=value, options=options)
 
         children = pi_filters[0]["child"]
+
         return cls(filters=[_pi_to_dict(i) for i in children])
 
     def to_bokeh(self) -> List[MultiSelect]:

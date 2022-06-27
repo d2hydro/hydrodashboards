@@ -130,3 +130,10 @@ dmypy.json
 .idea/*
 scripts/*
 *.cmd
+
+# static
+src/hydrodashboards/bokeh/static/*
+
+# bat and cmd
+*.bat
+*.cmd
