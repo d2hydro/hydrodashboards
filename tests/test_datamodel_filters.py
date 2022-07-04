@@ -10,14 +10,16 @@ OPTIONS = [
     ("WDB_OW_MPN", "Meetpunt"),
 ]
 TITLES = ["Oppervlaktewater", "Grondwater", "Fysisch/Chemisch", "Meteorologie"]
+
 api = Api(
-    url="https://www.hydrobase.nl/fews/nzv/FewsWebServices/rest/fewspiservice/v1/"
+    url="https://www.hydrobase.nl/fews/nzv/FewsWebServices/rest/fewspiservice/v1/",
+    ssl_verify=False,
 )
 
 fews_filters = api.get_filters(filter_id=ROOT_FILTER)
 
 datamodel_filters = Filters.from_fews(fews_filters)
-bokeh_filters = datamodel_filters.to_bokeh()
+bokeh_filters = datamodel_filters.bokeh
 
 
 def test_length():

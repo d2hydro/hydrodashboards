@@ -1,18 +1,20 @@
 from typing import List
-from .models import BaseModel, Filter
+from .models import Filter
 from bokeh.models import MultiSelect
 from bokeh.layouts import column
+from dataclasses import dataclass, field
 
 MAX_FILTER_LEN = 5
 SIZING_MODE = "stretch_width"
 
 
-class Filters(BaseModel):
-    filters: List[Filter]
-    bokeh: List[MultiSelect] = None
+@dataclass
+class Filters:
+    filters: List[Filter] = field(default_factory=list)
+    _bokeh: column = None
 
     @classmethod
-    def from_fews(cls, pi_filters: dict = None, dashboard="bokeh"):
+    def from_fews(cls, pi_filters: dict = None):
         def _pi_to_dict(fews_filter: dict) -> Filter:
             title = f'{fews_filter["name"]}'
             value = []
@@ -26,18 +28,15 @@ class Filters(BaseModel):
 
         return cls(filters=[_pi_to_dict(i) for i in children])
 
-    def to_bokeh(self) -> List[MultiSelect]:
-
-        if self.bokeh is None:
-            bokeh_filters = column(
+    @property
+    def bokeh(self) -> column:
+        if self._bokeh is None:
+            self._bokeh = column(
                 [
-                    i.to_multi_select(sizing_mode=SIZING_MODE, max_filter_len=MAX_FILTER_LEN)
+                    i.bokeh
                     for i in self.filters
                 ],
                 name="filters",
                 sizing_mode=SIZING_MODE,
             )
-
-            self.bokeh = bokeh_filters
-
-        return self.bokeh
+        return self._bokeh

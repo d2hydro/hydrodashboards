@@ -24,7 +24,45 @@
     <!-- Bootstrap JS -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
     <!-- Our Custom JS -->
- 
+    <script src="/wam/static/js/main.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#sidebarCollapse').on('click', function () {
+                $('#sidebar').toggleClass('active');
+                $(this).toggleClass('active');
+
+                AnimationUtils.tagElements();
+                AnimationUtils.onResizePage();
+            });
+        });     
+
+		function myFunction() {
+		  var x = document.getElementById("myDIV");
+		  var but = document.getElementById("button_lower");
+		  var h = document.getElementById("grafiek_upper");
+          var download = document.getElementsByClassName("bk bk-btn bk-btn-success")[0];
+		  but.classList.toggle("fa-angle-double-up");
+		  but.classList.toggle("fa-angle-double-down");
+		  if (x.style.display === "none") {
+			x.style.display = "block";
+			h.style.height = "62.5vh";
+			
+			download.style.backgroundColor = "#3681C1";
+			download.style.borderColor = "#495568";
+		  } else {
+			x.style.display = "none";		
+			h.style.height = "84vh";	
+			
+			download.style.backgroundColor = "white";
+			download.style.borderColor = "white";
+		  }
+          AnimationUtils.dispatchResizeEvent();
+		}
+		
+
+    </script>
+
 {% endblock %}
 
 
@@ -34,12 +72,112 @@
         <!-- Sidebar Holder -->
         <nav id="sidebar">
             <div class="sidebar-header">
-                <h3>{TITLE}</h3>
+                <h3>WAM Dashboard</h3>
             </div>
 			<div class="sidebar-bokeh1">
 				{{ embed(roots.filters) }}
-			</div>                     
+			</div>
+			 <div class="sidebar-bokeh2">
+				{{ embed(roots.locations) }}
+			</div>
+			<div class="sidebar-bokeh3">
+				{{ embed(roots.parameters) }}
+			</div>
+			<div class="sidebar-bokeh6">	
+				{{ embed(roots.search_period) }}
+			</div>        	
+            <div class="sidebar-bokeh5">
+				{{ embed(roots.update_graph) }}
+			</div> 	
+                       
+			
         </nav>
+
+        <!-- Page Content Holder -->
+        <div id="content">
+		
+            <nav class="navbar navbar-expand-lg">
+				<div class="container-fluid h-100">
+                    <button type="button" id="sidebarCollapse" class="navbar-btn">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <i class="fas fa-align-justify"></i>
+                     </button>
+					<button onClick="window.location.reload();"style="border:none; height:22px;cursor:pointer;color:white; background: rgba(0,0,0,0);">
+						<i style="font-size:19px;" ; class="fas fa-align-justify">&#xf01e;</i>
+					</button>
+
+					<div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="nav navbar-nav ml-auto">
+							<ul class="nav nav-tabs" id="nav-tab" role="tablist">
+                            <li class="nav-item">
+                                <button class="nav-item nav-link active" id="kaart-tab" data-toggle="tab" data-target="#kaart" role="tab" aria-controls="nav-kaart" aria-selected="true">Kaart</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-item nav-link" id="grafiek-tab" data-toggle="tab" data-target="#grafiek" role="tab" aria-controls="nav-grafiek" aria-selected="false">Grafiek</button>
+                            </li>
+							</ul>
+						</ul>
+					</div>
+			</div>
+			</nav>
+      
+			<div class="tab-content">
+				<div class="tab-pane fade show active row" id="kaart" role="tabpanel" aria- labelledby="kaart-tab" aria-expanded="false">
+					
+						<div class="row h-100" id="kaartje" >
+							<div class="col-11">
+								{{ embed(roots.map_figure)}}
+							</div>
+							<div class="col-1" style= "margin-top: 32px;padding-left: 0px">
+								{{ embed(roots.map_options) }}
+								<div class="status">
+									<h6>Log</h6>
+									{{ embed(roots.status) }}
+								</div>
+								
+							</div>
+						</div>
+				
+			
+				</div>
+				<div class="tab-pane fade show" id="grafiek" role="tabpanel" aria- labelledby="grafiek-tab"aria-expanded="false">
+					<div class="container-fluid h-100" >
+						<div class="row"style="margin-left:0px;margin-right:0px" > 
+							<div class="col-12" id="grafiek_upper">
+								{{ embed(roots.time_figure) }}
+							</div>	
+						</div>							
+					
+					    <div class="row" id="myDIV1">	
+							<div class="col-4">
+								<button	onclick="myFunction()" class="fas fa-angle-double-down" id="button_lower" aria-hidden="true"></button>
+								<h6 style="color:#3681C1;" id="button-text">Zoekgrafiek</h6>
+							</div>	
+							<div class="col-4" style="margin-left:-240px;">		
+								{{ embed(roots.select_search_time_series) }}
+							</div> 
+							<div class="col-2 offset-2">
+								{{ embed(roots.download_search_time_series) }}								
+							</div>
+                        </div>    
+						
+				        <div class="row" id="myDIV" >
+							<div class="col-12"id="grafiek-slider">
+								{{ embed(roots.view_period) }}
+							</div>		
+							
+							<div class="col-12" id="grafiek-lower">
+								{{ embed(roots.search_time_figure) }}
+							</div>	
+						</div>
+				    </div>	
+				</div>
+			</div>
+		</div>
 	</div>
 
  
