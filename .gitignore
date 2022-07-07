@@ -137,3 +137,6 @@ src/hydrodashboards/bokeh/static/*
 # bat and cmd
 *.bat
 *.cmd
+
+# bokeh log_files
+*bokeh_*.txt

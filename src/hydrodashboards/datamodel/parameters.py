@@ -1,17 +1,15 @@
-from bokeh.models import MultiSelect
 from hydrodashboards.bokeh.language import parameters_title
 from hydrodashboards.datamodel.models import Filter
-from fewspy.time_series import TimeSeries
-import geopandas as gpd
 import pandas as pd
-from typing import List
 from dataclasses import dataclass, field
-
+from typing import List
+from .utils import concat_fews_parameter_names, concat_fews_parameter_ids
 
 @dataclass
 class Parameters(Filter):
     _fews_parameters: pd.DataFrame = pd.DataFrame()
     _fews_qualifiers: pd.DataFrame = pd.DataFrame()
+    _options: List[tuple] = field(default_factory=list)
 
     def __post_init__(self):
         self.title = parameters_title[self.language]
@@ -30,25 +28,51 @@ class Parameters(Filter):
             _fews_qualifiers=pi_qualifiers,
         )
 
-    def update_from_pi_headers(self, pi_headers: TimeSeries, exclude_pars: list = []):
-        def _concat_options(header, exclude_pars=[]):
-            parameter_id = header.parameter_id
-            parameter_name = self._fews_parameters.loc[parameter_id]["name"]
-            if header.qualifier_id is not None:
-                parameter_id = f"{parameter_id} * {'*'.join(header.qualifier_id)}"
-                qualifier_names = [
-                    self._fews_qualifiers.loc[i]["name"] for i in header.qualifier_id
-                ]
-                parameter_name = f"{parameter_name} ({' '.join(qualifier_names)})"
+    def id_from_ts_header(self, header):
+        parameter_id = header.parameter_id
+        if header.qualifier_id is not None:
+            qualifier_ids = header.qualifier_id
+            parameter_id = concat_fews_parameter_ids(parameter_id, qualifier_ids)
+        return parameter_id
 
-            return parameter_id, parameter_name
+    def name_from_ts_header(self, header):
+        parameter_id = header.parameter_id
+        parameter_name = self._fews_parameters.loc[parameter_id]["name"]
+        if header.qualifier_id is not None:
+            qualifier_names = [
+                self._fews_qualifiers.loc[i]["name"] for i in header.qualifier_id
+            ]
+            parameter_name = concat_fews_parameter_ids(parameter_name, qualifier_names)
 
-        options = list(set([_concat_options(i.header) for i in pi_headers.time_series]))
-        options = [i for i in options if i[0] not in exclude_pars]
+        return parameter_name
+
+    def clean_value(self):
+        values = [i[0] for i in self.options]
+        self.value = [i for i in self.value if i in values]
+
+    def update_from_options(self, options: List[tuple], reinit=True):
+        self._options = options
+        if reinit:
+            self.options = self._options
+        self.clean_value()
+
+    def options_from_headers_df(self, headers_df: pd.DataFrame):
+        """
+        Update options and values from list of options
+
+        Args:
+            headers_df (pd.DataFrame): headers in pandas dataframe
+
+        Returns:
+            None.
+
+        """
+
+        options = [
+            tuple(i)
+            for i in headers_df[["parameter_ids", "parameter_names"]]
+            .drop_duplicates()
+            .to_records(index=False)
+        ]
         options.sort(key=lambda a: a[1])
-        values = [i[0] for i in options]
-
-        # update options and values
-        self.options = self.bokeh.options = options
-        self.value = self.bokeh.value = [i for i in self.value if i in values]
         return options

@@ -1,7 +1,5 @@
 from typing import List
 from .models import Filter
-from bokeh.models import MultiSelect
-from bokeh.layouts import column
 from dataclasses import dataclass, field
 
 MAX_FILTER_LEN = 5
@@ -9,9 +7,14 @@ SIZING_MODE = "stretch_width"
 
 
 @dataclass
+class LocationsFilter(Filter):
+    id: str = None
+    cache: dict = field(default_factory=dict)
+
+
+@dataclass
 class Filters:
-    filters: List[Filter] = field(default_factory=list)
-    _bokeh: column = None
+    filters: List[LocationsFilter] = field(default_factory=list)
 
     @classmethod
     def from_fews(cls, pi_filters: dict = None):
@@ -22,21 +25,17 @@ class Filters:
                 options = [(i["id"], i["name"]) for i in fews_filter["child"]]
             else:
                 options = []
-            return Filter(title=title, value=value, options=options)
+            return LocationsFilter(
+                id=fews_filter["id"], title=title, value=value, options=options
+            )
 
         children = pi_filters[0]["child"]
 
         return cls(filters=[_pi_to_dict(i) for i in children])
 
-    @property
-    def bokeh(self) -> column:
-        if self._bokeh is None:
-            self._bokeh = column(
-                [
-                    i.bokeh
-                    for i in self.filters
-                ],
-                name="filters",
-                sizing_mode=SIZING_MODE,
-            )
-        return self._bokeh
+    def get_filter(self, id):
+        return next((i for i in self.filters if id in [j[0] for j in i.options]), None)
+
+    def get_name(self, filter_id, locations_filter):
+        options = locations_filter.options
+        return next((i[1] for i in options if i[0] == filter_id), None)
