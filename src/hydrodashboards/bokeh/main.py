@@ -13,14 +13,17 @@ from hydrodashboards.bokeh.widgets import (
     filters_widgets,
     search_period_widget,
     update_graph_widget,
+    view_period_widget,
 )
-from bokeh.models.widgets import Div
+from bokeh.models.widgets import Div, Select, Button
 from hydrodashboards.bokeh.log_utils import import_logger
 import inspect
 
 from hydrodashboards.bokeh.language import update_graph_title
 
+
 import time
+from datetime import datetime
 
 LANG = "dutch"
 
@@ -133,8 +136,6 @@ def update_time_series():
     """Update time_series and stop time_fig_loader"""
     logger.debug(inspect.stack()[0][3])
     data.update_time_series()
-    time.sleep(2)
-    print(len(data.time_series_sets.time_series))
     update_graph.css_classes = ["stoploading_time_fig"]
 
 
@@ -142,8 +143,9 @@ def update_time_series():
 We initialize the dataclass
 """
 
+now = datetime.now()
 logger = import_logger()
-data = Data(logger=logger)
+data = Data(logger=logger, now=now)
 
 """
 We define all sources used in this main document
@@ -196,13 +198,13 @@ app_status = Div(text=data.app_status)
 time_figure = time_figure_widget.empty_fig()
 
 # Search time series widget
-search_time_series = data.select_search_time_series.bokeh
+search_time_series = Select(value=None, options=[])
 
 # Search download search time series widget
-download_search_time_series = data.download_search_time_series.bokeh
+download_search_time_series = Button(label="Download", button_type="success")
 
 # View period widget
-view_period = data.view_period.bokeh
+view_period = view_period_widget.make_view_period(data.periods)
 
 # Search time figure widget
 search_time_figure = time_figure_widget.empty_fig()
@@ -228,9 +230,22 @@ curdoc().add_root(column(app_status, name="app_status", sizing_mode="stretch_bot
 
 # time-figure layout
 curdoc().add_root(column(time_figure, name="time_figure", sizing_mode="stretch_both"))
-curdoc().add_root(search_time_series)
-curdoc().add_root(download_search_time_series)
-curdoc().add_root(view_period)
-curdoc().add_root(column(search_time_figure, name="search_time_figure", sizing_mode="stretch_both"))
+curdoc().add_root(
+    column(
+        search_time_series, name="select_search_time_series", sizing_mode="stretch_both"
+    )
+)
+curdoc().add_root(
+    column(
+        download_search_time_series,
+        name="download_search_time_series",
+        sizing_mode="stretch_width",
+    )
+)
+curdoc().add_root(column(view_period, name="view_period", sizing_mode="stretch_both"))
+curdoc().add_root(
+    column(search_time_figure, name="search_time_figure", sizing_mode="stretch_both")
+)
+
 
 curdoc().title = TITLE

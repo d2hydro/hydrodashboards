@@ -5,6 +5,7 @@ import geopandas as gpd
 import pandas as pd
 from dataclasses import dataclass, field
 from typing import List
+import itertools
 
 COLUMNS = [
     "id",
@@ -50,6 +51,32 @@ class Locations(Filter):
     def map_locations(self):
         map_locations = self.app_df.reset_index().to_dict(orient="list")
         return map_locations
+
+    def max_time_series_indices(self, parameter_values: list) -> List[tuple]:
+        """
+        Returns the maximum amount of time series indices to be found on selected
+        locations and parameters
+
+        Args:
+            parameter_values (list): List of parameter values
+
+        Returns:
+            List[tuple]: List with (location, parameter) tuples
+
+        """
+
+        def _indices_for_location(location):
+            children = list(self.app_df.loc[location]["child_ids"])
+            parameters = [
+                i
+                for i in self.app_df.loc[location]["parameter_ids"]
+                if i in parameter_values
+            ]
+
+            return list(itertools.product(children, parameters))
+
+        labels_gen = (_indices_for_location(i) for i in self.value)
+        return [i for i in itertools.chain(*labels_gen)]
 
     @classmethod
     def from_fews(cls, pi_locations: gpd.GeoDataFrame, language="dutch"):

@@ -1,9 +1,15 @@
-def concat_fews_parameter_ids(parameter_id, qualifier_ids):
-    return f"{parameter_id} * {'*'.join(qualifier_ids)}"
+def concat_fews_parameter_ids(parameter_id, qualifier_ids=None):
+    if qualifier_ids is None:
+        return parameter_id
+    else:
+        return f"{parameter_id} * {'*'.join(qualifier_ids)}"
 
 
-def concat_fews_parameter_names(parameter_name, qualifier_names):
-    return f"{parameter_name} * {'*'.join(qualifier_names)}"
+def concat_fews_parameter_names(parameter_name, qualifier_names=None):
+    if qualifier_names is None:
+        return parameter_name
+    else:
+        return f"{parameter_name} {' '.join(qualifier_names)}"
 
 
 def split_parameter_id_to_fews(parameter_id):

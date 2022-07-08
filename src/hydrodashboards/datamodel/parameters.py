@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from typing import List
 from .utils import concat_fews_parameter_names, concat_fews_parameter_ids
 
+
 @dataclass
 class Parameters(Filter):
     _fews_parameters: pd.DataFrame = pd.DataFrame()
@@ -29,11 +30,7 @@ class Parameters(Filter):
         )
 
     def id_from_ts_header(self, header):
-        parameter_id = header.parameter_id
-        if header.qualifier_id is not None:
-            qualifier_ids = header.qualifier_id
-            parameter_id = concat_fews_parameter_ids(parameter_id, qualifier_ids)
-        return parameter_id
+        return concat_fews_parameter_ids(header.parameter_id, header.qualifier_id)
 
     def name_from_ts_header(self, header):
         parameter_id = header.parameter_id
@@ -42,7 +39,9 @@ class Parameters(Filter):
             qualifier_names = [
                 self._fews_qualifiers.loc[i]["name"] for i in header.qualifier_id
             ]
-            parameter_name = concat_fews_parameter_ids(parameter_name, qualifier_names)
+        else:
+            qualifier_names = None
+        parameter_name = concat_fews_parameter_names(parameter_name, qualifier_names)
 
         return parameter_name
 

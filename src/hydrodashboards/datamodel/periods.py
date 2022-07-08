@@ -1,7 +1,7 @@
 from hydrodashboards.bokeh.language import (
     search_period_start_title,
-    search_period_end_title
-    )
+    search_period_end_title,
+)
 
 from datetime import datetime, timedelta
 from dataclasses import dataclass
@@ -30,3 +30,11 @@ class Periods:
         self.search_start = self.now - self.default_search_period
         self.search_end_title = search_period_start_title[self.language]
         self.search_start_title = search_period_end_title[self.language]
+
+    @property
+    def view_period(self):
+        return self.view_end - self.view_start
+
+    @property
+    def search_period(self):
+        return self.search_end - self.search_start

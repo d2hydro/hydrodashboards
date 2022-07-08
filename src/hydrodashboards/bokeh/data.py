@@ -6,9 +6,7 @@ from hydrodashboards.bokeh.config import (
     EXCLUDE_PARS,
     FEWS_URL,
     FILTER_COLORS,
-    FIRST_DATE,
     HEADERS_FULL_HISTORY,
-    INIT_TIMEDELTA,
     ROOT_FILTER,
     SSL_VERIFY,
 )
@@ -22,13 +20,11 @@ from hydrodashboards.datamodel import (
     TimeSeriesSets,
 )
 
-from hydrodashboards.datamodel.placeholders import (
-    SelectSearchTimeSeries,
-    DownloadSearchTimeSeries,
-    ViewPeriod,
-    SearchTimeFigure,
+# import utilities
+from hydrodashboards.datamodel.utils import (
+    split_parameter_id_to_fews,
+    concat_fews_parameter_ids,
 )
-
 
 # import functions from python modules
 from datetime import datetime
@@ -54,9 +50,9 @@ def _get_propeties(filter_id, filter_name):
 
 
 class Data:
-    def __init__(self, logger=None):
+    def __init__(self, logger=None, now: datetime = datetime.now()):
         self.logger = logger
-        # help properties for internal use in class
+        # fews properties
         self._fews_api = Api(url=FEWS_URL, ssl_verify=SSL_VERIFY, logger=logger)
         self._fews_qualifiers = self._fews_api.get_qualifiers()
         self._fews_root_parameters = self._fews_api.get_parameters(
@@ -66,22 +62,143 @@ class Data:
         self._fews_filters = self._fews_api.get_filters(filter_id=ROOT_FILTER)
 
         # time properties
-        self.now = datetime.now()
+        self.now = now
+        self.periods = Periods(self.now)
 
-        # properties matching dashboard layout
+        # data-classes linked to dashboard
         self.filters = Filters.from_fews(self._fews_filters)
         self.locations = Locations.from_fews(self._fews_root_locations)
         self.parameters = Parameters.from_fews(
             pi_parameters=self._fews_root_parameters,
             pi_qualifiers=self._fews_qualifiers,
         )
-        self.periods = Periods(self.now)
 
         self.time_series_sets = TimeSeriesSets()
-        self.select_search_time_series = SelectSearchTimeSeries()
-        self.download_search_time_series = DownloadSearchTimeSeries()
-        self.view_period = ViewPeriod()
-        self.search_time_figure = SearchTimeFigure()
+
+    """
+
+    Section with FEWS API helper functions
+
+    """
+
+    def _fews_locators_from_generator(self, generator):
+        """Returns location_ids, parameter_ids and qualifier_ids from list"""
+        location_ids, parameter_ids, qualifier_ids = list(map(list, zip(*generator)))
+        location_ids = list(set(location_ids))
+        parameter_ids = list(set(parameter_ids))
+        qualifier_ids = [list(i) for i in set(map(tuple, qualifier_ids))]
+        return location_ids, parameter_ids, qualifier_ids
+
+    def _fews_locators_from_indices(self, indices):
+        generator = [[i[0], *split_parameter_id_to_fews(i[1])] for i in indices]
+        return self._fews_locators_from_generator(generator)
+
+    def _fews_locators_from_ts(self, time_series):
+        generator = [
+            [i.location, *split_parameter_id_to_fews(i.parameter)] for i in time_series
+        ]
+        return self._fews_locators_from_generator(generator)
+
+    def _get_thinning(self, width=1500, selection="view"):
+        if selection == "view":
+            period = self.periods.view_period
+        elif selection == "search":
+            period = self.periods.search_period
+        return int(period.total_seconds() * 1000 / width)
+
+    def _get_fews_ts(self, indices=None, request_type="headers"):
+        only_headers = False
+        thinning = None
+        if request_type == "headers":
+            only_headers = True
+            (
+                location_ids,
+                parameter_ids,
+                qualifier_ids,
+            ) = self._fews_locators_from_indices(indices)
+            start_time = self.periods.history_start
+            end_time = self.periods.now
+        elif request_type == "search":
+            thinning = self._get_thinning(selection="search")
+            (
+                location_ids,
+                parameter_ids,
+                qualifier_ids,
+            ) = self._fews_locators_from_indices(indices)
+            start_time = self.periods.search_start
+            end_time = self.periods.search_end
+        elif request_type == "view":
+            thinning = self._get_thinning()
+            time_series = self.time_series_sets.select_view(self.periods)
+            location_ids, parameter_ids, qualifier_ids = self._fews_locators_from_ts(
+                time_series
+            )
+            start_time = self.periods.view_start
+            end_time = self.periods.view_end
+        elif request_type == "history":
+            time_series = self.time_series_sets.select_incomplete()
+            location_ids, parameter_ids, qualifier_ids = self._fews_locators_from_ts(
+                time_series
+            )
+            start_time = self.periods.history_start
+            end_time = self.periods.now
+
+        return self._fews_api.get_time_series(
+            filter_id=ROOT_FILTER,
+            location_ids=location_ids,
+            parameter_ids=parameter_ids,
+            qualifier_ids=qualifier_ids,
+            start_time=start_time,
+            end_time=end_time,
+            thinning=thinning,
+            only_headers=only_headers,
+        )
+
+    def _properties_from_fews_ts_headers(self, fews_time_series):
+        def property_generator(header):
+            parameter = concat_fews_parameter_ids(
+                header.parameter_id, header.qualifier_id
+            )
+            parameter_name = next(
+                i[1] for i in self.parameters.options if i[0] == parameter
+            )
+            location_name = self.locations.locations.loc[header.location_id]["name"]
+            label = f"{location_name} {parameter_name}"
+            return dict(location=header.location_id, parameter=parameter, label=label)
+
+        return [property_generator(i.header) for i in fews_time_series]
+
+    def _update_ts_from_fews_ts_set(self, fews_ts_set, complete=False):
+        def erasing_data(new, old):
+            if old.empty:
+                return False
+            elif new.empty:
+                return True
+#            else:
+#                return (new.index[0] > old.index[0]) and (new.index[-1] < old.index[-1])
+
+        if not fews_ts_set.empty:
+            for fews_ts in fews_ts_set.time_series:
+                location_id = fews_ts.header.location_id
+                parameter_id = concat_fews_parameter_ids(
+                    fews_ts.header.parameter_id, fews_ts.header.qualifier_id
+                )
+                ts_idx = list(self.time_series_sets.indices).index(
+                    (location_id, parameter_id)
+                )
+                ts_select = self.time_series_sets.time_series[ts_idx]
+                if not erasing_data(fews_ts.events, ts_select.df):
+                    ts_select.df = fews_ts.events
+                    ts_select.complete = complete
+                    ts_select.empty = fews_ts.events.empty
+                    ts_select.start_datetime = fews_ts.header.start_date
+                    ts_select.end_datetime = fews_ts.header.end_date
+
+    """
+
+    Section with functions called in app callbacks
+
+    """
 
     @property
     def app_status(self):
@@ -222,21 +339,41 @@ class Data:
         # clean parameter value to options
         self.parameters.clean_value()
 
+    def update_time_serie_history(self):
+        if self.time_series_sets.select_incomplete():
+            fews_ts_set = self._get_fews_ts(request_type="history")
+            self._update_ts_from_fews_ts_set(fews_ts_set, complete=True)
+
     def update_time_series(self):
-        def labels_by_location(location):
-            children = list(self.locations.app_df.loc[location]["child_ids"])
-            parameters = [
-                i
-                for i in self.locations.app_df.loc[location]["parameter_ids"]
-                if i in self.parameters.value
-            ]
+        """
+        Updates time_series when button is clicked.
 
-            return list(itertools.product(children, parameters))
+        Returns:
+            TYPE: DESCRIPTION.
 
-        def get_labels():
-            labels_gen = (labels_by_location(i) for i in self.locations.value)
-            return [i for i in itertools.chain(*labels_gen)]
+        """
 
-        labels = get_labels()
-        self.time_series_sets.append_from_labels(labels)
-        self.time_series_sets.set_active(labels)
+        # get headers and initalize time series
+        indices = self.locations.max_time_series_indices(self.parameters.value)
+        fews_ts_set = self._get_fews_ts(indices=indices, request_type="headers")
+        properties = self._properties_from_fews_ts_headers(fews_ts_set.time_series)
+        self.time_series_sets.append_from_dict(properties)
+        self.time_series_sets.set_active(indices)
+
+        # set data for search time_series
+        first_active = self.time_series_sets.first_active
+        if not first_active.within_period(period=self.periods, selection="search"):
+            fews_ts_set = self._get_fews_ts(
+                indices=[first_active.index], request_type="search"
+            )
+
+            self._update_ts_from_fews_ts_set(fews_ts_set)
+
+        # set data for view time_series
+        if self.time_series_sets.select_view(self.periods):
+            fews_ts_set = self._get_fews_ts(request_type="view")
+
+            self._update_ts_from_fews_ts_set(fews_ts_set)
+
+        self.update_time_serie_history()
+        print(self.time_series_sets.time_series)

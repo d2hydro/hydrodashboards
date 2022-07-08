@@ -20,7 +20,7 @@ api = Api(
 )
 EXCLUDE_PARS = ["Dummy"]
 
-data = Data()
+data = Data(now=datetime(2022,5,29))
 
 # select one filter
 filter_ids = ["WDB_OW_KGM"]
@@ -31,18 +31,14 @@ filter_ids = ["WDB_OW_KGM", "WDB_ML_KNMI"]
 data.update_on_filter_select(filter_ids)
 
 # select locations
-values = ["NL34.HL.KGM003", "KNMI_235"]
+values = ["NL34.HL.KGM194", "KNMID_172"]
 data.update_on_locations_select(values)
 
 # select parameters
-values = ["Q [m3/s] [NVT] [OW] * validatie", "NEERSG [mm] [NVT] [LT]", "WATHTE [m] [NAP] [OW] * validatie"]
+values = ["Q [m3/s] [NVT] [OW] * validatie", "NEERSG [mm] [NVT] [LT] * unvalidated", "WATHTE [m] [NAP] [OW] * validatie"]
 data.parameters.value = values
 
 
 # update timeseries
 data.update_time_series()
 
-#%% new code!
-from hydrodashboards.datamodel.utils import split_parameter_id_to_fews
-self = data
-times_series = self.time_series_sets.time_series
