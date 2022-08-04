@@ -232,15 +232,21 @@ class Data:
                 f"<li>cache: {time_series_cache}</li></ul>"
             )
         elif html_type == "table":
-            html = ('<table class="table table-bordered" style="width:100%">'
-                    "<tr>"
-                    f"<td>Locaties:  {locations} (max 10)</td>"
-                    f"<td>Parameters:  {parameters}</td>"
-                    f"<td>Tijdseries:  {time_series_active}</td>"
-                    f"<td>Tijdseries cache:  {time_series_cache}</td>"
-                    "<tr>"
-                    "</table>"
-                    )
+            html = (
+                f"Locaties: {locations} (max 10) | "
+                f"Parameters: {parameters} | "
+                f"Tijdseries: {time_series_active} | "
+                f"Tijdseries cache: {time_series_cache}"
+                )
+            # html = ('<table style="width:100%">'
+            #         "<tr>"
+            #         f"<td>Locaties: {locations} (max 10) | </td>"
+            #         f"<td>Parameters: {parameters} | </td>"
+            #         f"<td>Tijdseries: {time_series_active} | </td>"
+            #         f"<td>Tijdseries cache: {time_series_cache}</td>"
+            #         "<tr>"
+            #         "</table>"
+            #         )
 
         return html
 
