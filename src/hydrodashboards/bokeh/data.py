@@ -220,13 +220,16 @@ class Data:
     def app_status(self):
         locations = len(self.locations.value)
         parameters = len(self.parameters.value)
-        time_series = len(self.time_series_sets)
+        time_series_active = self.time_series_sets.active_length
+        time_series_cache = len(self.time_series_sets)
 
         return (
             f"Geselecteerd:<br>"
             f"<ul><li>locaties: {locations} (max 10)</li>"
             f"<li>parameters: {parameters}</li></ul>"
-            f"Tijdseries geladen: {time_series}"
+            f"Tijdseries:<br>"
+            f"<ul><li>geladen: {time_series_active}</li>"
+            f"<li>cache: {time_series_cache}</li></ul>"
         )
 
     def update_on_filter_select(self, values: list):

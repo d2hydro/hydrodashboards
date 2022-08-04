@@ -34,8 +34,13 @@ def view_period_patch_source(data):
                                     "y": [-10**9, 10**9, 10**9, -10**9]})
 
 
-def time_series_sources(time_series=[], unreliables=False):
-    return {i.label: _make_ts_cds(i, unreliables) for i in time_series}
+def time_series_sources(time_series=[], unreliables=False, active_only=False):
+    def _active(i, active_only=active_only):
+        if active_only:
+            return i.active
+        else:
+            return True
+    return {i.label: _make_ts_cds(i, unreliables) for i in time_series if _active(i)}
 
 
 def update_time_series_sources(sources, time_series=[], unreliables=False):

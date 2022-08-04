@@ -163,8 +163,8 @@ def update_time_series_view():
 
     # update time_series_layout (top figures)
     parameter_groups = data.parameters.get_groups()
-    time_series_groups = data.time_series_sets.by_parameter_groups(parameter_groups)
-    time_series_sources = sources.time_series_sources(data.time_series_sets.time_series)
+    time_series_groups = data.time_series_sets.by_parameter_groups(parameter_groups, active_only=True)
+    time_series_sources = sources.time_series_sources(data.time_series_sets.time_series, active_only=True)
 
     time_figure_widget.create_time_figures(time_figure_layout=time_figure_layout,
                                            time_series_groups=time_series_groups,
@@ -196,10 +196,11 @@ def update_time_series_history():
     data.update_time_series_history()
 
     # make temporary time_series_sources
-    _time_series_sources = sources.time_series_sources(data.time_series_sets.time_series)
+    _time_series_sources = sources.time_series_sources(data.time_series_sets.time_series,
+                                                       active_only=True)
 
     # updating the sources in the used as glyph data_sources
-    for k, v in _time_series_sources .items():
+    for k, v in _time_series_sources.items():
         time_series_sources[k].data.update(v.data)
 
     update_graph.css_classes = ["stoploading_time_fig"]

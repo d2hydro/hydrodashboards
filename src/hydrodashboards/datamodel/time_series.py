@@ -53,6 +53,10 @@ class TimeSeriesSets:
         return len(self.time_series)
 
     @property
+    def active_length(self):
+        return len([1 for i in self.time_series if i.active])
+
+    @property
     def indices(self):
         return [i.index for i in self.time_series]
 
@@ -91,8 +95,12 @@ class TimeSeriesSets:
         time_series = [TimeSeries(**i) for i in properties]
         self.time_series += time_series
 
-    def by_parameter_groups(self, parameter_groups: dict):
+    def by_parameter_groups(self, parameter_groups: dict, active_only=False):
         groups = {k: [] for k in parameter_groups.keys()}
         for i in self.time_series:
-            groups[i.__dict__["parameter"]].append(i)
+            if active_only:
+                if i.active:
+                    groups[i.__dict__["parameter"]].append(i)
+            else:
+                groups[i.__dict__["parameter"]].append(i)
         return groups
