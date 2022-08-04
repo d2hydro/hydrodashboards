@@ -2,7 +2,7 @@ from bokeh.models.widgets import DatePicker
 from bokeh.layouts import row
 
 
-def make_search_period(data):
+def make_search_period(data, on_change):
     start_date_picker = DatePicker(
         title=data.search_start_title,
         value=data.search_start.strftime("%Y-%m-%d"),
@@ -19,5 +19,8 @@ def make_search_period(data):
     )
     start_date_picker.js_link("value", end_date_picker, "min_date")
     end_date_picker.js_link("value", start_date_picker, "max_date")
+    for i in on_change:
+        start_date_picker.on_change(*i)
+        end_date_picker.on_change(*i)
 
     return row(start_date_picker, end_date_picker)

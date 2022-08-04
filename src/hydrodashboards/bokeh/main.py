@@ -22,8 +22,8 @@ import inspect
 from hydrodashboards.bokeh.language import update_graph_title
 
 
-import time
 from datetime import datetime
+import pandas as pd
 
 LANG = "dutch"
 
@@ -87,6 +87,9 @@ def update_on_locations_value(attrname, old, new):
     # update app status
     app_status.text = data.app_status
 
+    # enable update_graph button
+    update_graph.disabled = False
+
 
 def update_on_parameters_value(attrname, old, new):
     """Update when values in locations filter are selected"""
@@ -97,6 +100,23 @@ def update_on_parameters_value(attrname, old, new):
 
     # update app status
     app_status.text = data.app_status
+
+    # enable update_graph button
+    update_graph.disabled = False
+
+
+def update_on_search_period_value(attrname, old, new):
+    """Update when search_period_value changes"""
+    logger.debug(inspect.stack()[0][3])
+
+    data.periods.search_start = pd.Timestamp(search_period.children[0].value)
+    data.periods.search_end = pd.Timestamp(search_period.children[1].value)
+
+    # update data.periods for next purpose
+    search_x_range.start = data.periods.search_start
+    search_x_range.end = data.periods.search_end
+    view_period.start = data.periods.search_start
+    view_period.end = data.periods.search_end
 
 
 def update_map_figure_background_control(attrname, old, new):
@@ -127,16 +147,102 @@ def update_map_figure_overlay_control(attrname, old, new):
 
 def start_time_series_loader():
     """Start time_series loader and start update_time_series"""
-    logger.debug(inspect.stack()[0][3])
+    #logger.debug(inspect.stack()[0][3])
     update_graph.css_classes = ["loader_time_fig"]
-    curdoc().add_next_tick_callback(update_time_series)
+
+    # now we go downloading a view 
+    curdoc().add_next_tick_callback(update_time_series_view)
 
 
-def update_time_series():
+def update_time_series_view():
     """Update time_series and stop time_fig_loader"""
+    global time_series_sources # we update the global variable time_series_sources
+
     logger.debug(inspect.stack()[0][3])
     data.update_time_series()
+
+    # update time_series_layout (top figures)
+    parameter_groups = data.parameters.get_groups()
+    time_series_groups = data.time_series_sets.by_parameter_groups(parameter_groups)
+    time_series_sources = sources.time_series_sources(data.time_series_sets.time_series)
+
+    time_figure_widget.create_time_figures(time_figure_layout=time_figure_layout,
+                                           time_series_groups=time_series_groups,
+                                           time_series_sources=time_series_sources,
+                                           x_range=view_x_range)
+
+    # update search_time_series
+    search_time_series.options = list(time_series_sources.keys())
+    if search_time_series.value not in search_time_series.options:
+        search_time_series.value = search_time_series.options[0]
+
+    # add_search time_series
+    time_figure_widget.search_fig(search_time_figure_layout,
+                                  source=time_series_sources[search_time_series.value],
+                                  x_range=search_x_range,
+                                  periods=data.periods)
+
+    # update app status
+    app_status.text = data.app_status
+
+    curdoc().add_next_tick_callback(update_time_series_history)
+
+    view_period.disabled = False
+
+def update_time_series_history():
+    global time_series_sources
+
+    # update full history of all non-complete time-series
+    data.update_time_series_history()
+
+    # make temporary time_series_sources
+    _time_series_sources = sources.time_series_sources(data.time_series_sets.time_series)
+
+    # updating the sources in the used as glyph data_sources
+    for k, v in _time_series_sources .items():
+        time_series_sources[k].data.update(v.data)
+
     update_graph.css_classes = ["stoploading_time_fig"]
+
+
+def update_on_search_time_series_value(attrname, old, new):
+    """Update source of search_time_figure when search_time_series_value changes"""
+    logger.debug(inspect.stack()[0][3])
+
+    # change search time_series
+    time_figure_widget.search_fig(search_time_figure_layout,
+                                  source=time_series_sources[search_time_series.value],
+                                  x_range=search_x_range,
+                                  periods=data.periods)
+
+
+def update_on_view_period_value(attrname, old, new):
+    """Update periods when view_period value changes"""
+    logger.debug(inspect.stack()[0][3])
+
+    # update datamodel to keep things in sync
+    data.periods.view_start, data.periods.view_end = view_period.value_as_datetime
+
+    # update patch source
+    search_time_figure_layout.children[0].renderers[0].data_source.data.update(
+        sources.view_period_patch_source(data.periods).data)
+
+
+def update_on_view_x_range_change(attrname, old, new):
+    """Update view_period widget when view_x_range changes."""
+    logger.debug(inspect.stack()[0][3])
+
+    def _to_timestamp(i):
+        if (not isinstance(i, pd.Timestamp)) | (not isinstance(i, datetime)):
+            return pd.Timestamp(i * 10 ** 6)
+        else:
+            return i
+
+    start_datetime = _to_timestamp(view_x_range.start)
+    end_datetime = _to_timestamp(view_x_range.end)
+
+    view_period.value = (start_datetime, end_datetime)
+    update_graph.disabled = True
 
 
 """
@@ -153,6 +259,7 @@ We define all sources used in this main document
 
 locations_source = sources.locations_source()
 locations_source.selected.on_change("indices", update_on_locations_source_select)
+time_series_sources = sources.time_series_sources
 
 """
 In this section we define all widgets. We pass callbacks and sources to every widget
@@ -171,7 +278,9 @@ on_change = [("value", update_on_parameters_value)]
 parameters = filters_widgets.make_filter(data=data.parameters, on_change=on_change)
 
 # Search period widget
-search_period = search_period_widget.make_search_period(data.periods)
+on_change = [("value", update_on_search_period_value)]
+search_period = search_period_widget.make_search_period(data.periods, on_change=on_change)
+
 
 # Update graph widget
 update_graph = update_graph_widget.make_update_graph(update_graph_title[LANG])
@@ -195,18 +304,27 @@ map_options = map_figure_widget.make_options(
 app_status = Div(text=data.app_status)
 
 # Time figure widget
+view_x_range = time_figure_widget.make_x_range(data.periods, graph="top_figs")
+view_x_range.on_change("end", update_on_view_x_range_change)
+view_x_range.on_change("start", update_on_view_x_range_change)
+
 time_figure = time_figure_widget.empty_fig()
 
 # Search time series widget
 search_time_series = Select(value=None, options=[])
+search_time_series.on_change("value", update_on_search_time_series_value)
 
 # Search download search time series widget
 download_search_time_series = Button(label="Download", button_type="success")
 
 # View period widget
 view_period = view_period_widget.make_view_period(data.periods)
+view_period.on_change("value", update_on_view_period_value)
+view_period.js_link("value_throttled", view_x_range, "start", attr_selector=0)
+view_period.js_link("value_throttled", view_x_range, "end", attr_selector=1)
 
 # Search time figure widget
+search_x_range = time_figure_widget.make_x_range(data.periods, graph="search_fig")
 search_time_figure = time_figure_widget.empty_fig()
 
 """
@@ -229,7 +347,8 @@ curdoc().add_root(column(map_options, name="map_options", sizing_mode="stretch_b
 curdoc().add_root(column(app_status, name="app_status", sizing_mode="stretch_both"))
 
 # time-figure layout
-curdoc().add_root(column(time_figure, name="time_figure", sizing_mode="stretch_both"))
+time_figure_layout = column(time_figure, name="time_figure", sizing_mode="stretch_both")
+curdoc().add_root(time_figure_layout)
 curdoc().add_root(
     column(
         search_time_series, name="select_search_time_series", sizing_mode="stretch_both"
@@ -243,9 +362,8 @@ curdoc().add_root(
     )
 )
 curdoc().add_root(column(view_period, name="view_period", sizing_mode="stretch_both"))
-curdoc().add_root(
-    column(search_time_figure, name="search_time_figure", sizing_mode="stretch_both")
-)
+search_time_figure_layout = column(search_time_figure, name="search_time_figure", sizing_mode="stretch_both")
+curdoc().add_root(search_time_figure_layout)
 
 
 curdoc().title = TITLE

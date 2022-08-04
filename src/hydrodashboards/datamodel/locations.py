@@ -127,7 +127,9 @@ class Locations(Filter):
             options = []
         return options
 
-    def update_from_options(self, options: List[tuple]):
+    def update_from_options(self, options: List[tuple], sort=True):
+        if sort:
+            options.sort(key=lambda a: a[1])
         values = [i[0] for i in options]
         self.options = options
         self.value = [i for i in self.value if i in values]

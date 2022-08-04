@@ -9,6 +9,7 @@ COLUMNS = {"datetime": "datetime64", "value": float}
 @dataclass
 class TimeSeries:
     parameter: str
+    parameter_name: str
     location: str
     label: str
     active: bool = False
@@ -48,6 +49,9 @@ class TimeSeries:
 class TimeSeriesSets:
     time_series: List[TimeSeries] = field(default_factory=list)
 
+    def __len__(self):
+        return len(self.time_series)
+
     @property
     def indices(self):
         return [i.index for i in self.time_series]
@@ -86,3 +90,9 @@ class TimeSeriesSets:
         ]
         time_series = [TimeSeries(**i) for i in properties]
         self.time_series += time_series
+
+    def by_parameter_groups(self, parameter_groups: dict):
+        groups = {k: [] for k in parameter_groups.keys()}
+        for i in self.time_series:
+            groups[i.__dict__["parameter"]].append(i)
+        return groups

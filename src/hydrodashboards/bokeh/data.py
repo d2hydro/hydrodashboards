@@ -2,14 +2,27 @@
 from fewspy import Api
 
 # import dashboard configuration
-from hydrodashboards.bokeh.config import (
-    EXCLUDE_PARS,
-    FEWS_URL,
-    FILTER_COLORS,
-    HEADERS_FULL_HISTORY,
-    ROOT_FILTER,
-    SSL_VERIFY,
-)
+try:
+    from config import (
+        EXCLUDE_PARS,
+        FEWS_URL,
+        FILTER_COLORS,
+        HEADERS_FULL_HISTORY,
+        HISTORY_PERIOD,
+        ROOT_FILTER,
+        SSL_VERIFY,
+    )
+except ModuleNotFoundError:
+    from hydrodashboards.bokeh.config import (
+        EXCLUDE_PARS,
+        FEWS_URL,
+        FILTER_COLORS,
+        HEADERS_FULL_HISTORY,
+        HISTORY_PERIOD,
+        ROOT_FILTER,
+        SSL_VERIFY,
+    )
+
 
 # import datamodel components
 from hydrodashboards.datamodel import (
@@ -63,7 +76,7 @@ class Data:
 
         # time properties
         self.now = now
-        self.periods = Periods(self.now)
+        self.periods = Periods(self.now, history_period=HISTORY_PERIOD)
 
         # data-classes linked to dashboard
         self.filters = Filters.from_fews(self._fews_filters)
@@ -164,7 +177,10 @@ class Data:
             )
             location_name = self.locations.locations.loc[header.location_id]["name"]
             label = f"{location_name} {parameter_name}"
-            return dict(location=header.location_id, parameter=parameter, label=label)
+            return dict(location=header.location_id,
+                        parameter=parameter,
+                        parameter_name=parameter_name,
+                        label=label)
 
         return [property_generator(i.header) for i in fews_time_series]
 
@@ -204,7 +220,7 @@ class Data:
     def app_status(self):
         locations = len(self.locations.value)
         parameters = len(self.parameters.value)
-        time_series = 0
+        time_series = len(self.time_series_sets)
 
         return (
             f"Geselecteerd:<br>"
@@ -339,7 +355,7 @@ class Data:
         # clean parameter value to options
         self.parameters.clean_value()
 
-    def update_time_serie_history(self):
+    def update_time_series_history(self):
         if self.time_series_sets.select_incomplete():
             fews_ts_set = self._get_fews_ts(request_type="history")
             self._update_ts_from_fews_ts_set(fews_ts_set, complete=True)
@@ -375,5 +391,6 @@ class Data:
 
             self._update_ts_from_fews_ts_set(fews_ts_set)
 
-        self.update_time_serie_history()
-        print(self.time_series_sets.time_series)
+        #self.update_time_series_history()
+        #print(self.time_series_sets.time_series)
+      

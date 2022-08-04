@@ -43,5 +43,4 @@ ROOT_FILTER = "WDB"
 SSL_VERIFY = False
 
 # Search Settings
-FIRST_DATE = datetime(2010, 1, 1)
-INIT_TIMEDELTA = timedelta(days=30)
+HISTORY_PERIOD = timedelta(days=3650)

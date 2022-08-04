@@ -3,7 +3,11 @@ from hydrodashboards.datamodel.models import Filter
 import pandas as pd
 from dataclasses import dataclass, field
 from typing import List
-from .utils import concat_fews_parameter_names, concat_fews_parameter_ids
+from .utils import (
+    concat_fews_parameter_names,
+    concat_fews_parameter_ids,
+    split_parameter_id_to_fews
+    )
 
 
 @dataclass
@@ -48,6 +52,14 @@ class Parameters(Filter):
     def clean_value(self):
         values = [i[0] for i in self.options]
         self.value = [i for i in self.value if i in values]
+
+    def get_groups(self, parameter_source="fews"):
+        if parameter_source == "fews":
+            groups = {i: self._fews_parameters.at[
+                split_parameter_id_to_fews(i)[0],
+                "parameter_group"
+                ] for i in self.value}
+        return groups
 
     def update_from_options(self, options: List[tuple], reinit=True):
         self._options = options
