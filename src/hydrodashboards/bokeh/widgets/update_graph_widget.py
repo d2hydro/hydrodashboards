@@ -7,5 +7,6 @@ def make_update_graph(label):
         css_classes=["stoploading_time_fig"],
         sizing_mode="stretch_width",
         button_type="primary",
+        disabled=True
     )
     return time_fig_button

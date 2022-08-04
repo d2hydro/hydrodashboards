@@ -1,5 +1,6 @@
 from bokeh.plotting import figure
 from bokeh.layouts import column
+from bokeh.events import PanEnd, MouseWheel
 from bokeh.models.widgets import Div
 from bokeh.models import (
     HoverTool,
@@ -11,7 +12,7 @@ from bokeh.models import (
 from bokeh.palettes import Category10_10 as palette
 import pandas as pd
 from itertools import cycle
-from hydrodashboards.bokeh.sources import time_series_template, view_period_patch_source
+from hydrodashboards.bokeh.sources import time_series_template, view_period_patch_source, time_series_to_source
 
 colors = cycle(palette)
 
@@ -65,22 +66,30 @@ def make_y_range(time_series, bounds=None):
     return y_range
 
 
-def search_fig(search_time_figure_layout, source, x_range, periods, color="#1f77b4"):
+def search_fig(search_time_figure_layout, time_series, x_range, periods, color="#1f77b4"):
     def _add_line(time_fig, source, color):
         time_fig.line(x="datetime",
                       y="value",
-                      source=source,
+                      source=time_series_template(),
                       color=color)
-    
+
+    # get y-axis start and end
+    values = time_series.df["value"].values
+    if len(values) == 0:
+        y_start, y_end = range_defaults()
+    else:
+        y_start = values.min()
+        y_end = values.max()
+        y_start, y_end = check_nan(y_start, y_end)
+
+    # get source
+    source = time_series_to_source(time_series,
+                                   start_date_time=x_range.start,
+                                   end_date_time=x_range.end)
+
+    # create or update graph
     if isinstance(search_time_figure_layout.children[0], Div):
         search_time_figure_layout.children.pop()
-        values = source.data["value"]
-        if len(values) == 0:
-            y_start, y_end = range_defaults
-        else:
-            y_start = values.min()
-            y_end = values.max()
-            y_start, y_end = check_nan(y_start, y_end)
         y_range = Range1d(start=y_start, end=y_end)
         time_fig = figure(sizing_mode=SIZING_MODE,
                           x_range=x_range,
@@ -101,13 +110,22 @@ def search_fig(search_time_figure_layout, source, x_range, periods, color="#1f77
         # update patch data_source
         time_fig.renderers[0].data_source.data.update(view_period_patch_source(periods).data)
 
+        # update time_series source
+        time_fig.renderers[1].data_source.data.update(source.data)
+
+        # set y_range end and start
+        time_fig.y_range.start = y_start
+        time_fig.y_range.end = y_end
+
         # remove and add time_fig_renderer
-        time_fig.renderers.remove(time_fig.renderers[1])
-        _add_line(time_fig, source, color)
-    
+        #time_fig.renderers.remove(time_fig.renderers[1])
+        #_add_line(time_fig, source, color)
 
 
-def top_fig(group: tuple, time_series_sources: dict, x_range: Range1d):
+
+def top_fig(group: tuple,
+            x_range: Range1d,
+            press_up_event=None):
 
     """Generate a time-figure from supplied bokeh input parameters."""
 
@@ -146,11 +164,6 @@ def top_fig(group: tuple, time_series_sources: dict, x_range: Range1d):
                       active_drag="box_zoom",
                       toolbar_location="above")
 
-    # misc settings
-    #wheel_zoom = next((i for i in time_fig.tools if type(i) == WheelZoomTool), None)
-    #if wheel_zoom:
-    #    wheel_zoom.speed = 0.0001
-
     time_fig.toolbar.logo = None
     time_fig.toolbar.autohide = False
 
@@ -167,23 +180,41 @@ def top_fig(group: tuple, time_series_sources: dict, x_range: Range1d):
     # add lines to figure
     for i in time_series:
         label = i.label
-        source = time_series_sources[time_series[0].label]
         time_fig.line(x="datetime",
                       y="value",
-                      source=source,
+                      source=time_series_to_source(i,
+                                                   start_date_time=x_range.start,
+                                                   end_date_time=x_range.end),
                       color=next(colors),
-                      legend_label=label)
+                      legend_label=label,
+                      name=label)
 
     # make up legend
     time_fig.legend.click_policy = "hide"
 
     time_fig.add_layout(time_fig.legend[0], "right")
     time_fig.legend[0].label_text_font_size = "9pt"
+    if press_up_event is not None:
+        time_fig.on_event(PanEnd, press_up_event)
+        time_fig.on_event(MouseWheel, press_up_event)
     return time_fig
 
 
-def create_time_figures(time_figure_layout: column, time_series_groups: dict, time_series_sources: dict, x_range):
+def create_time_figures(time_figure_layout: column,
+                        time_series_groups: dict,
+#                        time_series_sources: dict,
+                        x_range,
+                        press_up_event=None):
     time_figure_layout.children.pop()
-    top_figs = [top_fig(i, time_series_sources, x_range) for i in  time_series_groups.items()]
+    top_figs = [top_fig(i,
+                        x_range,
+                        press_up_event=press_up_event) for i in  time_series_groups.items()]
     top_figs[-1].xaxis.visible = True
     time_figure_layout.children.append(column(*top_figs, sizing_mode="stretch_both"))
+
+    time_series_sources = {}
+    for i in top_figs:
+        for j in i.renderers:
+            time_series_sources[j.name] = j.data_source
+
+    return time_series_sources

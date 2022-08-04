@@ -3,8 +3,18 @@ import numpy as np
 import pandas as pd
 
 
-def _make_ts_cds(i, unreliables=False):
-    df = i.df
+def time_series_to_source(time_series,
+                          start_date_time=None,
+                          end_date_time=None,
+                          unreliables=False,
+                          excluded_date_times=None):
+    def _index_mask(index, start_date_time, end_date_time):
+        return (index > start_date_time) & (index <= end_date_time)
+    df = time_series.df
+    if (start_date_time is not None) and (end_date_time is not None):
+        df = df.loc[_index_mask(df.index, start_date_time, end_date_time)]
+    if excluded_date_times is not None:
+        df = df.loc[~df.index.isin(excluded_date_times)]
     if not unreliables:
         df = pd.DataFrame(df.loc[df["flag"] < 6]["value"])
     return ColumnDataSource(df)
@@ -42,10 +52,10 @@ def time_series_sources(time_series=[], unreliables=False, active_only=False):
             return i.active
         else:
             return True
-    return {i.label: _make_ts_cds(i, unreliables) for i in time_series if _active(i)}
+    return {i.label: time_series_to_source(i, unreliables) for i in time_series if _active(i)}
 
 
 def update_time_series_sources(sources, time_series=[], unreliables=False):
     for i in time_series:
-        source = _make_ts_cds(i, unreliables)
+        source = time_series_to_source(i, unreliables)
         sources[i.label].data.update(source.data)

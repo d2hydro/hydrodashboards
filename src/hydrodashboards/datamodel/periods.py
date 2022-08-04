@@ -23,13 +23,14 @@ class Periods:
     language: str = "dutch"
 
     def __post_init__(self):
+        next_day = datetime(*self.now.timetuple()[:3]) + timedelta(days=1)
         self.view_end = self.now
         self.view_start = self.now - self.default_view_period
-        self.search_end = self.now
-        self.history_start = self.now - self.history_period
-        self.search_start = self.now - self.default_search_period
-        self.search_end_title = search_period_start_title[self.language]
-        self.search_start_title = search_period_end_title[self.language]
+        self.search_end = next_day
+        self.history_start = next_day - timedelta(self.history_period.days)
+        self.search_start = next_day - timedelta(self.default_search_period.days)
+        self.search_start_title = search_period_start_title[self.language]
+        self.search_end_title = search_period_end_title[self.language]
 
     @property
     def view_period(self):

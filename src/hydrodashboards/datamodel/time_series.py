@@ -54,7 +54,11 @@ class TimeSeriesSets:
 
     @property
     def active_length(self):
-        return len([1 for i in self.time_series if i.active])
+        return len(self.active_labels)
+
+    @property
+    def active_labels(self):
+        return [i.label for i in self.time_series if i.active]
 
     @property
     def indices(self):
@@ -63,6 +67,9 @@ class TimeSeriesSets:
     @property
     def first_active(self):
         return next((i for i in self.time_series if i.active), None)
+
+    def get_by_label(self, label):
+        return next((i for i in self.time_series if i.label == label), None)
 
     def select_view(self, periods):
         def _selector(ts, periods):

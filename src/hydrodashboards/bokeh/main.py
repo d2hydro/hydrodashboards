@@ -26,7 +26,7 @@ from datetime import datetime
 import pandas as pd
 
 LANG = "dutch"
-HTML_TYPE = "list"
+HTML_TYPE = "table"
 
 
 """
@@ -47,6 +47,41 @@ def enable_update_graph():
         update_graph.disabled = False
     else:
         update_graph.disabled = True
+
+
+def update_time_series_sources(stream=False):
+    """Update of time_series_sources assigned to top_figs."""
+    start, end = view_x_range_as_datetime()
+    for k, v in time_series_sources.items():
+        time_series = data.time_series_sets.get_by_label(k)        
+        if stream:
+            exluded_date_times = v.data["datetime"]
+            _source = sources.time_series_to_source(time_series=time_series,
+                                                    start_date_time=start,
+                                                    end_date_time=end,
+                                                    excluded_date_times=exluded_date_times,
+                                                    unreliables=False)
+            v.stream(_source.data)
+        else:
+            _source = sources.time_series_to_source(time_series=time_series,
+                                                    start_date_time=start,
+                                                    end_date_time=end,
+                                                    unreliables=False)
+            v.data.update(_source.data)
+
+
+def view_x_range_as_datetime():
+    """Get the view_x_range start and end as datetime."""
+    def _to_timestamp(i):
+        if isinstance(i, (float, int)):
+            return pd.Timestamp(i * 10 ** 6)
+        else:
+            return i
+
+    start = _to_timestamp(view_x_range.start)
+    end = _to_timestamp(view_x_range.end)
+
+    return start, end
 
 
 """
@@ -131,8 +166,17 @@ def update_on_search_period_value(attrname, old, new):
     """Update when search_period_value changes"""
     logger.debug(inspect.stack()[0][3])
 
-    data.periods.search_start = pd.Timestamp(search_period.children[0].value)
-    data.periods.search_end = pd.Timestamp(search_period.children[1].value)
+    search_start = datetime.strptime(search_period.children[0].value, "%Y-%m-%d")
+    search_end = datetime.strptime(search_period.children[1].value, "%Y-%m-%d")
+
+    search_new = datetime.strptime(new, "%Y-%m-%d")
+    #print(search_new, data.periods.search_start)
+    if search_new < data.periods.search_start:
+        data.extend_time_series(search_new, insert=True)
+    elif search_new > data.periods.search_end:
+        data.extend_time_series(search_new, insert=False)
+    data.periods.search_start = search_start
+    data.periods.search_end = search_end
 
     # update data.periods for next purpose
     search_x_range.start = data.periods.search_start
@@ -186,21 +230,21 @@ def update_time_series_view():
     # update time_series_layout (top figures)
     parameter_groups = data.parameters.get_groups()
     time_series_groups = data.time_series_sets.by_parameter_groups(parameter_groups, active_only=True)
-    time_series_sources = sources.time_series_sources(data.time_series_sets.time_series, active_only=True)
+    #time_series_sources = sources.time_series_sources(data.time_series_sets.time_series, active_only=True)
 
-    time_figure_widget.create_time_figures(time_figure_layout=time_figure_layout,
+    time_series_sources = time_figure_widget.create_time_figures(time_figure_layout=time_figure_layout,
                                            time_series_groups=time_series_groups,
-                                           time_series_sources=time_series_sources,
-                                           x_range=view_x_range)
+                                           x_range=view_x_range,
+                                           press_up_event=press_up_event)
 
     # update search_time_series
-    search_time_series.options = list(time_series_sources.keys())
+    search_time_series.options = data.time_series_sets.active_labels
     if search_time_series.value not in search_time_series.options:
         search_time_series.value = search_time_series.options[0]
 
     # add_search time_series
     time_figure_widget.search_fig(search_time_figure_layout,
-                                  source=time_series_sources[search_time_series.value],
+                                  time_series=data.time_series_sets.first_active,
                                   x_range=search_x_range,
                                   periods=data.periods)
 
@@ -211,22 +255,16 @@ def update_time_series_view():
     enable_view_period()
 
     # go to the next callback
-    curdoc().add_next_tick_callback(update_time_series_history)
+    curdoc().add_next_tick_callback(update_time_series_search)
 
 
-def update_time_series_history():
-    global time_series_sources
+def update_time_series_search():
 
     # update full history of all non-complete time-series
-    data.update_time_series_history()
-
-    # make temporary time_series_sources
-    _time_series_sources = sources.time_series_sources(data.time_series_sets.time_series,
-                                                       active_only=True)
+    data.update_time_series_search()
 
     # updating the sources in the used as glyph data_sources
-    for k, v in _time_series_sources.items():
-        time_series_sources[k].data.update(v.data)
+    update_time_series_sources()
 
     # stop loader and disable update_graph
     update_graph.css_classes = ["stoploading_time_fig"]
@@ -239,14 +277,14 @@ def update_on_search_time_series_value(attrname, old, new):
 
     # change search time_series
     time_figure_widget.search_fig(search_time_figure_layout,
-                                  source=time_series_sources[search_time_series.value],
+                                  time_series=data.time_series_sets.get_by_label(label=search_time_series.value),
                                   x_range=search_x_range,
                                   periods=data.periods)
 
 
 def update_on_view_period_value(attrname, old, new):
     """Update periods when view_period value changes"""
-    logger.debug(inspect.stack()[0][3])
+    #logger.debug(inspect.stack()[0][3])
 
     # keep end and start within MAX_VIEW_PERIOD
     start_datetime, end_datetime = view_period.value_as_datetime
@@ -267,21 +305,25 @@ def update_on_view_period_value(attrname, old, new):
         sources.view_period_patch_source(data.periods).data)
 
 
+def update_on_view_period_value_throttled(attrname, old, new):
+    """Update time_series_sources as view_x_range"""
+    #logger.debug(inspect.stack()[0][3])
+
+    update_time_series_sources()
+
+
 def update_on_view_x_range_change(attrname, old, new):
     """Update view_period widget when view_x_range changes."""
-    logger.debug(inspect.stack()[0][3])
+    #logger.debug(inspect.stack()[0][3])
 
-    def _to_timestamp(i):
-        if isinstance(i, int):
-            return pd.Timestamp(i * 10 ** 6)
-        else:
-            return i
+    start, end = view_x_range_as_datetime()
+    view_period.value = (start, end)
 
-    start_datetime = _to_timestamp(view_x_range.start)
-    end_datetime = _to_timestamp(view_x_range.end)
+    #update_time_series_sources(stream=False)
 
-    view_period.value = (start_datetime, end_datetime)
 
+def press_up_event(event):
+    update_time_series_sources()
 
 """
 We initialize the dataclass
@@ -357,6 +399,7 @@ download_search_time_series = Button(label="Download", button_type="success")
 # View period widget
 view_period = view_period_widget.make_view_period(data.periods)
 view_period.on_change("value", update_on_view_period_value)
+view_period.on_change("value_throttled", update_on_view_period_value_throttled)
 view_period.js_link("value_throttled", view_x_range, "start", attr_selector=0)
 view_period.js_link("value_throttled", view_x_range, "end", attr_selector=1)
 

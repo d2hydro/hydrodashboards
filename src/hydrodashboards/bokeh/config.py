@@ -43,5 +43,5 @@ ROOT_FILTER = "WDB"
 SSL_VERIFY = False
 
 # Search Settings
-HISTORY_PERIOD = timedelta(days=365)
+HISTORY_PERIOD = timedelta(days=3650)
 MAX_VIEW_PERIOD = timedelta(days=180)

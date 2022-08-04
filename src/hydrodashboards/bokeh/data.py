@@ -153,8 +153,8 @@ class Data:
             location_ids, parameter_ids, qualifier_ids = self._fews_locators_from_ts(
                 time_series
             )
-            start_time = self.periods.history_start
-            end_time = self.periods.now
+            start_time = self.periods.search_start
+            end_time = self.periods.search_end
 
         return self._fews_api.get_time_series(
             filter_id=ROOT_FILTER,
@@ -370,7 +370,10 @@ class Data:
         # clean parameter value to options
         self.parameters.clean_value()
 
-    def update_time_series_history(self):
+    def extend_time_series(self, search_datetime, insert=True):
+        print(f"extend timeseries from {search_datetime} insert: {insert}")
+
+    def update_time_series_search(self):
         if self.time_series_sets.select_incomplete():
             fews_ts_set = self._get_fews_ts(request_type="history")
             self._update_ts_from_fews_ts_set(fews_ts_set, complete=True)
