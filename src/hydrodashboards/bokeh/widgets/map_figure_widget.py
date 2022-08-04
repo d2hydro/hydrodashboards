@@ -142,7 +142,6 @@ def make_map(
 
 def make_options(
     map_overlays: dict,
-    overlays_title: str,
     overlays_change,
     background_title: str,
     background_change,
@@ -164,9 +163,8 @@ def make_options(
     background_control = RadioGroup(labels=background_options, active=background_active)
     background_control.on_change("active", background_change)
     map_controls = column(
-        Div(text=f"<h6>{overlays_title},</h6>"),
         overlay_control,
-        Div(text=f"<h6>{background_title},</h6>"),
+        Div(text=f"<h6>{background_title}</h6>"),
         background_control,
     )
     return map_controls

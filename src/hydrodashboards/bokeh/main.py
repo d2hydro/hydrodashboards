@@ -3,7 +3,7 @@
 from bokeh.io import curdoc
 from bokeh.layouts import column
 from data import Data
-from config import TITLE, BOUNDS, MAP_OVERLAYS
+from config import TITLE, BOUNDS, MAP_OVERLAYS, MAX_VIEW_PERIOD
 
 # import bokeh sources
 import hydrodashboards.bokeh.sources as sources
@@ -26,6 +26,28 @@ from datetime import datetime
 import pandas as pd
 
 LANG = "dutch"
+HTML_TYPE = "list"
+
+
+"""
+Supporting functions
+"""
+
+
+def enable_view_period():
+    """Enable view period (used when first graph is loaded)."""
+    if view_period.disabled:  # at app init view_period is disabled
+        view_period.disabled = False
+        view_period.bar_color = "#e6e6e6"
+
+
+def enable_update_graph():
+    """Enable update_graph if locations ánd paramters are selected."""
+    if (len(locations.value) > 0) & (len(parameters.value) > 0):
+        update_graph.disabled = False
+    else:
+        update_graph.disabled = True
+
 
 """
 All callbacks used in the app
@@ -51,7 +73,7 @@ def update_on_filter_value(attrname, old, new):
     locations_source.data = data.locations.map_locations
 
     # update app status
-    app_status.text = data.app_status
+    app_status.text = data.app_status(html_type=HTML_TYPE)
 
 
 def update_on_locations_source_select(attr, old, new):
@@ -85,10 +107,10 @@ def update_on_locations_value(attrname, old, new):
     parameters.value = data.parameters.value
 
     # update app status
-    app_status.text = data.app_status
+    app_status.text = data.app_status(html_type=HTML_TYPE)
 
     # enable update_graph button
-    update_graph.disabled = False
+    enable_update_graph()
 
 
 def update_on_parameters_value(attrname, old, new):
@@ -99,10 +121,10 @@ def update_on_parameters_value(attrname, old, new):
     data.parameters.value = parameters.value
 
     # update app status
-    app_status.text = data.app_status
+    app_status.text = data.app_status(html_type=HTML_TYPE)
 
     # enable update_graph button
-    update_graph.disabled = False
+    enable_update_graph()
 
 
 def update_on_search_period_value(attrname, old, new):
@@ -183,11 +205,14 @@ def update_time_series_view():
                                   periods=data.periods)
 
     # update app status
-    app_status.text = data.app_status
+    app_status.text = data.app_status(html_type=HTML_TYPE)
 
+    # enable view_period if disabled (at first timeseries load)
+    enable_view_period()
+
+    # go to the next callback
     curdoc().add_next_tick_callback(update_time_series_history)
 
-    view_period.disabled = False
 
 def update_time_series_history():
     global time_series_sources
@@ -203,7 +228,9 @@ def update_time_series_history():
     for k, v in _time_series_sources.items():
         time_series_sources[k].data.update(v.data)
 
+    # stop loader and disable update_graph
     update_graph.css_classes = ["stoploading_time_fig"]
+    update_graph.disabled = True
 
 
 def update_on_search_time_series_value(attrname, old, new):
@@ -221,6 +248,17 @@ def update_on_view_period_value(attrname, old, new):
     """Update periods when view_period value changes"""
     logger.debug(inspect.stack()[0][3])
 
+    # keep end and start within MAX_VIEW_PERIOD
+    start_datetime, end_datetime = view_period.value_as_datetime
+    if (end_datetime - start_datetime).days > MAX_VIEW_PERIOD.days:
+        if old[0] != new[0]:
+            view_period.value = (
+                start_datetime,
+                start_datetime + MAX_VIEW_PERIOD,
+            )
+        elif old[1] != new[1]:
+            view_period.value = (end_datetime - MAX_VIEW_PERIOD, end_datetime)
+
     # update datamodel to keep things in sync
     data.periods.view_start, data.periods.view_end = view_period.value_as_datetime
 
@@ -234,7 +272,7 @@ def update_on_view_x_range_change(attrname, old, new):
     logger.debug(inspect.stack()[0][3])
 
     def _to_timestamp(i):
-        if (not isinstance(i, pd.Timestamp)) | (not isinstance(i, datetime)):
+        if isinstance(i, int):
             return pd.Timestamp(i * 10 ** 6)
         else:
             return i
@@ -243,7 +281,6 @@ def update_on_view_x_range_change(attrname, old, new):
     end_datetime = _to_timestamp(view_x_range.end)
 
     view_period.value = (start_datetime, end_datetime)
-    update_graph.disabled = True
 
 
 """
@@ -295,14 +332,13 @@ map_figure = map_figure_widget.make_map(
 # Map options widget
 map_options = map_figure_widget.make_options(
     map_overlays=MAP_OVERLAYS,
-    overlays_title="Kaartlagen",
     overlays_change=update_map_figure_overlay_control,
     background_title="Achtergrond",
     background_change=update_map_figure_background_control,
 )
 
 # Status widget
-app_status = Div(text=data.app_status)
+app_status = Div(text=data.app_status(html_type=HTML_TYPE))
 
 # Time figure widget
 view_x_range = time_figure_widget.make_x_range(data.periods, graph="top_figs")

@@ -86,8 +86,11 @@ def search_fig(search_time_figure_layout, source, x_range, periods, color="#1f77
                           x_range=x_range,
                           y_range=y_range,
                           toolbar_location=None)
-
+        time_fig.toolbar.active_drag = None
+        time_fig.toolbar.active_scroll = None
+        time_fig.toolbar.active_tap = None
         time_fig.yaxis.visible = False
+
         time_fig.patch(x="x", y="y", source=view_period_patch_source(periods), alpha=0.5, line_width=2)
         _add_line(time_fig, source, color)
         search_time_figure_layout.children.append(time_fig)

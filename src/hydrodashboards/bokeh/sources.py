@@ -1,10 +1,12 @@
 from bokeh.models import ColumnDataSource
 import numpy as np
+import pandas as pd
+
 
 def _make_ts_cds(i, unreliables=False):
     df = i.df
     if not unreliables:
-        df = df.loc[df["flag"] < 6]
+        df = pd.DataFrame(df.loc[df["flag"] < 6]["value"])
     return ColumnDataSource(df)
 
 
@@ -26,7 +28,7 @@ def locations_source():
 
 
 def time_series_template():
-    return ColumnDataSource(data = {i: np.array([]) for i in ["datetime", "value", "flag"]})
+    return ColumnDataSource(data = {i: np.array([]) for i in ["datetime", "value"]})
 
 
 def view_period_patch_source(data):

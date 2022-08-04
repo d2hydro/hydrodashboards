@@ -216,21 +216,33 @@ class Data:
 
     """
 
-    @property
-    def app_status(self):
+    def app_status(self, html_type="table"):
         locations = len(self.locations.value)
         parameters = len(self.parameters.value)
         time_series_active = self.time_series_sets.active_length
         time_series_cache = len(self.time_series_sets)
 
-        return (
-            f"Geselecteerd:<br>"
-            f"<ul><li>locaties: {locations} (max 10)</li>"
-            f"<li>parameters: {parameters}</li></ul>"
-            f"Tijdseries:<br>"
-            f"<ul><li>geladen: {time_series_active}</li>"
-            f"<li>cache: {time_series_cache}</li></ul>"
-        )
+        if html_type == "list":
+            html = (
+                f"Geselecteerd:<br>"
+                f"<ul><li>locaties: {locations} (max 10)</li>"
+                f"<li>parameters: {parameters}</li></ul>"
+                f"Tijdseries:<br>"
+                f"<ul><li>geladen: {time_series_active}</li>"
+                f"<li>cache: {time_series_cache}</li></ul>"
+            )
+        elif html_type == "table":
+            html = ('<table style="width:100%">'
+                    "<tr>"
+                    f"<td>locaties: {locations} (max 10)</td>"
+                    f"<td>parameters: {parameters}</td>"
+                    f"<td>tijdseries: {time_series_active}</td>"
+                    f"<td>tijdseries cache: {time_series_cache}</td>"
+                    "<tr>"
+                    "</table>"
+                    )
+
+        return html
 
     def update_on_filter_select(self, values: list):
         """

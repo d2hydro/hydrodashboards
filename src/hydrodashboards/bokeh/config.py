@@ -44,3 +44,4 @@ SSL_VERIFY = False
 
 # Search Settings
 HISTORY_PERIOD = timedelta(days=365)
+MAX_VIEW_PERIOD = timedelta(days=180)
