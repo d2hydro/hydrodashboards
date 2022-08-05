@@ -69,7 +69,6 @@ def update_time_series_sources(stream=False):
                                                     unreliables=False)
             v.data.update(_source.data)
 
-
 def view_x_range_as_datetime():
     """Get the view_x_range start and end as datetime."""
     def _to_timestamp(i):
@@ -268,6 +267,9 @@ def update_time_series_search():
     # updating the sources in the used as glyph data_sources
     update_time_series_sources()
 
+    # updating the figure_layout y_ranges
+    time_figure_widget.update_time_series_y_ranges(time_figure_layout)
+
     # stop loader and disable update_graph
     update_graph.css_classes = ["stoploading_time_fig"]
     update_graph.disabled = True
@@ -289,15 +291,16 @@ def update_on_view_period_value(attrname, old, new):
     #logger.debug(inspect.stack()[0][3])
 
     # keep end and start within MAX_VIEW_PERIOD
-    start_datetime, end_datetime = view_period.value_as_datetime
-    if (end_datetime - start_datetime).days > MAX_VIEW_PERIOD.days:
-        if old[0] != new[0]:
-            view_period.value = (
-                start_datetime,
-                start_datetime + MAX_VIEW_PERIOD,
-            )
-        elif old[1] != new[1]:
-            view_period.value = (end_datetime - MAX_VIEW_PERIOD, end_datetime)
+    if MAX_VIEW_PERIOD is not None:
+        start_datetime, end_datetime = view_period.value_as_datetime
+        if (end_datetime - start_datetime).days > MAX_VIEW_PERIOD.days:
+            if old[0] != new[0]:
+                view_period.value = (
+                    start_datetime,
+                    start_datetime + MAX_VIEW_PERIOD,
+                )
+            elif old[1] != new[1]:
+                view_period.value = (end_datetime - MAX_VIEW_PERIOD, end_datetime)
 
     # update datamodel to keep things in sync
     data.periods.view_start, data.periods.view_end = view_period.value_as_datetime
@@ -312,6 +315,9 @@ def update_on_view_period_value_throttled(attrname, old, new):
     #logger.debug(inspect.stack()[0][3])
 
     update_time_series_sources()
+    
+    # updating the figure_layout y_ranges
+    time_figure_widget.update_time_series_y_ranges(time_figure_layout)
 
 
 def update_on_view_x_range_change(attrname, old, new):
@@ -321,11 +327,12 @@ def update_on_view_x_range_change(attrname, old, new):
     start, end = view_x_range_as_datetime()
     view_period.value = (start, end)
 
-    #update_time_series_sources(stream=False)
-
 
 def press_up_event(event=None):
     update_time_series_sources()
+
+    # updating the figure_layout y_ranges
+    time_figure_widget.update_time_series_y_ranges(time_figure_layout)
 
 """
 We initialize the dataclass

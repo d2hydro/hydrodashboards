@@ -80,6 +80,28 @@ def make_y_range(time_series, bounds=None):
     return y_range
 
 
+def update_time_series_y_ranges(time_figure_layout):
+    def _get_sources(renderers):
+        return [i.data_source for i in renderers if len(i.data_source.data["value"]) > 0]
+
+    def _ends(renderers):
+        sources = _get_sources(renderers)
+        if len(sources) > 0:
+            start = min((i.data["value"].min() for i in sources))
+            end = max((i.data["value"].max() for i in sources))
+        else:
+            start = -0.05
+            end = 0.05
+        return start, end
+
+    def update_range(fig):
+        fig.y_range.start, fig.y_range.end = _ends(fig.renderers)
+
+    top_figs = time_figure_layout.children[0].children
+    for fig in top_figs:
+        update_range(fig)
+
+
 def search_fig(search_time_figure_layout, time_series, x_range, periods, color="#1f77b4"):
     def _add_line(time_fig, source, color):
         time_fig.line(x="datetime",
@@ -156,7 +178,6 @@ def top_fig(group: tuple,
              "xwheel_zoom",
              "zoom_in",
              "zoom_out",
-             "reset",
              "undo",
              "redo",
              "save",
