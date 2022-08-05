@@ -4,6 +4,7 @@ from bokeh.events import PanEnd, MouseWheel
 from bokeh.models.widgets import Div
 from bokeh.models import (
     HoverTool,
+    ZoomOutTool,
     DatetimeTickFormatter,
     Range1d,
     WheelZoomTool,
@@ -31,6 +32,19 @@ def check_nan(start, end):
         end = start + 0.1
     return start, end
 
+
+def date_time_range_as_datetime(date_time_range):
+    """Get the view_x_range start and end as datetime."""
+    def _to_timestamp(i):
+        if isinstance(i, (float, int)):
+            return pd.Timestamp(i * 10 ** 6)
+        else:
+            return i
+
+    start = _to_timestamp(date_time_range.start)
+    end = _to_timestamp(date_time_range.end)
+
+    return start, end
 
 def empty_fig():
     return Div(text="No graph has been generated")
@@ -83,9 +97,10 @@ def search_fig(search_time_figure_layout, time_series, x_range, periods, color="
         y_start, y_end = check_nan(y_start, y_end)
 
     # get source
+    x_start, x_end = date_time_range_as_datetime(x_range)
     source = time_series_to_source(time_series,
-                                   start_date_time=x_range.start,
-                                   end_date_time=x_range.end)
+                                   start_date_time=x_start,
+                                   end_date_time=x_end)
 
     # create or update graph
     if isinstance(search_time_figure_layout.children[0], Div):
@@ -178,13 +193,14 @@ def top_fig(group: tuple,
     time_fig.yaxis[0].formatter = NumeralTickFormatter(format="0.00")
 
     # add lines to figure
+    x_start, x_end = date_time_range_as_datetime(x_range)
     for i in time_series:
         label = i.label
         time_fig.line(x="datetime",
                       y="value",
                       source=time_series_to_source(i,
-                                                   start_date_time=x_range.start,
-                                                   end_date_time=x_range.end),
+                                                   start_date_time=x_start,
+                                                   end_date_time=x_end),
                       color=next(colors),
                       legend_label=label,
                       name=label)

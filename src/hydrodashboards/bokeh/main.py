@@ -169,20 +169,22 @@ def update_on_search_period_value(attrname, old, new):
     search_start = datetime.strptime(search_period.children[0].value, "%Y-%m-%d")
     search_end = datetime.strptime(search_period.children[1].value, "%Y-%m-%d")
 
-    search_new = datetime.strptime(new, "%Y-%m-%d")
-    #print(search_new, data.periods.search_start)
-    if search_new < data.periods.search_start:
-        data.extend_time_series(search_new, insert=True)
-    elif search_new > data.periods.search_end:
-        data.extend_time_series(search_new, insert=False)
+    if not data.time_series_sets.within_period(search_start, search_end):
+        enable_update_graph()
+        data.time_series_sets.remove_inactive()
+
+    # update data.periods for next purpose
     data.periods.search_start = search_start
     data.periods.search_end = search_end
 
-    # update data.periods for next purpose
+    # update widgets
     search_x_range.start = data.periods.search_start
     search_x_range.end = data.periods.search_end
     view_period.start = data.periods.search_start
     view_period.end = data.periods.search_end
+
+    # update app status
+    app_status.text = data.app_status(html_type=HTML_TYPE)
 
 
 def update_map_figure_background_control(attrname, old, new):
@@ -230,12 +232,11 @@ def update_time_series_view():
     # update time_series_layout (top figures)
     parameter_groups = data.parameters.get_groups()
     time_series_groups = data.time_series_sets.by_parameter_groups(parameter_groups, active_only=True)
-    #time_series_sources = sources.time_series_sources(data.time_series_sets.time_series, active_only=True)
 
     time_series_sources = time_figure_widget.create_time_figures(time_figure_layout=time_figure_layout,
-                                           time_series_groups=time_series_groups,
-                                           x_range=view_x_range,
-                                           press_up_event=press_up_event)
+                                                                 time_series_groups=time_series_groups,
+                                                                 x_range=view_x_range,
+                                                                 press_up_event=press_up_event)
 
     # update search_time_series
     search_time_series.options = data.time_series_sets.active_labels
@@ -322,7 +323,7 @@ def update_on_view_x_range_change(attrname, old, new):
     #update_time_series_sources(stream=False)
 
 
-def press_up_event(event):
+def press_up_event(event=None):
     update_time_series_sources()
 
 """

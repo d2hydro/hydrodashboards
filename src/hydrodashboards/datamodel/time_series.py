@@ -48,6 +48,8 @@ class TimeSeries:
 @dataclass
 class TimeSeriesSets:
     time_series: List[TimeSeries] = field(default_factory=list)
+    start_date_time: datetime = None
+    end_date_time: datetime = None
 
     def __len__(self):
         return len(self.time_series)
@@ -67,6 +69,20 @@ class TimeSeriesSets:
     @property
     def first_active(self):
         return next((i for i in self.time_series if i.active), None)
+
+    def remove_inactive(self):
+        self.time_series = [i for i in self.time_series if i.active]
+
+    def within_period(self, start_datetime: datetime, end_datetime: datetime):
+        if (self.search_start is not None) | (self.search_end is not None):
+            within_period = (self.search_start <= start_datetime) & (self.search_end >= start_datetime)
+        else:
+            within_period = None
+        return within_period
+
+    def set_search_period(self, start_datetime: datetime, end_datetime: datetime):
+        self.search_start = start_datetime
+        self.search_end = end_datetime
 
     def get_by_label(self, label):
         return next((i for i in self.time_series if i.label == label), None)

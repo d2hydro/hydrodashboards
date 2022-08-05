@@ -190,8 +190,6 @@ class Data:
                 return False
             elif new.empty:
                 return True
-#            else:
-#                return (new.index[0] > old.index[0]) and (new.index[-1] < old.index[-1])
 
         if not fews_ts_set.empty:
             for fews_ts in fews_ts_set.time_series:
@@ -238,15 +236,6 @@ class Data:
                 f"Tijdseries: {time_series_active} | "
                 f"Tijdseries cache: {time_series_cache}"
                 )
-            # html = ('<table style="width:100%">'
-            #         "<tr>"
-            #         f"<td>Locaties: {locations} (max 10) | </td>"
-            #         f"<td>Parameters: {parameters} | </td>"
-            #         f"<td>Tijdseries: {time_series_active} | </td>"
-            #         f"<td>Tijdseries cache: {time_series_cache}</td>"
-            #         "<tr>"
-            #         "</table>"
-            #         )
 
         return html
 
@@ -415,6 +404,5 @@ class Data:
 
             self._update_ts_from_fews_ts_set(fews_ts_set)
 
-        #self.update_time_series_history()
-        #print(self.time_series_sets.time_series)
-      
+        # finalize time_series_sets with search_start and search_end
+        self.time_series_sets.set_search_period(*self.periods.search_dates)

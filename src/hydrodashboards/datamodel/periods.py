@@ -39,3 +39,7 @@ class Periods:
     @property
     def search_period(self):
         return self.search_end - self.search_start
+
+    @property
+    def search_dates(self):
+        return self.search_start, self.search_end
