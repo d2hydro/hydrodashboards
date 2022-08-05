@@ -38,24 +38,39 @@
         });     
 
 		function myFunction() {
-		  var x = document.getElementById("myDIV");
+          var but_leg = document.getElementById("button_leg_bar");
+		  var maplayer_icon=document.getElementById("maplayer_icon");
+          var map_opt = document.getElementById("map_opt");
+		  var kaart = document.getElementById("kaart");
+		  var zoekgraf = document.getElementById("zoekgrafiek-en-slider");
 		  var but = document.getElementById("button_lower");
 		  var h = document.getElementById("grafiek_upper");
           var download = document.getElementsByClassName("bk bk-btn bk-btn-success")[0];
+         
 		  but.classList.toggle("fa-angle-double-up");
 		  but.classList.toggle("fa-angle-double-down");
-		  if (x.style.display === "none") {
-			x.style.display = "block";
-			h.style.height = "62.5vh";
+		  if (zoekgraf.style.display === "none") {
+			zoekgraf.style.display = "block";
+			h.style.height = "60.5vh";
 			
 			download.style.backgroundColor = "#3681C1";
 			download.style.borderColor = "#495568";
 		  } else {
-			x.style.display = "none";		
-			h.style.height = "84vh";	
+			zoekgraf.style.display = "none";		
+			h.style.height = "82vh";	
 			
 			download.style.backgroundColor = "white";
 			download.style.borderColor = "white";
+		  }
+          if (map_opt.style.display == "none") {
+			map_opt.style.position = "fixed";
+		    map_opt.style.display = "block";
+			
+			
+		  } else {
+			map_opt.style.display = "none";	
+			dummy.style.display= "block";
+		
 		  }
           AnimationUtils.dispatchResizeEvent();
 		}
@@ -126,24 +141,29 @@
 			</nav>
       
 			<div class="tab-content">
+		
 				<div class="tab-pane fade show active row" id="kaart" role="tabpanel" aria- labelledby="kaart-tab" aria-expanded="false">
-					
-						<div class="row h-100" id="kaartje" >
-							<div class="col-11">
-								{{ embed(roots.map_figure)}}
-							</div>
-							<div class="col-1" style= "margin-top: 32px;padding-left: 0px">
-								{{ embed(roots.map_options) }}
-								<div class="status">
-									<h6>App status</h6>
-									{{ embed(roots.app_status) }}
-								</div>
-								
-							</div>
-						</div>
+					        <div class="col-12" id="kaart">
+						        {{ embed(roots.map_figure)}}			
+					        </div>
+                            <div class="test" id ="button_leg_bar" >
+								<button	onclick="myFunction()" class="maplayer_icon" id="maplayer_icon" aria-hidden="true"></button>
+						
+					        </div>	
+                            <div class="map_opt" id="map_opt">
+						         {{ embed(roots.map_options) }}                       
+                                 
+				                 
+					        </div>	
+							
 				
+
+                      							
 			
 				</div>
+			          <div class="app_status" id="app_status">
+			{{ embed(roots.app_status) }}
+		</div>	      
 				<div class="tab-pane fade show" id="grafiek" role="tabpanel" aria- labelledby="grafiek-tab"aria-expanded="false">
 					<div class="container-fluid h-100" >
 						<div class="row"style="margin-left:0px;margin-right:0px" > 
@@ -152,7 +172,7 @@
 							</div>	
 						</div>							
 					
-					    <div class="row" id="myDIV1">	
+					    <div class="row" id="zoekgrafiek-bar">	
 							<div class="col-4">
 								<button	onclick="myFunction()" class="fas fa-angle-double-down" id="button_lower" aria-hidden="true"></button>
 								<h6 style="color:#3681C1;" id="button-text">Zoekgrafiek</h6>
@@ -165,7 +185,7 @@
 							</div>
                         </div>    
 						
-				        <div class="row" id="myDIV" >
+				        <div class="row" id="zoekgrafiek-en-slider" >
 							<div class="col-12"id="grafiek-slider">
 								{{ embed(roots.view_period) }}
 							</div>		
