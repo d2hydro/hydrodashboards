@@ -132,7 +132,7 @@ scripts/*
 *.cmd
 
 # static
-src/hydrodashboards/bokeh/static/*
+#src/hydrodashboards/bokeh/static/*
 
 # bat and cmd
 *.bat
@@ -140,3 +140,4 @@ src/hydrodashboards/bokeh/static/*
 
 # bokeh log_files
 *bokeh_*.txt
+src/hydrodashboards/bokeh/bootstrap/*

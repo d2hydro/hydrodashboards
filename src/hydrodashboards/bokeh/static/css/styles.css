@@ -1,0 +1,513 @@
+/*
+    DEMO STYLE
+*/
+@import "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700";
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #fafafa;
+}
+
+.bk-root {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.80em;
+    font-weight: 320;
+    line-height: 1.7em;
+}
+
+@keyframes spinner {
+  to {transform: rotate(360deg);}
+}
+.bk.loaderzoekgrafiek{    
+  height: 100vh;
+  opacity: 1;
+  position: relative;
+  transition: opacity linear 0.1s;  
+  display:block; 
+  visibility: hidden;  
+}
+.bk.loaderzoekgrafiek::before {
+  content: '';
+  box-sizing: border-box;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  margin-left: -10px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  border-top-color: #000;
+  animation: spinner .6s linear infinite;
+  visibility: visible;
+}
+
+.bk.stoploading{
+color: blue;
+background-color: blue;
+border-color: blue;
+}
+
+.bk.loader_time_fig{    
+  display:flex;  
+  opacity: 1;
+  transition: opacity linear 0.1s;  
+  visibility: hidden;  
+}
+.bk.loader_time_fig::after {
+  content: '';
+  box-sizing: border-box;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  margin-left: -10px;
+  border-radius: 50%;
+  border: 2px solid #F16996;
+  border-top-color: #000;
+  animation: spinner .6s linear infinite;
+  visibility: visible;
+}
+
+.bk.stoploading_time_fig{
+color: blue;
+}
+
+.bk.bk-btn.bk-btn-primary:hover:after{
+}
+.bk.bk-btn.bk-btn-primary{
+	background: #F16996;
+	border:1px solid black;
+}
+p {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.1em;
+    font-weight: 300;
+    line-height: 1.7em;
+    color: #999;
+}
+
+a, a:hover, a:focus {
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.navbar {
+    padding: 12px 0px;
+    border: none;
+    border-radius: 0;
+    position: relative;
+	height: 60px;
+	border-left: 1px solid white;
+	border-right: 1px solid white;
+	
+}
+
+.navbar-btn {
+    box-shadow: none;
+    outline: none !important;
+	position: relative;
+    border: none;
+	
+}
+.navbar-expand-lg {
+   background: #495568;
+   }
+
+
+/* ---------------------------------------------------
+    SIDEBAR STYLE
+----------------------------------------------------- */
+
+.wrapper {
+    display: flex;
+    width: 100%;
+    position:absolute;
+	height:100%;
+    align-items: stretch;
+    perspective: 1332px;
+}
+
+#sidebar {
+    min-width: 270px;
+    max-width: 270px;
+	background: #495568;
+    height:100vh;
+    color: #fff;
+    transition: all 0.6s cubic-bezier(0.945, 0.020, 0.270, 0.665);
+    transform-origin: bottom left;
+}
+
+#sidebar.active {
+    margin-left: -270px;
+    transform: rotateY(100deg);
+}
+
+#sidebar .sidebar-header {
+    padding-right: 20px;
+	padding-left: 20px;
+	padding-top: 10px;
+    background: #3A4453;
+
+}
+#sidebar .sidebar-bokeh1 {
+	width: 100%;
+	padding-left: 20px;
+	height: 290px;
+	padding-top:0px;
+	padding-right:20px;
+	margin-top:10px;
+}
+#sidebar .sidebar-bokeh2 {
+    width: 100%;
+	padding: 20px;
+	height: 100px;
+}
+
+#sidebar .sidebar-bokeh3 {
+    width: 100%;
+	padding: 20px;
+	height: 120px;
+}
+
+
+#sidebar .sidebar-bokeh4 {
+    width: 100%;
+	padding: 20px;
+	height: 56px;
+}
+
+#sidebar .sidebar-bokeh5{
+  width: 100%;
+  padding: 20px;
+  margin-top:5px;
+  height: 55px;
+}
+
+#sidebar .sidebar-bokeh6{
+  width: 100%;
+  padding: 20px;
+  height: 55px;
+}
+a[data-toggle="collapse"] {
+  position: relative;
+}
+
+/* ---------------------------------------------------
+    CONTENT STYLE
+----------------------------------------------------- */
+#content {
+    width: 101%;
+    height: 100%;
+    min-height: 100%;
+    transition: all 0.3s;
+	position:relative;
+	background-color:#F1F2F3;
+	margin-left:0px;
+	margin-right:0px;
+	display:block;
+	padding:0px;
+	
+}
+
+#sidebarCollapse {
+    width: 40px;
+    height: 40px;
+    background: rgba(0,0,0,0);
+    cursor: pointer;
+	
+}
+
+#sidebarCollapse span {
+    width: 80%;
+    height: 2px;
+    margin: 0 auto;
+    display: block;
+    background: white;
+    transition: all 0.8s cubic-bezier(0.810, -0.330, 0.345, 1.375);
+    transition-delay: 0.2s;
+}
+
+#sidebarCollapse span:first-of-type {
+    transform: rotate(45deg) translate(2px, 2px);
+}
+#sidebarCollapse span:nth-of-type(2) {
+    opacity: 0;
+}
+#sidebarCollapse span:last-of-type {
+    transform: rotate(-45deg) translate(1px, -1px);
+}
+
+
+#sidebarCollapse.active span {
+    transform: none;
+    opacity: 1;
+    margin: 5px auto;
+}
+
+#kaart-tab{
+	color:#0C0F2E;
+}
+#grafiek-tab{
+	color:#0C0F2E;
+}
+
+.tab-content{
+width: 100%;
+ height: calc(100% - 60px);
+ display:block;
+ position: absolute;
+}
+#kaart{
+	position:absolute; 
+	width:101%;
+	height:99.9%;
+	display:block;
+	border: none;	
+}
+
+#button_leg_bar {
+  background-color: transparent;
+  background-image: url(/bokeh/static/icons/Layers-595b40b75ba036ed117d8546.svg);
+  background-repeat: no-repeat;
+  border-width: 0px;
+  bottom: 20px;
+  right: 10px;
+  width: 70px;
+  position:fixed;
+}
+
+#dummy {
+  background-color: transparent;
+  border-width: 0px;
+  bottom: 20px;
+  right: 10px;
+  width: 70px;
+  position:fixed;
+}
+
+#maplayer_icon{
+  width: 60px;
+  height:60px;
+  border-color: transparent;
+  background-color: transparent;
+  border-width: 0px;
+  outline: none;
+}
+
+#button_legend {
+
+  cursor: pointer; 
+  color:#3681C1;
+}
+#button_legend:hover {color: blue}
+
+#button-legend-text{
+	display: inline-block;
+}
+
+.map_opt
+{ 
+  display:block;
+  position: fixed;
+  background: white;
+  width: 128px;
+  top: calc(100% - 240px);
+  left: calc(100% - 154px);
+  background-color: white;
+  padding: 2px;
+  border: 1px solid #F1F2F3;
+  border-radius:4px;
+}
+
+.app_status
+{
+	margin-left:10px;
+	height:8px;
+	border-color:transparent;	
+}
+
+#grafiek_upper{
+    height: 60.5vh;	
+	background-color: white;
+	margin-top:3vh;
+}
+
+#threshold{
+	display:flex;
+	top:-62.5vh;
+	height:26px;
+	width: 26px;
+}
+
+.bk.threshold{
+
+}
+.bk.bk-btn.bk-btn-default:hover:after{
+	content:"Drempelhoogte";
+	margin-top:18px;
+	background-color: black;
+	color: #fff;
+	border-radius: 6px;
+	padding: 2px 5px;
+}
+.bk.bk-btn.bk-btn-default{
+	 display:flex;
+	 height:26px;
+	 width: 26px;
+	 margin-left: 60px;
+	 margin-right:200px;
+	 background-image: url(/bokeh/static/icons/threshold.png);
+	 background-repeat: no-repeat;
+	 background-position:center 2px center;
+	 background-color: white;
+	 border-color: white;
+}
+
+.bk.bk-btn.bk-btn-default.bk-active{
+	  background-image: url(/bokeh/static/icons/threshold.png);
+	  background-repeat: no-repeat;
+	  background-position:center 2px center;
+	  display:flex;
+      margin-right:200px;
+	  margin-left: 60px;
+	  height: 26px;
+	  text-align: center;
+	  border-radius:4px;
+	  background-color: #FE6F9E;
+	  -webkit-transition: 0.5s;
+	  -moz-transition: 0.5s;
+	  -o-transition: 0.5s;
+	  transition: 0.5s;
+}
+
+#zoekgrafiek-bar{
+  background: #F8F9FA;
+  border: 2px solid white;
+  margin-left:0px;
+  margin-right:0px;
+  margin-top:1vh;
+}
+
+#zoekgrafiek-en-slider {
+  position: relative;
+  margin-left:0px;
+  margin-right:0px;
+  display:block;
+  background-color: white;
+}
+
+#grafiek-lower{
+    height: 15vh;
+	margin-top: 2vh;
+	margin-right:0px;
+	margin-left:0px;
+}
+
+#grafiek-slider{
+    height: 3vh;
+	margin-top:0vh;
+	margin-bottom:0vh;
+	margin-right:0px;
+	margin-left:0px;
+	position: relative;
+	background-color: white;
+	
+}
+
+#button-text{
+    margin-top:12px;
+	display: inline-block;
+	margin-left:8px;
+}
+
+#button_lower {
+  margin-top:12px;
+  display: inline-block;
+  margin-right: 1px;
+  cursor: pointer; 
+  margin-left: 10px;
+  color:#3681C1;
+}
+
+#button_lower:hover {color: blue}
+
+#button_lower:active {
+  transform: translateY(4px);
+}
+
+.bk.bk-btn.bk-btn-success{
+ background-image: url(/bokeh/static/icons/download-2-16.png);
+ background-repeat: no-repeat;
+ background-position:right 10px center;
+ background-color: #3681C1;
+ color: white;
+ text-align: left;
+ flex: 0 0 auto;
+ width:110px;
+ border-color:#495568;
+ margin-left:300px; 
+ height: 30px;
+ position: inline-block;
+ margin-bottom: auto;
+ margin-top:2px;
+
+}
+/* ---------------------------------------------------
+    styles on menu animation 
+----------------------------------------------------- */
+.menu-animation-width.animation-active {
+    width: 100% !important;
+}
+
+.menu-animation-toolbar.animation-active {
+    left: auto !important;
+    right: 5px !important;
+}
+
+.menu-animation-slider {
+    padding-right: 17px;
+}
+
+.menu-animation-slider.animation-active {
+    padding-right: 57px;
+}
+
+/* ---------------------------------------------------
+    MEDIAQUERIES
+----------------------------------------------------- */
+@media (max-width: 768px) {
+    #sidebar {
+        margin-left: -300px;
+        transform: rotateY(90deg);
+    }
+	
+    #sidebar.active {
+        margin-left: 0;
+        transform: none;
+    }
+    #sidebarCollapse span:first-of-type,
+    #sidebarCollapse span:nth-of-type(2),
+    #sidebarCollapse span:last-of-type {
+        transform: none;
+        opacity: 1;
+        margin: 5px auto;
+    }
+    #sidebarCollapse.active span {
+        margin: 0 auto;
+    }
+    #sidebarCollapse.active span:first-of-type {
+        transform: rotate(45deg) translate(2px, 2px);
+    }
+    #sidebarCollapse.active span:nth-of-type(2) {
+        opacity: 0;
+    }
+    #sidebarCollapse.active span:last-of-type {
+        transform: rotate(-45deg) translate(1px, -1px);
+    }
+
+}
