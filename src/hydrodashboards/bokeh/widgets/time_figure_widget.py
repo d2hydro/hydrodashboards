@@ -64,7 +64,7 @@ def make_x_range(data, graph="top_figs"):
                           end=data.search_end,
                           bounds=(
                               data.history_start,
-                              data.now,
+                              data.search_end,
                               ))
         x_range.min_interval = pd.Timedelta(days=1)
     return x_range
@@ -102,11 +102,11 @@ def update_time_series_y_ranges(time_figure_layout):
         update_range(fig)
 
 
-def search_fig(search_time_figure_layout, time_series, x_range, periods, color="#1f77b4"):
-    def _add_line(time_fig, source, color):
+def search_fig(search_time_figure_layout, time_series, x_range, periods, color="#1f77b4", search_source=None):
+    def _add_line():
         time_fig.line(x="datetime",
                       y="value",
-                      source=time_series_template(),
+                      source=search_source,
                       color=color)
 
     # get y-axis start and end
@@ -138,7 +138,7 @@ def search_fig(search_time_figure_layout, time_series, x_range, periods, color="
         time_fig.yaxis.visible = False
 
         time_fig.patch(x="x", y="y", source=view_period_patch_source(periods), alpha=0.5, line_width=2)
-        _add_line(time_fig, source, color)
+        _add_line()
         search_time_figure_layout.children.append(time_fig)
     else:
         # get time_fig from layout
@@ -149,6 +149,8 @@ def search_fig(search_time_figure_layout, time_series, x_range, periods, color="
 
         # update time_series source
         time_fig.renderers[1].data_source.data.update(source.data)
+        time_fig.renderers[1].glyph.line_color = color
+        time_fig.renderers[1].data_source.name = source.name
 
         # set y_range end and start
         time_fig.y_range.start = y_start
@@ -157,7 +159,6 @@ def search_fig(search_time_figure_layout, time_series, x_range, periods, color="
         # remove and add time_fig_renderer
         #time_fig.renderers.remove(time_fig.renderers[1])
         #_add_line(time_fig, source, color)
-
 
 
 def top_fig(group: tuple,
@@ -252,6 +253,8 @@ def create_time_figures(time_figure_layout: column,
     time_series_sources = {}
     for i in top_figs:
         for j in i.renderers:
-            time_series_sources[j.name] = j.data_source
+            time_series_sources[j.name] = {}
+            time_series_sources[j.name]["source"] = j.data_source
+            time_series_sources[j.name]["color"] = j.glyph.line_color
 
     return time_series_sources

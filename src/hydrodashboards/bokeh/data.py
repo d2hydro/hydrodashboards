@@ -219,6 +219,7 @@ class Data:
         parameters = len(self.parameters.value)
         time_series_active = self.time_series_sets.active_length
         time_series_cache = len(self.time_series_sets)
+        search_period_days = self.periods.search_period.days
 
         if html_type == "list":
             html = (
@@ -234,7 +235,8 @@ class Data:
                 f"Locaties: {locations} (max 10) | "
                 f"Parameters: {parameters} | "
                 f"Tijdseries: {time_series_active} | "
-                f"Tijdseries cache: {time_series_cache}"
+                f"Tijdseries cache: {time_series_cache} | "
+                f"Zoekperiode: {search_period_days} dagen"
                 )
 
         return html
@@ -364,9 +366,6 @@ class Data:
 
         # clean parameter value to options
         self.parameters.clean_value()
-
-    def extend_time_series(self, search_datetime, insert=True):
-        print(f"extend timeseries from {search_datetime} insert: {insert}")
 
     def update_time_series_search(self):
         if self.time_series_sets.select_incomplete():

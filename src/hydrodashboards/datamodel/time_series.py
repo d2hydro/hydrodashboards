@@ -48,8 +48,8 @@ class TimeSeries:
 @dataclass
 class TimeSeriesSets:
     time_series: List[TimeSeries] = field(default_factory=list)
-    start_date_time: datetime = None
-    end_date_time: datetime = None
+    search_start: datetime = None
+    search_end: datetime = None
 
     def __len__(self):
         return len(self.time_series)

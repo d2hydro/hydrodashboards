@@ -8,6 +8,7 @@ from config import TITLE, BOUNDS, MAP_OVERLAYS, MAX_VIEW_PERIOD
 # import bokeh sources
 import hydrodashboards.bokeh.sources as sources
 from hydrodashboards.bokeh.widgets import (
+    download_widget,
     time_figure_widget,
     map_figure_widget,
     filters_widgets,
@@ -15,7 +16,7 @@ from hydrodashboards.bokeh.widgets import (
     update_graph_widget,
     view_period_widget,
 )
-from bokeh.models.widgets import Div, Select, Button
+from bokeh.models.widgets import Div, Select
 from hydrodashboards.bokeh.log_utils import import_logger
 import inspect
 
@@ -55,19 +56,19 @@ def update_time_series_sources(stream=False):
     for k, v in time_series_sources.items():
         time_series = data.time_series_sets.get_by_label(k)        
         if stream:
-            exluded_date_times = v.data["datetime"]
+            exluded_date_times = v["source"].data["datetime"]
             _source = sources.time_series_to_source(time_series=time_series,
                                                     start_date_time=start,
                                                     end_date_time=end,
                                                     excluded_date_times=exluded_date_times,
                                                     unreliables=False)
-            v.stream(_source.data)
+            v["source"].stream(_source.data)
         else:
             _source = sources.time_series_to_source(time_series=time_series,
                                                     start_date_time=start,
                                                     end_date_time=end,
                                                     unreliables=False)
-            v.data.update(_source.data)
+            v["source"].data.update(_source.data)
 
 def view_x_range_as_datetime():
     """Get the view_x_range start and end as datetime."""
@@ -181,6 +182,7 @@ def update_on_search_period_value(attrname, old, new):
     search_x_range.end = data.periods.search_end
     view_period.start = data.periods.search_start
     view_period.end = data.periods.search_end
+    view_x_range.bounds = (data.periods.search_start, data.periods.search_end)
 
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
@@ -243,10 +245,13 @@ def update_time_series_view():
         search_time_series.value = search_time_series.options[0]
 
     # add_search time_series
+    _time_series = data.time_series_sets.get_by_label(search_time_series.value)
     time_figure_widget.search_fig(search_time_figure_layout,
-                                  time_series=data.time_series_sets.first_active,
+                                  time_series=_time_series,
                                   x_range=search_x_range,
-                                  periods=data.periods)
+                                  periods=data.periods,
+                                  color=time_series_sources[search_time_series.value]["color"],
+                                  search_source=search_source)
 
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
@@ -262,7 +267,6 @@ def update_time_series_search():
 
     # update full history of all non-complete time-series
     data.update_time_series_search()
-    # print(data.time_series_sets.time_series)
 
     # updating the sources in the used as glyph data_sources
     update_time_series_sources()
@@ -283,7 +287,9 @@ def update_on_search_time_series_value(attrname, old, new):
     time_figure_widget.search_fig(search_time_figure_layout,
                                   time_series=data.time_series_sets.get_by_label(label=search_time_series.value),
                                   x_range=search_x_range,
-                                  periods=data.periods)
+                                  periods=data.periods,
+                                  color=time_series_sources[search_time_series.value]["color"],
+                                  search_source=search_source)
 
 
 def update_on_view_period_value(attrname, old, new):
@@ -349,6 +355,7 @@ We define all sources used in this main document
 locations_source = sources.locations_source()
 locations_source.selected.on_change("indices", update_on_locations_source_select)
 time_series_sources = sources.time_series_sources
+search_source = sources.time_series_template()
 
 """
 In this section we define all widgets. We pass callbacks and sources to every widget
@@ -403,7 +410,7 @@ search_time_series = Select(value=None, options=[])
 search_time_series.on_change("value", update_on_search_time_series_value)
 
 # Search download search time series widget
-download_search_time_series = Button(label="Download", button_type="success")
+download_search_time_series = download_widget.make_button(source=search_source)
 
 # View period widget
 view_period = view_period_widget.make_view_period(data.periods)
