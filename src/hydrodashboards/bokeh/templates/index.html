@@ -74,8 +74,6 @@
 		  }
           AnimationUtils.dispatchResizeEvent();
 		}
-		
-
     </script>
 
 {% endblock %}
@@ -103,9 +101,7 @@
 			</div>        	
             <div class="sidebar-bokeh5">
 				{{ embed(roots.update_graph) }}
-			</div> 	
-                       
-			
+			</div> 		
         </nav>
 
         <!-- Page Content Holder -->
@@ -141,7 +137,6 @@
 			</nav>
       
 			<div class="tab-content">
-		
 				<div class="tab-pane fade show active row" id="kaart" role="tabpanel" aria- labelledby="kaart-tab" aria-expanded="false">
 					        <div class="col-12" id="kaart">
 						        {{ embed(roots.map_figure)}}			
@@ -155,15 +150,11 @@
                                  
 				                 
 					        </div>	
-							
-				
 
-                      							
-			
 				</div>
-			          <div class="app_status" id="app_status">
-			{{ embed(roots.app_status) }}
-		</div>	      
+			    <div class="app_status" id="app_status">
+						{{ embed(roots.app_status) }}
+				</div>	      
 				<div class="tab-pane fade show" id="grafiek" role="tabpanel" aria- labelledby="grafiek-tab"aria-expanded="false">
 					<div class="container-fluid h-100" >
 						<div class="row"style="margin-left:0px;margin-right:0px" > 

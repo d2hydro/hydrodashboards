@@ -326,9 +326,11 @@ width: 100%;
 
 .app_status
 {
+	display: block;
 	margin-left:10px;
-	height:8px;
-	border-color:transparent;	
+	height:2px;
+	color: #3681C1;
+	white-space: nowrap ;
 }
 
 #grafiek_upper{
