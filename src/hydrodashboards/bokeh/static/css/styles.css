@@ -396,7 +396,7 @@ width: 100%;
   border: 2px solid white;
   margin-left:0px;
   margin-right:0px;
-  margin-top:1vh;
+  margin-top:3vh;
 }
 
 #zoekgrafiek-en-slider {
@@ -408,16 +408,16 @@ width: 100%;
 }
 
 #grafiek-lower{
-    height: 15vh;
-	margin-top: 2vh;
+    height: 16vh;
+	margin-top: -1.2vh;
 	margin-right:0px;
 	margin-left:0px;
 }
 
 #grafiek-slider{
     height: 3vh;
-	margin-top:0vh;
-	margin-bottom:0vh;
+	margin-top:0px;
+	margin-bottom:0px;
 	margin-right:0px;
 	margin-left:0px;
 	position: relative;
