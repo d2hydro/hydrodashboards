@@ -264,8 +264,8 @@ width: 100%;
 }
 #kaart{
 	position:absolute; 
-	width:101%;
-	height:99.9%;
+	width:100%;
+	height:100%;
 	display:block;
 	border: none;	
 }
@@ -329,14 +329,18 @@ width: 100%;
 	display: block;
 	margin-left:10px;
 	height:2px;
+	width: 300px;
 	color: #3A4453;
 	white-space: nowrap ;
+	position:absolute;
+    top:96%;
+
 }
 
 #grafiek_upper{
     height: 60.5vh;	
 	background-color: white;
-	margin-top:3vh;
+	margin-top:1vh;
 }
 
 #threshold{
@@ -417,8 +421,7 @@ width: 100%;
 	margin-right:0px;
 	margin-left:0px;
 	position: relative;
-	background-color: white;
-	
+	background-color: white;	
 }
 
 #button-text{

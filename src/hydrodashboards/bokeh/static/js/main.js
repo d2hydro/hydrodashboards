@@ -7,7 +7,7 @@ createAnimationUtils =  () => {
     animationToolbarClass = "menu-animation-toolbar";
     animationSliderClass = "menu-animation-slider";
     activeClass = "animation-active";
-    components = ["kaart","map_opt","but_leg", "grafiek", "grafiek-slider", "grafiek-lower"];
+    components = ["kaart", "grafiek", "grafiek-slider", "grafiek-lower"];
 
     addSliderTags = () => {
         const sliderElement = this.getSliderElement();

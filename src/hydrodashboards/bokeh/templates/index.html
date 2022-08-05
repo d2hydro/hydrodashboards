@@ -52,28 +52,30 @@
 		  if (zoekgraf.style.display === "none") {
 			zoekgraf.style.display = "block";
 			h.style.height = "60.5vh";
-			
 			download.style.backgroundColor = "#3681C1";
 			download.style.borderColor = "#495568";
 		  } else {
 			zoekgraf.style.display = "none";		
 			h.style.height = "82vh";	
-			
 			download.style.backgroundColor = "white";
 			download.style.borderColor = "white";
 		  }
-          if (map_opt.style.display == "none") {
+          
+          AnimationUtils.dispatchResizeEvent();
+		}
+		function myFunction1() {
+          var but_leg = document.getElementById("button_leg_bar");
+		  var maplayer_icon=document.getElementById("maplayer_icon");
+          var map_opt = document.getElementById("map_opt");
+		  var kaart = document.getElementById("kaart");
+		if (map_opt.style.display == "none") {
 			map_opt.style.position = "fixed";
-		    map_opt.style.display = "block";
-			
-			
+		    map_opt.style.display = "block";			
 		  } else {
 			map_opt.style.display = "none";	
 			dummy.style.display= "block";
-		
 		  }
-          AnimationUtils.dispatchResizeEvent();
-		}
+		  }
     </script>
 
 {% endblock %}
@@ -142,19 +144,16 @@
 						        {{ embed(roots.map_figure)}}			
 					        </div>
                             <div class="test" id ="button_leg_bar" >
-								<button	onclick="myFunction()" class="maplayer_icon" id="maplayer_icon" aria-hidden="true"></button>
-						
+								<button	onclick="myFunction1()" class="maplayer_icon" id="maplayer_icon" aria-hidden="true"></button>
 					        </div>	
                             <div class="map_opt" id="map_opt">
 						         {{ embed(roots.map_options) }}                       
-                                 
-				                 
 					        </div>	
-
 				</div>
-			    <div class="app_status" id="app_status">
-						{{ embed(roots.app_status) }}
-				</div>	      
+			  
+				<div class="app_status" id="app_status">
+					{{ embed(roots.app_status) }}
+				</div>	 				
 				<div class="tab-pane fade show" id="grafiek" role="tabpanel" aria- labelledby="grafiek-tab"aria-expanded="false">
 					<div class="container-fluid h-100" >
 						<div class="row"style="margin-left:0px;margin-right:0px" > 
