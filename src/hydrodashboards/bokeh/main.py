@@ -263,6 +263,7 @@ def update_time_series_search():
 
     # update full history of all non-complete time-series
     data.update_time_series_search()
+    # print(data.time_series_sets.time_series)
 
     # updating the sources in the used as glyph data_sources
     update_time_series_sources()
