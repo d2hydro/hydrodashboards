@@ -7,7 +7,7 @@ LOG_DIR = Path(__file__).parent.joinpath("logs")
 LOG_LEVEL = "DEBUG"
 
 
-def import_logger() -> logging.Logger:
+def import_logger(log_dir=LOG_DIR) -> logging.Logger:
     """
     Make a logger for Bokeh app, including file handler
 
@@ -16,9 +16,9 @@ def import_logger() -> logging.Logger:
 
     """
 
-    LOG_DIR.mkdir(exist_ok=True)
+    log_dir.mkdir(exist_ok=True)
 
-    log_file = LOG_DIR.joinpath(
+    log_file = log_dir.joinpath(
         f"bokeh_{datetime.now().strftime('%Y%m%dT%H%M%S')}.txt"
     ).resolve()
     logFormatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")

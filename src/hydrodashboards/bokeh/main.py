@@ -3,7 +3,7 @@
 from bokeh.io import curdoc
 from bokeh.layouts import column
 from data import Data
-from config import TITLE, BOUNDS, MAP_OVERLAYS, MAX_VIEW_PERIOD
+from config import TITLE, BOUNDS, MAP_OVERLAYS, MAX_VIEW_PERIOD, LOG_DIR
 
 # import bokeh sources
 import hydrodashboards.bokeh.sources as sources
@@ -35,11 +35,14 @@ Supporting functions
 """
 
 
-def enable_view_period():
+def enable_view_time_series_controls():
     """Enable view period (used when first graph is loaded)."""
     if view_period.disabled:  # at app init view_period is disabled
         view_period.disabled = False
         view_period.bar_color = "#e6e6e6"
+    
+    if download_search_time_series.disabled:
+        download_search_time_series.disabled = False
 
 
 def enable_update_graph():
@@ -191,7 +194,7 @@ def update_on_search_period_value(attrname, old, new):
 def update_map_figure_background_control(attrname, old, new):
     """Update map_figure when background is selected"""
     logger.debug(inspect.stack()[0][3])
-    tile_source = map_figure_widget.get_tilesource(map_options.children[3].labels[new])
+    tile_source = map_figure_widget.get_tilesource(map_options.children[2].labels[new])
     idx = next(
         idx for idx, i in enumerate(map_figure.renderers) if i.name == "background"
     )
@@ -201,7 +204,7 @@ def update_map_figure_background_control(attrname, old, new):
 def update_map_figure_overlay_control(attrname, old, new):
     """Update visible map-overlays on change"""
     logger.debug(inspect.stack()[0][3])
-    map_overlays = map_options.children[1]
+    map_overlays = map_options.children[0]
     map_fig_idx = {
         i.name: idx
         for idx, i in enumerate(map_figure.renderers)
@@ -257,7 +260,7 @@ def update_time_series_view():
     app_status.text = data.app_status(html_type=HTML_TYPE)
 
     # enable view_period if disabled (at first timeseries load)
-    enable_view_period()
+    enable_view_time_series_controls()
 
     # go to the next callback
     curdoc().add_next_tick_callback(update_time_series_search)
@@ -345,7 +348,7 @@ We initialize the dataclass
 """
 
 now = datetime.now()
-logger = import_logger()
+logger = import_logger(log_dir=LOG_DIR)
 data = Data(logger=logger, now=now)
 
 """

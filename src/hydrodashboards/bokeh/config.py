@@ -1,5 +1,10 @@
 from datetime import datetime, timedelta
 from bokeh.models import BBoxTileSource
+from pathlib import Path
+import os
+
+# system_settings
+LOG_DIR = Path(os.getcwd()).joinpath("logs")
 
 # Layout settings
 TITLE = "test dashboard"
