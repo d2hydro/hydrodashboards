@@ -119,11 +119,12 @@ class TimeSeriesSets:
         self.time_series += time_series
 
     def by_parameter_groups(self, parameter_groups: dict, active_only=False):
-        groups = {k: [] for k in parameter_groups.keys()}
-        for i in self.time_series:
-            if active_only:
-                if i.active:
-                    groups[i.__dict__["parameter"]].append(i)
-            else:
-                groups[i.__dict__["parameter"]].append(i)
+        groups = {k: [] for k in set(parameter_groups.values())}
+        if active_only:
+            time_series = [i for i in self.time_series if i.active]
+        else:
+            time_series = self.time_series
+        for i in time_series:
+            group = parameter_groups[i.__dict__["parameter"]]
+            groups[group].append(i)
         return groups

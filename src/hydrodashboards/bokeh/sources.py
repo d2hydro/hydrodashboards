@@ -15,7 +15,7 @@ def time_series_to_source(time_series,
         df = df.loc[_index_mask(df.index, start_date_time, end_date_time)]
     if excluded_date_times is not None:
         df = df.loc[~df.index.isin(excluded_date_times)]
-    if not unreliables:
+    if (not unreliables) & ("flag" in df.columns):
         df = pd.DataFrame(df.loc[df["flag"] < 6]["value"])
     source = ColumnDataSource(df)
     source.name = time_series.label

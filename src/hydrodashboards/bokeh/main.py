@@ -324,7 +324,7 @@ def update_on_view_period_value_throttled(attrname, old, new):
     #logger.debug(inspect.stack()[0][3])
 
     update_time_series_sources()
-    
+
     # updating the figure_layout y_ranges
     time_figure_widget.update_time_series_y_ranges(time_figure_layout)
 
@@ -334,6 +334,9 @@ def update_on_view_x_range_change(attrname, old, new):
     #logger.debug(inspect.stack()[0][3])
 
     start, end = view_x_range_as_datetime()
+    view_x_range.reset_start = start
+    view_x_range.reset_end = end
+
     view_period.value = (start, end)
 
 
@@ -430,6 +433,7 @@ search_time_figure = time_figure_widget.empty_fig()
 In this section we add all widgets to the curdoc
 """
 # left column layout
+curdoc().add_root(column(column(Div(text=f"<h3>{TITLE}</h3>")), name="app_title", sizing_mode="stretch_width"))
 curdoc().add_root(column(filters, name="filters", sizing_mode="stretch_width"))
 curdoc().add_root(column(locations, name="locations", sizing_mode="stretch_width"))
 curdoc().add_root(column(parameters, name="parameters", sizing_mode="stretch_width"))

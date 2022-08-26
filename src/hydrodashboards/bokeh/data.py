@@ -44,6 +44,7 @@ from datetime import datetime
 import pandas as pd
 import itertools
 
+FEWS_BUGS = dict(qualifier_ids=True)
 
 def _get_propeties(filter_id, filter_name):
     if filter_id in FILTER_COLORS.keys():
@@ -120,6 +121,13 @@ class Data:
         return int(period.total_seconds() * 1000 / width)
 
     def _get_fews_ts(self, indices=None, request_type="headers"):
+        
+        ## function used to bypass FEWS_BUGS["qualifier_ids"]
+        def include_header(i):
+            parameter_id = concat_fews_parameter_ids(i.header.parameter_id,
+                                                     i.header.qualifier_id)
+            return parameter_id in self.parameters.value
+        
         only_headers = False
         thinning = None
         if request_type == "headers":
@@ -131,6 +139,9 @@ class Data:
             ) = self._fews_locators_from_indices(indices)
             start_time = self.periods.history_start
             end_time = self.periods.now
+            # included as there is a bug in qualifier_ids requests
+            if FEWS_BUGS["qualifier_ids"]:
+                qualifier_ids = None
         elif request_type == "search":
             thinning = self._get_thinning(selection="search")
             (
@@ -156,7 +167,7 @@ class Data:
             start_time = self.periods.search_start
             end_time = self.periods.search_end
 
-        return self._fews_api.get_time_series(
+        result = self._fews_api.get_time_series(
             filter_id=ROOT_FILTER,
             location_ids=location_ids,
             parameter_ids=parameter_ids,
@@ -166,6 +177,11 @@ class Data:
             thinning=thinning,
             only_headers=only_headers,
         )
+        # included as there is a bug in qualifier_ids requests
+        if (request_type == "headers") & FEWS_BUGS["qualifier_ids"]:
+            result.time_series = [i for i in result.time_series if include_header(i)]
+
+        return result
 
     def _properties_from_fews_ts_headers(self, fews_time_series):
         def property_generator(header):

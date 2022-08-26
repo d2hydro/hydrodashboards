@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from bokeh.models import BBoxTileSource
 from pathlib import Path
 import os
@@ -7,7 +7,7 @@ import os
 LOG_DIR = Path(os.getcwd()).joinpath("logs")
 
 # Layout settings
-TITLE = "test dashboard"
+TITLE = "WAM Dashboard"
 LANGUAGE = "dutch"
 BOUNDS = [210000, 544000, 250000, 625000]
 FILTER_COLORS = {
@@ -49,5 +49,4 @@ SSL_VERIFY = False
 
 # Search Settings
 HISTORY_PERIOD = timedelta(days=3650)
-#MAX_VIEW_PERIOD = timedelta(days=180)
 MAX_VIEW_PERIOD = None

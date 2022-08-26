@@ -71,9 +71,13 @@ def make_x_range(data, graph="top_figs"):
 
 
 def make_y_range(time_series, bounds=None):
-    y_start = min((i.df["value"].min() for i in time_series))
-    y_end = max((i.df["value"].max() for i in time_series))
-    y_start, y_end = check_nan(y_start, y_end)
+    time_series = [i for i in time_series if not i.df.empty]
+    if len(time_series) > 0:
+        y_start = min((i.df["value"].min() for i in time_series))
+        y_end = max((i.df["value"].max() for i in time_series))
+        y_start, y_end = check_nan(y_start, y_end)
+    else:
+        y_start, y_end = range_defaults()
     y_range = Range1d(start=y_start,
                       end=y_end)
     y_range.min_interval = 0.01
@@ -90,12 +94,11 @@ def update_time_series_y_ranges(time_figure_layout):
             start = min((i.data["value"].min() for i in sources))
             end = max((i.data["value"].max() for i in sources))
         else:
-            start = -0.05
-            end = 0.05
+            start, end = range_defaults()
         return start, end
 
     def update_range(fig):
-        fig.y_range.start, fig.y_range.end = _ends(fig.renderers)
+        fig.y_range.reset_start, fig.y_range.reset_end = _ends(fig.renderers)
 
     top_figs = time_figure_layout.children[0].children
     for fig in top_figs:
@@ -181,6 +184,7 @@ def top_fig(group: tuple,
              "zoom_out",
              "undo",
              "redo",
+             "reset",
              "save",
              time_hover]
 
@@ -230,8 +234,9 @@ def top_fig(group: tuple,
     # make up legend
     time_fig.legend.click_policy = "hide"
 
-    time_fig.add_layout(time_fig.legend[0], "right")
-    time_fig.legend[0].label_text_font_size = "9pt"
+    if len(time_fig.legend) > 0:
+        time_fig.add_layout(time_fig.legend[0], "right")
+        time_fig.legend[0].label_text_font_size = "9pt"
     if press_up_event is not None:
         time_fig.on_event(PanEnd, press_up_event)
         time_fig.on_event(MouseWheel, press_up_event)
