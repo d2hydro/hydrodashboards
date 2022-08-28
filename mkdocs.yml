@@ -1,0 +1,23 @@
+site_name: hydrodashboards documentation
+site_url: https://d2hydro.github.io/hydrodashboards
+theme:
+  name: "material"
+  language: en
+  logo: icons/logo/globe_only.png
+  favicon: icons/logo/favicon.png
+  highlightjs: true
+  palette: 
+    primary: blue
+
+plugins:
+  - search
+  - mkdocstrings
+  
+extra:
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/d2hydro/hydrodashboards
+nav:
+    - Home: index.md
+    - Manuals:
+        - Gebruikershandleiding (NL): manuals/user_nl.md

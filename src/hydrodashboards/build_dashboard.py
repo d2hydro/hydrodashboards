@@ -13,18 +13,40 @@ virtual_env = None
 app_port = 5003
 config_file = r"d:\repositories\hydrodashboards\src\hydrodashboards\bokeh\config.py"
 
-def copy_environment(virtual_env: Union[str, Path] = None):
+
+def reverse_bokeh_select(virtual_env: Union[str, Path]):
+
+    # strings to replace
+    original = 't||s?t&&!s?"append":!t&&s?"intersect":t&&s?"subtract"'
+    new = 't||s?!t&&s?"append":t&&!s?"intersect":t&&s?"subtract"'
+
+    # path to bokeh_min_js
+    bokeh_min_js = Path(virtual_env).joinpath(
+        r"Lib\site-packages\bokeh\server\static\js\bokeh.min.js"
+        )
+
+    # rename to backup
+    bokeh_min_js_backup = Path(str(bokeh_min_js) + ".backup")
+    bokeh_min_js.rename(bokeh_min_js_backup)
+
+    # read backup, replace string and write to bokeh_min_js
+    bokeh_min_js.write_text(bokeh_min_js_backup.read_text().replace(original, new))
+
+
+def copy_environment(virtual_env: Union[str, Path], reverse_bokeh_select=True):
     virtual_env = Path(virtual_env)
-    
+
     if virtual_env.exists():
         shutil.rmtree(virtual_env)
 
-    print(f"copying {VIRTUAL_ENV} to {VIRTUAL_ENV}")
+    print(f"copying {VIRTUAL_ENV} to {virtual_env}")
     shutil.copytree(VIRTUAL_ENV, virtual_env)
+
+    if reverse_bokeh_select:
+        reverse_bokeh_select(virtual_env)
 
 
 def bokeh(app_dir: Union[str, Path],
-          title: str,
           config_file: Union[str, Path] = None,
           virtual_env: Union[str, Path] = None,
           app_port: int = 5003):

@@ -22,7 +22,8 @@ SIZING_MODE = "stretch_both"
 def range_defaults():
     return -0.05, 0.05
 
-def check_nan(start, end):
+# %%
+def correct_ends(start, end):
     if pd.isna(start):
         if pd.isna(end):
             start, end = range_defaults()
@@ -30,9 +31,13 @@ def check_nan(start, end):
             start = end - 0.1
     elif pd.isna(end):
         end = start + 0.1
+    elif start > end - 0.1:
+        diff = (0.1 - (end - start)) / 2
+        start -= diff
+        end += diff
     return start, end
 
-
+# %%
 def date_time_range_as_datetime(date_time_range):
     """Get the view_x_range start and end as datetime."""
     def _to_timestamp(i):
@@ -75,12 +80,13 @@ def make_y_range(time_series, bounds=None):
     if len(time_series) > 0:
         y_start = min((i.df["value"].min() for i in time_series))
         y_end = max((i.df["value"].max() for i in time_series))
-        y_start, y_end = check_nan(y_start, y_end)
+        y_start, y_end = correct_ends(y_start, y_end)
     else:
         y_start, y_end = range_defaults()
     y_range = Range1d(start=y_start,
                       end=y_end)
     y_range.min_interval = 0.01
+    print (y_start, y_end)
     return y_range
 
 
@@ -119,7 +125,7 @@ def search_fig(search_time_figure_layout, time_series, x_range, periods, color="
     else:
         y_start = values.min()
         y_end = values.max()
-        y_start, y_end = check_nan(y_start, y_end)
+        y_start, y_end = correct_ends(y_start, y_end)
 
     # get source
     x_start, x_end = date_time_range_as_datetime(x_range)

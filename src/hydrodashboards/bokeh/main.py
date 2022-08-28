@@ -110,6 +110,10 @@ def update_on_filter_value(attrname, old, new):
     # update source
     locations_source.data = data.locations.map_locations
 
+    # update selected
+    indices = [locations_source.data["id"].index(i) for i in locations.value]
+    locations_source.selected.indices = indices
+
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
 
