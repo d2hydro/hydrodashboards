@@ -43,3 +43,21 @@ class Periods:
     @property
     def search_dates(self):
         return self.search_start, self.search_end
+
+    def set_search_period(self, search_start, search_end):
+
+        # check if new search period isn't smaller than current view_period
+        nw_search_period = search_end - search_start
+        period = min(self.view_period, nw_search_period)
+
+        # keep the view_period within search period
+        if search_start > self.view_start:
+            self.view_start = search_start
+            self.view_end = search_start + period
+        elif search_end < self.view_end:
+            self.view_end = search_end
+            self.view_start = search_end - period
+
+        # set search period
+        self.search_start = search_start
+        self.search_end = search_end

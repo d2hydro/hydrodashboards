@@ -23,7 +23,7 @@ import inspect
 from hydrodashboards.bokeh.language import update_graph_title
 
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 
 LANG = "dutch"
@@ -173,21 +173,18 @@ def update_on_search_period_value(attrname, old, new):
     search_start = datetime.strptime(search_period.children[0].value, "%Y-%m-%d")
     search_end = datetime.strptime(search_period.children[1].value, "%Y-%m-%d")
 
-    # if not data.time_series_sets.within_period(search_start, search_end):
-    #     enable_update_graph()
-    #     data.time_series_sets.remove_inactive()
-    data.time_series_sets.time_series = []
+    if not data.time_series_sets.within_period(search_start, search_end):
+        enable_update_graph()
+        data.time_series_sets.remove_inactive()
+    # data.time_series_sets.time_series = []
     enable_update_graph()
-
     # update data.periods for next purpose
-    data.periods.search_start = search_start
-    data.periods.search_end = search_end
+    data.periods.set_search_period(search_start, search_end)
 
     # update widgets
+    view_period_widget.update_view_period(view_period, data.periods)
     search_x_range.start = data.periods.search_start
     search_x_range.end = data.periods.search_end
-    view_period.start = data.periods.search_start
-    view_period.end = data.periods.search_end
     view_x_range.bounds = (data.periods.search_start, data.periods.search_end)
 
     # update app status
@@ -306,8 +303,8 @@ def update_on_view_period_value(attrname, old, new):
     #logger.debug(inspect.stack()[0][3])
 
     # keep end and start within MAX_VIEW_PERIOD
+    start_datetime, end_datetime = view_period.value_as_datetime
     if MAX_VIEW_PERIOD is not None:
-        start_datetime, end_datetime = view_period.value_as_datetime
         if (end_datetime - start_datetime).days > MAX_VIEW_PERIOD.days:
             if old[0] != new[0]:
                 view_period.value = (
@@ -316,6 +313,11 @@ def update_on_view_period_value(attrname, old, new):
                 )
             elif old[1] != new[1]:
                 view_period.value = (end_datetime - MAX_VIEW_PERIOD, end_datetime)
+    
+    # keep end and start within one day
+    if (end_datetime - start_datetime).days < 1:
+        start_datetime -= timedelta(hours=12)
+        end_datetime += timedelta(hours=12)
 
     # update datamodel to keep things in sync
     data.periods.view_start, data.periods.view_end = view_period.value_as_datetime

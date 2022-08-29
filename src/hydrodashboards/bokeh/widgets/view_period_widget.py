@@ -10,3 +10,9 @@ def make_view_period(data, disabled=True, show_value=False):
     period_slider.format = "%d-%m-%Y"
     period_slider.disabled = disabled
     return period_slider
+
+
+def update_view_period(view_period, data):
+    view_period.value = (data.view_start, data.view_end)
+    view_period.start = data.search_start
+    view_period.end = data.search_end
