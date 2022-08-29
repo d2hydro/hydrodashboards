@@ -35,14 +35,11 @@ Supporting functions
 """
 
 
-def enable_view_time_series_controls():
+def toggle_view_time_series_controls(value=True):
     """Enable view period (used when first graph is loaded)."""
-    if view_period.disabled:  # at app init view_period is disabled
-        view_period.disabled = False
-        view_period.bar_color = "#e6e6e6"
-    
-    if download_search_time_series.disabled:
-        download_search_time_series.disabled = False
+    view_period.disabled = value
+    view_period.bar_color = "#e6e6e6"
+    download_search_time_series.disabled = value
 
 
 def enable_update_graph():
@@ -176,9 +173,11 @@ def update_on_search_period_value(attrname, old, new):
     search_start = datetime.strptime(search_period.children[0].value, "%Y-%m-%d")
     search_end = datetime.strptime(search_period.children[1].value, "%Y-%m-%d")
 
-    if not data.time_series_sets.within_period(search_start, search_end):
-        enable_update_graph()
-        data.time_series_sets.remove_inactive()
+    # if not data.time_series_sets.within_period(search_start, search_end):
+    #     enable_update_graph()
+    #     data.time_series_sets.remove_inactive()
+    data.time_series_sets.time_series = []
+    enable_update_graph()
 
     # update data.periods for next purpose
     data.periods.search_start = search_start
@@ -226,6 +225,9 @@ def start_time_series_loader():
     #logger.debug(inspect.stack()[0][3])
     update_graph.css_classes = ["loader_time_fig"]
 
+    # disable view_period
+    toggle_view_time_series_controls(value=True)
+
     # now we go downloading a view 
     curdoc().add_next_tick_callback(update_time_series_view)
 
@@ -263,9 +265,6 @@ def update_time_series_view():
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
 
-    # enable view_period if disabled (at first timeseries load)
-    enable_view_time_series_controls()
-
     # go to the next callback
     curdoc().add_next_tick_callback(update_time_series_search)
 
@@ -280,6 +279,9 @@ def update_time_series_search():
 
     # updating the figure_layout y_ranges
     time_figure_widget.update_time_series_y_ranges(time_figure_layout)
+
+    # enable view_timeseries_controls
+    toggle_view_time_series_controls(value=False)
 
     # stop loader and disable update_graph
     update_graph.css_classes = ["stoploading_time_fig"]

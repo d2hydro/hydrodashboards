@@ -132,17 +132,20 @@ class Data:
         thinning = None
         if request_type == "headers":
             only_headers = True
+            parallel = False
             (
                 location_ids,
                 parameter_ids,
                 qualifier_ids,
             ) = self._fews_locators_from_indices(indices)
-            start_time = self.periods.search_start
-            end_time = self.periods.now
+            # start_time = self.periods.search_start
+            start_time = self.periods.search_end
+            end_time = self.periods.search_end
             # included as there is a bug in qualifier_ids requests
             if FEWS_BUGS["qualifier_ids"]:
                 qualifier_ids = None
         elif request_type == "search":
+            parallel = False
             thinning = self._get_thinning(selection="search")
             (
                 location_ids,
@@ -152,6 +155,7 @@ class Data:
             start_time = self.periods.search_start
             end_time = self.periods.search_end
         elif request_type == "view":
+            parallel = True
             thinning = self._get_thinning()
             time_series = self.time_series_sets.select_view(self.periods)
             location_ids, parameter_ids, qualifier_ids = self._fews_locators_from_ts(
@@ -160,6 +164,7 @@ class Data:
             start_time = self.periods.view_start
             end_time = self.periods.view_end
         elif request_type == "history":
+            parallel = True
             time_series = self.time_series_sets.select_incomplete()
             location_ids, parameter_ids, qualifier_ids = self._fews_locators_from_ts(
                 time_series
@@ -175,7 +180,8 @@ class Data:
             start_time=start_time,
             end_time=end_time,
             thinning=thinning,
-            only_headers=only_headers,
+            only_headers=only_headers
+            #parallel=parallel
         )
         # included as there is a bug in qualifier_ids requests
         if (request_type == "headers") & FEWS_BUGS["qualifier_ids"]:
@@ -318,7 +324,7 @@ class Data:
             # get locations and parameters from sub-filter
             if filter_id not in filter_data.cache.keys():  # add to cache if
                 if filter_id in HEADERS_FULL_HISTORY:
-                    start_time = datetime(1900, 1, 1)
+                    start_time = self.periods.search_start
                 else:
                     start_time = self.now
                 pi_headers = self._fews_api.get_time_series(
