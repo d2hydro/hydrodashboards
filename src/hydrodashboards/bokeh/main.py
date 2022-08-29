@@ -302,25 +302,22 @@ def update_on_view_period_value(attrname, old, new):
     """Update periods when view_period value changes"""
     #logger.debug(inspect.stack()[0][3])
 
-    # keep end and start within MAX_VIEW_PERIOD
-    start_datetime, end_datetime = view_period.value_as_datetime
-    if MAX_VIEW_PERIOD is not None:
-        if (end_datetime - start_datetime).days > MAX_VIEW_PERIOD.days:
-            if old[0] != new[0]:
-                view_period.value = (
-                    start_datetime,
-                    start_datetime + MAX_VIEW_PERIOD,
-                )
-            elif old[1] != new[1]:
-                view_period.value = (end_datetime - MAX_VIEW_PERIOD, end_datetime)
-    
-    # keep end and start within one day
-    if (end_datetime - start_datetime).days < 1:
-        start_datetime -= timedelta(hours=12)
-        end_datetime += timedelta(hours=12)
+    # # keep end and start within MAX_VIEW_PERIOD
+    # start_datetime, end_datetime = view_period.value_as_datetime
+    # if MAX_VIEW_PERIOD is not None:
+    #     if (end_datetime - start_datetime).days > MAX_VIEW_PERIOD.days:
+    #         if old[0] != new[0]:
+    #             view_period.value = (
+    #                 start_datetime,
+    #                 start_datetime + MAX_VIEW_PERIOD,
+    #             )
+    #         elif old[1] != new[1]:
+    #             view_period.value = (end_datetime - MAX_VIEW_PERIOD, end_datetime)
 
     # update datamodel to keep things in sync
-    data.periods.view_start, data.periods.view_end = view_period.value_as_datetime
+    values_accepted = data.periods.set_view_period(*view_period.value_as_datetime)
+    if not values_accepted:
+        view_period.value = (data.periods.view_start, data.periods.view_end)
 
     # update patch source
     search_time_figure_layout.children[0].renderers[0].data_source.data.update(

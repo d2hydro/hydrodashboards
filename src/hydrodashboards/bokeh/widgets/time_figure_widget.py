@@ -16,25 +16,30 @@ from itertools import cycle
 from hydrodashboards.bokeh.sources import time_series_template, view_period_patch_source, time_series_to_source
 
 colors = cycle(palette)
-
+#%%
 SIZING_MODE = "stretch_both"
+DELTA = 0.1
+
 
 def range_defaults():
-    return -0.05, 0.05
+    return  -DELTA/2, DELTA/2
 
-# %%
+def move_delta_ends(start, end):
+    diff = (DELTA - (end - start)) / 2
+    start -= diff
+    end += diff
+    return start, end
+
 def correct_ends(start, end):
     if pd.isna(start):
         if pd.isna(end):
             start, end = range_defaults()
         else:
-            start = end - 0.1
+            start = end - DELTA
     elif pd.isna(end):
-        end = start + 0.1
-    elif start > end - 0.1:
-        diff = (0.1 - (end - start)) / 2
-        start -= diff
-        end += diff
+        end = start + DELTA
+    elif start > end - DELTA:
+        start, end = move_delta_ends(start, end)
     return start, end
 
 # %%
@@ -63,7 +68,7 @@ def make_x_range(data, graph="top_figs"):
                               data.search_start,
                               data.search_end,
                               ))
-
+        x_range.min_interval = pd.Timedelta(minutes=15)
     elif graph == "search_fig":
         x_range = Range1d(start=data.search_start,
                           end=data.search_end,
@@ -98,6 +103,8 @@ def update_time_series_y_ranges(time_figure_layout):
         if len(sources) > 0:
             start = min((i.data["value"].min() for i in sources))
             end = max((i.data["value"].max() for i in sources))
+            if start > end - DELTA:
+                start, end = move_delta_ends(start, end)
         else:
             start, end = range_defaults()
         return start, end
