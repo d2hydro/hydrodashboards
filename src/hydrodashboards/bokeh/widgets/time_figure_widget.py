@@ -86,7 +86,6 @@ def make_y_range(time_series, bounds=None):
     y_range = Range1d(start=y_start,
                       end=y_end)
     y_range.min_interval = 0.01
-    print (y_start, y_end)
     return y_range
 
 

@@ -137,7 +137,7 @@ class Data:
                 parameter_ids,
                 qualifier_ids,
             ) = self._fews_locators_from_indices(indices)
-            start_time = self.periods.history_start
+            start_time = self.periods.search_start
             end_time = self.periods.now
             # included as there is a bug in qualifier_ids requests
             if FEWS_BUGS["qualifier_ids"]:
