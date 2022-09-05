@@ -1,13 +1,13 @@
 from bokeh.models import (
     HoverTool,
     Range1d,
+    ColumnDataSource,
     BBoxTileSource,
-    WMTSTileSource,
     TapTool,
 )
 from bokeh.plotting import figure
 from bokeh.layouts import row, column
-from bokeh.models import ColumnDataSource
+import bokeh.models as bokeh_models
 from bokeh.models.widgets import Div, RadioGroup, CheckboxGroup
 
 
@@ -19,7 +19,7 @@ BOKEH_BACKGROUNDS = {
             "&width=265&height=265&styles=&crs=EPSG:28992&format=image/jpeg"
             "&bbox={XMIN},{YMIN},{XMAX},{YMAX}"
         ),
-        "class": BBoxTileSource,
+        "class": "BBoxTileSource",
     },
     "topografie": {
         "url": (
@@ -34,7 +34,7 @@ BOKEH_BACKGROUNDS = {
             "&format=png"
             "&f=image"
         ),
-        "class": BBoxTileSource,
+        "class": "BBoxTileSource",
     },
 }
 
@@ -66,7 +66,7 @@ def get_tilesource(layer, map_configs=BOKEH_BACKGROUNDS):
         args = map_configs[layer]["args"]
     else:
         args = {}
-    return map_configs[layer]["class"](url=url, **args)
+    return getattr(bokeh_models, map_configs[layer]["class"])(url=url, **args)
 
 
 def make_map(

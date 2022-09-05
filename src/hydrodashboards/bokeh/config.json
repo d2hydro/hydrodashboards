@@ -1,0 +1,73 @@
+{
+  "log_dir": "d:\\repositories\\hydrodashboards\\src\\hydrodashboards\\bokeh\\logs",
+  "title": "WAM Dashboard",
+  "language": "dutch",
+  "bounds": [
+    210000,
+    544000,
+    250000,
+    625000
+  ],
+  "filter_colors": {
+    "WDB_OW_KGM": {
+      "fill": "cyan",
+      "line": "blue"
+    },
+    "WDB_OW_KST": {
+      "fill": "lightgreen",
+      "line": "green"
+    },
+    "WDB_OW_INL": {
+      "fill": "orange",
+      "line": "red"
+    },
+    "WDB_OW_KSL": {
+      "fill": "grey",
+      "line": "black"
+    },
+    "WDB_OW_MPN": {
+      "fill": "yellow",
+      "line": "orange"
+    },
+    "WDB_GW_GMW": {
+      "fill": "greenyellow",
+      "line": "green"
+    },
+    "WDB_FC_MPN": {
+      "fill": "darkorange",
+      "line": "red"
+    },
+    "WDB_EL_MPN": {
+      "fill": "fuchsia",
+      "line": "purple"
+    },
+    "WDB_ML_KNMI": {
+      "fill": "lightblue",
+      "line": "blue"
+    }
+  },
+  "map_overlays": {
+    "watergangen": {
+      "url": "https://arcgis.noorderzijlvest.nl/server/rest/services/Watergangen/Watergangen/MapServer/export?dpi=96&bbox={XMIN},{YMIN},{XMAX},{YMAX}&bboxSR=28992&transparent=true&f=image&format=png8",
+      "class": "BBoxTileSource",
+      "visible": true
+    },
+    "grens NZV": {
+      "url": "https://arcgis.noorderzijlvest.nl/server/rest/services/Referentie/BegrenzingNoorderzijlvest/MapServer/export?&width=1280&height=709&bbox={XMIN},{YMIN},{XMAX},{YMAX}&bboxSR=28992&transparent=true&f=image&format=png8",
+      "class": "BBoxTileSource",
+      "visible": true
+    }
+  },
+  "exclude_pars": [
+    "Dummy"
+  ],
+  "fews_url": "https://www.hydrobase.nl/fews/nzv/FewsWebServices/rest/fewspiservice/v1",
+  "headers_full_history": [
+    "WDB_FC_MPN",
+    "WDB_ML_KNMI",
+    "WDB_GW_GMW"
+  ],
+  "root_filter": "WDB",
+  "ssl_verify": false,
+  "history_period": 3650
+}

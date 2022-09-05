@@ -2,17 +2,13 @@ from pathlib import Path
 import shutil
 import fewspy
 import hydrodashboards
+from hydrodashboards.bokeh.config import Config
 import sys
+import json
 from typing import Union
 VIRTUAL_ENV = Path(sys.executable).parent.as_posix()
 HYDRODASHBOARDS_DIR = Path(hydrodashboards.__file__).parent
 CONFIG_FILE = Path(hydrodashboards.__file__).parent.joinpath("bokeh", "config.py")
-
-app_dir = r"d:/projecten/D2108.Dashboard_WAM/01.app/20220814/wam"
-virtual_env = None
-app_port = 5003
-config_file = r"d:\repositories\hydrodashboards\src\hydrodashboards\bokeh\config.py"
-
 
 def reverse_bokeh_select(virtual_env: Union[str, Path]):
 
@@ -46,6 +42,26 @@ def copy_environment(virtual_env: Union[str, Path], reverse_bokeh_select=True):
         reverse_bokeh_select(virtual_env)
 
 
+def config_to_json(config_file: Path, config_json: Path):
+    # import the config_py
+    import os
+    config_file = Path(config_file)
+    os.chdir(config_file.parent)
+    import config as cfg_py
+
+    cfg_dict = {k.lower(): v for k, v in cfg_py.__dict__.items() if k.isupper()}
+
+    cfg_dict["log_dir"] = str(cfg_dict["log_dir"])
+    cfg_dict["history_period"] = cfg_dict["history_period"].days
+    cfg_dict["bounds"] = tuple(cfg_dict["bounds"])
+    cfg_dict.pop("max_view_period", None)
+
+    for v in cfg_dict["map_overlays"].values():
+        v["class"] = v["class"].__name__
+
+    Path(config_json).write_text(json.dumps(cfg_dict, indent=2))
+
+
 def bokeh(app_dir: Union[str, Path],
           config_file: Union[str, Path] = None,
           virtual_env: Union[str, Path] = None,
@@ -76,6 +92,19 @@ def bokeh(app_dir: Union[str, Path],
 
     app_dir.mkdir(parents=True)
 
+    # %% copy config-file
+    if config_file is None:
+        config_file = CONFIG_FILE
+    else:
+        config_file = Path(config_file)
+
+    config_json = app_dir.joinpath("config.json")
+    if config_file.suffix == ".py":
+        config_to_json(config_file, config_json)
+    else:
+        config_json.write_text(config_file.read_text())
+
+    config = Config.from_json(config_json)
     # %% provide template
     templates_dir = app_dir / "templates"
     templates_dir.mkdir()
@@ -93,8 +122,24 @@ def bokeh(app_dir: Union[str, Path],
     css_dir.mkdir(parents=True)
     template_css = HYDRODASHBOARDS_DIR.joinpath("bokeh", "static", "css", "styles.css")
     styles_css = css_dir / "styles.css"
+
+    map_options_height = int(200 + 18 * len(config.map_overlays))
+    map_options_left = int(55 + 6.5 * max([len(i) for i in config.map_overlays.keys()]))
+    map_options_width = int(map_options_left - 20)
     styles_css.write_text(
-        template_css.read_text().replace("/bokeh/", f"/{app_dir.name}/")
+        template_css.read_text().replace(
+            "/bokeh/", f"/{app_dir.name}/"
+            ).replace(
+                "/map_options_height/",
+                f"{map_options_height}"
+                ).replace(
+                    "/map_options_left/",
+                    f"{map_options_left}"
+                    )
+                    .replace(
+                        "/map_options_width/",
+                        f"{map_options_width}"
+                        )
         )
 
     icons_dir = static_dir / "icons"
@@ -126,9 +171,9 @@ def bokeh(app_dir: Union[str, Path],
     # copy contents of datamodel folder to correct location
     for src in list(bokeh_src.glob("*.*")):
         dst = None
-        if src.name in ["data.py", "main.py", "theme.yaml"]:
+        if src.name in ["data.py", "main.py", "theme.yaml", "config.py"]:
             dst = app_dir.joinpath(src.name)
-        elif src.name != "config.py":
+        else:
             dst = bokeh_dir.joinpath(src.name)
 
         if dst is not None:
@@ -137,14 +182,6 @@ def bokeh(app_dir: Union[str, Path],
     # copy __init__.py
     hydrodashboards_dir.joinpath("__init__.py").write_text(
         Path(hydrodashboards.__file__).read_text())
-
-    # %% copy config-file
-    if config_file is None:
-        config_file = CONFIG_FILE
-    else:
-        config_file = Path(config_file)
-
-    app_dir.joinpath("config.py").write_text(config_file.read_text())
 
     # %% write serve_bokeh.bat
     if virtual_env is None:
@@ -160,3 +197,6 @@ def bokeh(app_dir: Union[str, Path],
         bokeh serve {app_dir.name} --port {app_port}
         """
         )
+
+bokeh(r"d:\projecten\D2107.WIK_Aa_en_Maas\01.App\202209_01\wik",
+      config_file=r"d:\projecten\D2107.WIK_Aa_en_Maas\01.App\202208_01\wik\config.py")

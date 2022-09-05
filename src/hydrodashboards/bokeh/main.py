@@ -3,7 +3,8 @@
 from bokeh.io import curdoc
 from bokeh.layouts import column
 from data import Data
-from config import TITLE, BOUNDS, MAP_OVERLAYS, MAX_VIEW_PERIOD, LOG_DIR
+from config import Config
+from pathlib import Path
 
 # import bokeh sources
 import hydrodashboards.bokeh.sources as sources
@@ -22,8 +23,7 @@ import inspect
 
 from hydrodashboards.bokeh.language import update_graph_title
 
-
-from datetime import datetime, timedelta
+from datetime import datetime
 import pandas as pd
 
 LANG = "dutch"
@@ -54,7 +54,7 @@ def update_time_series_sources(stream=False):
     """Update of time_series_sources assigned to top_figs."""
     start, end = view_x_range_as_datetime()
     for k, v in time_series_sources.items():
-        time_series = data.time_series_sets.get_by_label(k)        
+        time_series = data.time_series_sets.get_by_label(k)
         if stream:
             exluded_date_times = v["source"].data["datetime"]
             _source = sources.time_series_to_source(time_series=time_series,
@@ -69,6 +69,7 @@ def update_time_series_sources(stream=False):
                                                     end_date_time=end,
                                                     unreliables=False)
             v["source"].data.update(_source.data)
+
 
 def view_x_range_as_datetime():
     """Get the view_x_range start and end as datetime."""
@@ -219,13 +220,13 @@ def update_map_figure_overlay_control(attrname, old, new):
 
 def start_time_series_loader():
     """Start time_series loader and start update_time_series"""
-    #logger.debug(inspect.stack()[0][3])
+    # logger.debug(inspect.stack()[0][3])
     update_graph.css_classes = ["loader_time_fig"]
 
     # disable view_period
     toggle_view_time_series_controls(value=True)
 
-    # now we go downloading a view 
+    # now we go downloading a view
     curdoc().add_next_tick_callback(update_time_series_view)
 
 
@@ -238,12 +239,17 @@ def update_time_series_view():
 
     # update time_series_layout (top figures)
     parameter_groups = data.parameters.get_groups()
-    time_series_groups = data.time_series_sets.by_parameter_groups(parameter_groups, active_only=True)
+    time_series_groups = data.time_series_sets.by_parameter_groups(
+        parameter_groups,
+        active_only=True
+        )
 
-    time_series_sources = time_figure_widget.create_time_figures(time_figure_layout=time_figure_layout,
-                                                                 time_series_groups=time_series_groups,
-                                                                 x_range=view_x_range,
-                                                                 press_up_event=press_up_event)
+    time_series_sources = time_figure_widget.create_time_figures(
+        time_figure_layout=time_figure_layout,
+        time_series_groups=time_series_groups,
+        x_range=view_x_range,
+        press_up_event=press_up_event
+        )
 
     # update search_time_series
     search_time_series.options = data.time_series_sets.active_labels
@@ -252,12 +258,14 @@ def update_time_series_view():
 
     # add_search time_series
     _time_series = data.time_series_sets.get_by_label(search_time_series.value)
-    time_figure_widget.search_fig(search_time_figure_layout,
-                                  time_series=_time_series,
-                                  x_range=search_x_range,
-                                  periods=data.periods,
-                                  color=time_series_sources[search_time_series.value]["color"],
-                                  search_source=search_source)
+    time_figure_widget.search_fig(
+        search_time_figure_layout,
+        time_series=_time_series,
+        x_range=search_x_range,
+        periods=data.periods,
+        color=time_series_sources[search_time_series.value]["color"],
+        search_source=search_source
+        )
 
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
@@ -291,30 +299,21 @@ def update_on_search_time_series_value(attrname, old, new):
 
     # change search time_series
     time_figure_widget.search_fig(search_time_figure_layout,
-                                  time_series=data.time_series_sets.get_by_label(label=search_time_series.value),
+                                  time_series=data.time_series_sets.get_by_label(
+                                      label=search_time_series.value
+                                      ),
                                   x_range=search_x_range,
                                   periods=data.periods,
-                                  color=time_series_sources[search_time_series.value]["color"],
+                                  color=time_series_sources[
+                                      search_time_series.value
+                                      ]["color"],
                                   search_source=search_source)
 
 
 def update_on_view_period_value(attrname, old, new):
     """Update periods when view_period value changes"""
-    #logger.debug(inspect.stack()[0][3])
+    # logger.debug(inspect.stack()[0][3])
 
-    # # keep end and start within MAX_VIEW_PERIOD
-    # start_datetime, end_datetime = view_period.value_as_datetime
-    # if MAX_VIEW_PERIOD is not None:
-    #     if (end_datetime - start_datetime).days > MAX_VIEW_PERIOD.days:
-    #         if old[0] != new[0]:
-    #             view_period.value = (
-    #                 start_datetime,
-    #                 start_datetime + MAX_VIEW_PERIOD,
-    #             )
-    #         elif old[1] != new[1]:
-    #             view_period.value = (end_datetime - MAX_VIEW_PERIOD, end_datetime)
-
-    # update datamodel to keep things in sync
     values_accepted = data.periods.set_view_period(*view_period.value_as_datetime)
     if not values_accepted:
         view_period.value = (data.periods.view_start, data.periods.view_end)
@@ -326,7 +325,7 @@ def update_on_view_period_value(attrname, old, new):
 
 def update_on_view_period_value_throttled(attrname, old, new):
     """Update time_series_sources as view_x_range"""
-    #logger.debug(inspect.stack()[0][3])
+    # logger.debug(inspect.stack()[0][3])
 
     update_time_series_sources()
 
@@ -336,7 +335,7 @@ def update_on_view_period_value_throttled(attrname, old, new):
 
 def update_on_view_x_range_change(attrname, old, new):
     """Update view_period widget when view_x_range changes."""
-    #logger.debug(inspect.stack()[0][3])
+    # logger.debug(inspect.stack()[0][3])
 
     start, end = view_x_range_as_datetime()
     view_x_range.reset_start = start
@@ -351,13 +350,20 @@ def press_up_event(event=None):
     # updating the figure_layout y_ranges
     time_figure_widget.update_time_series_y_ranges(time_figure_layout)
 
+
+"""
+We read the config
+"""
+
+config = Config.from_json(Path(__file__).parent.joinpath("config.json"))
+
 """
 We initialize the dataclass
 """
 
 now = datetime.now()
-logger = import_logger(log_dir=LOG_DIR)
-data = Data(logger=logger, now=now)
+logger = import_logger(log_dir=config.log_dir)
+data = Data(logger=logger, now=now, config=config)
 
 """
 We define all sources used in this main document
@@ -395,12 +401,12 @@ update_graph.on_click(start_time_series_loader)
 
 # Map figure widget
 map_figure = map_figure_widget.make_map(
-    bounds=BOUNDS, locations_source=locations_source, map_overlays=MAP_OVERLAYS
+    bounds=config.bounds, locations_source=locations_source, map_overlays=config.map_overlays
 )
 
 # Map options widget
 map_options = map_figure_widget.make_options(
-    map_overlays=MAP_OVERLAYS,
+    map_overlays=config.map_overlays,
     overlays_change=update_map_figure_overlay_control,
     background_title="Achtergrond",
     background_change=update_map_figure_background_control,
@@ -438,7 +444,9 @@ search_time_figure = time_figure_widget.empty_fig()
 In this section we add all widgets to the curdoc
 """
 # left column layout
-curdoc().add_root(column(column(Div(text=f"<h3>{TITLE}</h3>")), name="app_title", sizing_mode="stretch_width"))
+curdoc().add_root(column(column(Div(text=f"<h3>{config.title}</h3>")),
+                         name="app_title",
+                         sizing_mode="stretch_width"))
 curdoc().add_root(column(filters, name="filters", sizing_mode="stretch_width"))
 curdoc().add_root(column(locations, name="locations", sizing_mode="stretch_width"))
 curdoc().add_root(column(parameters, name="parameters", sizing_mode="stretch_width"))
@@ -474,4 +482,4 @@ search_time_figure_layout = column(search_time_figure, name="search_time_figure"
 curdoc().add_root(search_time_figure_layout)
 
 
-curdoc().title = TITLE
+curdoc().title = config.title

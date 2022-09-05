@@ -14,9 +14,9 @@ def _get_date(date_time):
 @dataclass
 class Periods:
     now: datetime
-    default_search_period: timedelta = timedelta(days=365)
-    default_view_period: timedelta = timedelta(days=21)
-    history_period: timedelta = timedelta(days=3652)
+    default_search_period: int = 365
+    default_view_period: int = 21
+    history_period: int = 3652
     view_start: datetime = None
     view_end: datetime = None
     history_start: datetime = None
@@ -29,10 +29,10 @@ class Periods:
     def __post_init__(self):
         next_day = datetime(*self.now.timetuple()[:3]) + timedelta(days=1)
         self.view_end = self.now
-        self.view_start = self.now - self.default_view_period
+        self.view_start = self.now - timedelta(self.default_view_period)
         self.search_end = next_day
-        self.history_start = next_day - timedelta(self.history_period.days)
-        self.search_start = next_day - timedelta(self.default_search_period.days)
+        self.history_start = next_day - timedelta(self.history_period)
+        self.search_start = next_day - timedelta(self.default_search_period)
         self.search_start_title = search_period_start_title[self.language]
         self.search_end_title = search_period_end_title[self.language]
 

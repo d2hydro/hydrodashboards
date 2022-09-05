@@ -1,29 +1,6 @@
 # import FEWS API for reading data
 from fewspy import Api
 
-# import dashboard configuration
-try:
-    from config import (
-        EXCLUDE_PARS,
-        FEWS_URL,
-        FILTER_COLORS,
-        HEADERS_FULL_HISTORY,
-        HISTORY_PERIOD,
-        ROOT_FILTER,
-        SSL_VERIFY,
-    )
-except ModuleNotFoundError:
-    from hydrodashboards.bokeh.config import (
-        EXCLUDE_PARS,
-        FEWS_URL,
-        FILTER_COLORS,
-        HEADERS_FULL_HISTORY,
-        HISTORY_PERIOD,
-        ROOT_FILTER,
-        SSL_VERIFY,
-    )
-
-
 # import datamodel components
 from hydrodashboards.datamodel import (
     Filters,
@@ -42,14 +19,14 @@ from hydrodashboards.datamodel.utils import (
 # import functions from python modules
 from datetime import datetime
 import pandas as pd
-import itertools
 
 FEWS_BUGS = dict(qualifier_ids=True)
 
-def _get_propeties(filter_id, filter_name):
-    if filter_id in FILTER_COLORS.keys():
-        line = FILTER_COLORS[filter_id]["line"]
-        fill = FILTER_COLORS[filter_id]["fill"]
+
+def _get_propeties(filter_id, filter_name, filter_colors):
+    if filter_id in filter_colors.keys():
+        line = filter_colors[filter_id]["line"]
+        fill = filter_colors[filter_id]["fill"]
     else:
         line = "orange"
         fill = "black"
@@ -64,20 +41,22 @@ def _get_propeties(filter_id, filter_name):
 
 
 class Data:
-    def __init__(self, logger=None, now: datetime = datetime.now()):
+    def __init__(self, config, logger=None, now: datetime = datetime.now()):
+        self.config = config
         self.logger = logger
         # fews properties
-        self._fews_api = Api(url=FEWS_URL, ssl_verify=SSL_VERIFY, logger=logger)
+        self._fews_api = Api(url=self.config.fews_url,
+                             ssl_verify=self.config.ssl_verify, logger=logger)
         self._fews_qualifiers = self._fews_api.get_qualifiers()
         self._fews_root_parameters = self._fews_api.get_parameters(
-            filter_id=ROOT_FILTER
+            filter_id=self.config.root_filter
         )
-        self._fews_root_locations = self._fews_api.get_locations(filter_id=ROOT_FILTER)
-        self._fews_filters = self._fews_api.get_filters(filter_id=ROOT_FILTER)
+        self._fews_root_locations = self._fews_api.get_locations(filter_id=self.config.root_filter)
+        self._fews_filters = self._fews_api.get_filters(filter_id=self.config.root_filter)
 
         # time properties
         self.now = now
-        self.periods = Periods(self.now, history_period=HISTORY_PERIOD)
+        self.periods = Periods(self.now, history_period=self.config.history_period)
 
         # data-classes linked to dashboard
         self.filters = Filters.from_fews(self._fews_filters)
@@ -173,7 +152,7 @@ class Data:
             end_time = self.periods.search_end
 
         result = self._fews_api.get_time_series(
-            filter_id=ROOT_FILTER,
+            filter_id=self.config.root_filter,
             location_ids=location_ids,
             parameter_ids=parameter_ids,
             qualifier_ids=qualifier_ids,
@@ -311,7 +290,7 @@ class Data:
                     "parameter_names",
                 ],
             )
-            df = df.loc[~df["parameter_ids"].isin(EXCLUDE_PARS)]
+            df = df.loc[~df["parameter_ids"].isin(self.config.exclude_pars)]
             return df
 
         all_locations = []
@@ -323,7 +302,7 @@ class Data:
 
             # get locations and parameters from sub-filter
             if filter_id not in filter_data.cache.keys():  # add to cache if
-                if filter_id in HEADERS_FULL_HISTORY:
+                if filter_id in self.config.headers_full_history:
                     start_time = self.periods.search_start
                 else:
                     start_time = self.now
@@ -347,7 +326,7 @@ class Data:
 
             # if not yet in sets, add it there too
             if filter_id not in self.locations.sets.keys():
-                properties = _get_propeties(filter_id, filter_name)
+                properties = _get_propeties(filter_id, filter_name, self.config.filter_colors)
                 self.locations.add_to_sets(filter_id, headers_df, properties)
 
             # add locations and parameters to list

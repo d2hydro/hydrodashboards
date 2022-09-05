@@ -15,7 +15,7 @@ def import_logger(log_dir=LOG_DIR) -> logging.Logger:
         logger (logging.Logger): Logger object to be used in Bokeh app.
 
     """
-
+    log_dir = Path(log_dir)
     log_dir.mkdir(exist_ok=True)
 
     log_file = log_dir.joinpath(
