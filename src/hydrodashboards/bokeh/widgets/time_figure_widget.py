@@ -249,9 +249,17 @@ def top_fig(group: tuple,
     if len(time_fig.legend) > 0:
         time_fig.add_layout(time_fig.legend[0], "right")
         time_fig.legend[0].label_text_font_size = "9pt"
+        time_fig.legend[0].spacing = -2
+        time_fig.legend[0].padding = -5
+        time_fig.legend[0].label_height = 5
+        time_fig.legend[0].margin = 5
+        
+        time_fig.legend[0].border_line_width = 0
     if press_up_event is not None:
         time_fig.on_event(PanEnd, press_up_event)
         time_fig.on_event(MouseWheel, press_up_event)
+        
+
     return time_fig
 
 
