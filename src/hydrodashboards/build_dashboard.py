@@ -195,6 +195,3 @@ def bokeh(app_dir: Union[str, Path],
         bokeh serve {app_dir.name} --port {app_port}
         """
         )
-
-bokeh(r"d:\projecten\D2107.WIK_Aa_en_Maas\01.App\202209_01\wik",
-      config_file=r"d:\projecten\D2107.WIK_Aa_en_Maas\01.App\202208_01\wik\config.py")
