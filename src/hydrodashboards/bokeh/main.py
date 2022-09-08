@@ -122,9 +122,12 @@ def update_on_locations_source_select(attr, old, new):
 
     # get selected ids
     ids = [locations_source.data["id"][i] for i in locations_source.selected.indices]
+    if len(ids) > 10:
+        ids.sort()
+        ids = ids[:10]
 
     # update locations and data.locations value
-    locations.value = data.locations.value = ids
+    locations.value = ids
 
 
 def update_on_locations_value(attrname, old, new):
@@ -132,8 +135,8 @@ def update_on_locations_value(attrname, old, new):
     logger.debug(inspect.stack()[0][3])
 
     # limit to max 10 locations
-    if len(locations.value) > 10:
-        locations.value = locations.value[:10]
+    if len(new) > 10:
+        locations.value = old
 
     # update location source selected
     indices = [list(locations_source.data["id"]).index(i) for i in locations.value]
@@ -227,7 +230,7 @@ def update_map_figure_overlay_control(attrname, old, new):
 
 def start_time_series_loader():
     """Start time_series loader and start update_time_series"""
-    # logger.debug(inspect.stack()[0][3])
+    logger.debug(inspect.stack()[0][3])
     update_graph.css_classes = ["loader_time_fig"]
 
     # disable view_period
@@ -283,6 +286,7 @@ def update_time_series_view():
 
 def update_time_series_search():
 
+    logger.debug(inspect.stack()[0][3])
     # update full history of all non-complete time-series
     data.update_time_series_search()
 
@@ -319,7 +323,7 @@ def update_on_search_time_series_value(attrname, old, new):
 
 def update_on_view_period_value(attrname, old, new):
     """Update periods when view_period value changes"""
-    # logger.debug(inspect.stack()[0][3])
+    logger.debug(inspect.stack()[0][3])
 
     values_accepted = data.periods.set_view_period(*view_period.value_as_datetime)
     if not values_accepted:
@@ -333,7 +337,7 @@ def update_on_view_period_value(attrname, old, new):
 
 def update_on_view_period_value_throttled(attrname, old, new):
     """Update time_series_sources as view_x_range"""
-    # logger.debug(inspect.stack()[0][3])
+    logger.debug(inspect.stack()[0][3])
 
     update_time_series_sources()
 
@@ -343,7 +347,7 @@ def update_on_view_period_value_throttled(attrname, old, new):
 
 def update_on_view_x_range_change(attrname, old, new):
     """Update view_period widget when view_x_range changes."""
-    # logger.debug(inspect.stack()[0][3])
+    logger.debug(inspect.stack()[0][3])
 
     start, end = view_x_range_as_datetime()
     view_x_range.reset_start = start
@@ -353,6 +357,7 @@ def update_on_view_x_range_change(attrname, old, new):
 
 
 def press_up_event(event=None):
+    logger.debug(inspect.stack()[0][3])
     update_time_series_sources()
 
     # updating the figure_layout y_ranges
