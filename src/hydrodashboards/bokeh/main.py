@@ -23,7 +23,7 @@ import inspect
 
 from hydrodashboards.bokeh.language import update_graph_title
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 
 LANG = "dutch"
@@ -319,8 +319,9 @@ def update_on_view_period_value(attrname, old, new):
         view_period.value = (data.periods.view_start, data.periods.view_end)
 
     # update patch source
-    search_time_figure_layout.children[0].renderers[0].data_source.data.update(
-        sources.view_period_patch_source(data.periods).data)
+    if type(search_time_figure_layout.children[0]) != Div:
+        search_time_figure_layout.children[0].renderers[0].data_source.data.update(
+            sources.view_period_patch_source(data.periods).data)
 
 
 def update_on_view_period_value_throttled(attrname, old, new):
@@ -443,6 +444,8 @@ search_time_figure = time_figure_widget.empty_fig()
 """
 In this section we add all widgets to the curdoc
 """
+
+
 # left column layout
 curdoc().add_root(column(column(Div(text=f"<h3>{config.title}</h3>")),
                          name="app_title",
@@ -481,5 +484,65 @@ curdoc().add_root(column(view_period, name="view_period", sizing_mode="stretch_b
 search_time_figure_layout = column(search_time_figure, name="search_time_figure", sizing_mode="stretch_both")
 curdoc().add_root(search_time_figure_layout)
 
-
 curdoc().title = config.title
+
+"""
+In this section we parse all url parameters
+"""
+
+
+def locations_in_filter(location_ids, filter_id):
+    return data.locations.sets[filter_id].index.isin(location_ids).any()
+
+def convert_to_datetime(date_time):
+    try:
+        return datetime.strptime(date_time, "%Y-%m-%d")
+    except ValueError:
+        return None
+
+
+try:
+    args = curdoc().session_context.request.arguments
+    start_date, end_date = view_period.value_as_datetime
+    update_period = False
+    if "filter_id" in args.keys():
+        filter_ids = [i.decode("utf-8") for i in args.get("filter_id")]
+        filters_widgets.set_filter_values(filters, filter_ids)
+
+    if "location_id" in args.keys():
+        location_ids = [i.decode("utf-8") for i in args.get("location_id")]
+        if "filter_id" not in args.keys():
+            # get all filters in cache
+            data.update_on_filter_select(data.filters.values)
+            # get and select the filter ids that contain one or more location_ids
+            filter_ids = [i for i in data.filters.values if locations_in_filter(location_ids, i)]
+            filters_widgets.set_filter_values(filters, filter_ids)
+
+        # make sure there is no rubbish and set loction_ids
+        location_ids = [j for j in location_ids if j in [i[0] for i in locations.options]]
+        locations.value = location_ids
+    if "parameter_id" in args.keys():
+        parameter_ids = [i.decode("utf-8") for i in args.get("parameter_id")]
+        parameter_ids = [j for j in parameter_ids if j in [i[0] for i in parameters.options]]
+        parameters.value = parameter_ids
+    if "start_date" in args.keys():
+        start_date = convert_to_datetime(args.get("start_date")[0].decode("utf-8"))
+        update_period = True
+    if "end_date" in args.keys():
+        end_date = convert_to_datetime(args.get("end_date")[0].decode("utf-8"))
+        update_period = True
+    if update_period:
+        end_date = min(data.periods.view_end, end_date)
+        if start_date < end_date:
+            search_start = start_date - timedelta(days=1)
+            search_end = min(start_date - timedelta(days=1), data.periods.search_end)
+            data.periods.set_search_period(search_start, search_end)
+            data.periods.set_view_period(start_date, end_date)
+            view_period.value = (data.periods.view_start, data.periods.view_end)
+
+    start_time_series_loader()
+
+
+except AttributeError as e:
+    logger.error(f"reading args failed with error: {e}")
+    pass

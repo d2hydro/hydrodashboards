@@ -26,3 +26,11 @@ def get_filters_values(filters) -> List[MultiSelect]:
     """Return all values from a list of Bokeh MultiSelect filters."""
     values = [i.value for i in filters]
     return [i for j in values for i in j]
+
+
+def set_filter_values(filters, filter_ids):
+    """Set filter values on a selected set of filter_ids."""
+    for i in filters:
+        value = [j[0] for j in i.options if j[0] in filter_ids]
+        if value:
+            i.value = value

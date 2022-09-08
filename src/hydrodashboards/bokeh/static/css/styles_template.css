@@ -272,7 +272,7 @@ width: 100%;
 
 #button_leg_bar {
   background-color: transparent;
-  background-image: url(/wik/static/icons/layers.svg);
+  background-image: url(/bokeh/static/icons/layers.svg);
   background-repeat: no-repeat;
   border-width: 0px;
   bottom: 20px;
@@ -311,18 +311,6 @@ width: 100%;
 }
 
 .map_opt
-{ 
-  display:block;
-  position: fixed;
-  background: white;
-  width: 180px;
-  top: calc(100% - 416px);
-  left: calc(100% - 200px);
-  background-color: white;
-  padding: 2px;
-  border: 1px solid #F1F2F3;
-  border-radius:4px;
-}
 
 .app_status
 {
@@ -367,7 +355,7 @@ width: 100%;
 	 width: 26px;
 	 margin-left: 60px;
 	 margin-right:200px;
-	 background-image: url(/wik/static/icons/threshold.png);
+	 background-image: url(/bokeh/static/icons/threshold.png);
 	 background-repeat: no-repeat;
 	 background-position:center 2px center;
 	 background-color: white;
@@ -375,7 +363,7 @@ width: 100%;
 }
 
 .bk.bk-btn.bk-btn-default.bk-active{
-	  background-image: url(/wik/static/icons/threshold.png);
+	  background-image: url(/bokeh/static/icons/threshold.png);
 	  background-repeat: no-repeat;
 	  background-position:center 2px center;
 	  display:flex;
@@ -446,7 +434,7 @@ width: 100%;
 }
 
 .bk.bk-btn.bk-btn-success{
- background-image: url(/wik/static/icons/download.png);
+ background-image: url(/bokeh/static/icons/download.png);
  background-repeat: no-repeat;
  background-position:right 10px center;
  background-color: #3681C1;

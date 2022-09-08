@@ -39,3 +39,8 @@ class Filters:
     def get_name(self, filter_id, locations_filter):
         options = locations_filter.options
         return next((i[1] for i in options if i[0] == filter_id), None)
+
+    @property
+    def values(self):
+        values = [[j[0] for j in i.options] for i in self.filters]
+        return [j for i in values for j in i]

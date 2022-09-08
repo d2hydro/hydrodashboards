@@ -311,6 +311,18 @@ width: 100%;
 }
 
 .map_opt
+{ 
+  display:block;
+  position: fixed;
+  background: white;
+  width: 128px;
+  top: calc(100% - 240px);
+  left: calc(100% - 154px);
+  background-color: white;
+  padding: 2px;
+  border: 1px solid #F1F2F3;
+  border-radius:4px;
+}
 
 .app_status
 {
@@ -434,7 +446,7 @@ width: 100%;
 }
 
 .bk.bk-btn.bk-btn-success{
- background-image: url(/bokeh/static/icons/download.png);
+ background-image: url(/wik/static/icons/download.png);
  background-repeat: no-repeat;
  background-position:right 10px center;
  background-color: #3681C1;
