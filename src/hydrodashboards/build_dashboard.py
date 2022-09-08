@@ -4,12 +4,22 @@ import fewspy
 import hydrodashboards
 from hydrodashboards.bokeh.config import Config
 from hydrodashboards.build_css_templates import map_opt
+import argparse
 import sys
 import json
 from typing import Union
 VIRTUAL_ENV = Path(sys.executable).parent.as_posix()
 HYDRODASHBOARDS_DIR = Path(hydrodashboards.__file__).parent
 CONFIG_FILE = Path(hydrodashboards.__file__).parent.joinpath("bokeh", "config.py")
+
+
+
+def main():
+    args = get_args()
+    print(args.app_dir)
+    bokeh(app_dir=args.app_dir,
+          config_file=args.config_file)
+
 
 def reverse_bokeh_select(virtual_env: Union[str, Path]):
 
@@ -72,8 +82,8 @@ def bokeh(app_dir: Union[str, Path],
 
     Args:
         app_dir (Union[str, Path]): Directory where the app should be build
-        config_file (Union[str, Path], optional): config.py with app-configuration that
-            will be copied to app_dir/config.py. If None the default-file will be
+        config_file (Union[str, Path], optional): config.json with app-configuration that
+            will be copied to app_dir/config.json. If None the default-file will be
             copied. Defaults to None.
         virtual_env (Union[str, Path], optional): Specification of the
             Python-environment in which the app will be launched. If None, the app will
@@ -195,3 +205,31 @@ def bokeh(app_dir: Union[str, Path],
         bokeh serve {app_dir.name} --port {app_port}
         """
         )
+
+def get_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Build dashboard")
+    parser.add_argument(
+        "-app_dir",
+        help="Directory in which to store the app",
+    )
+    parser.add_argument(
+        "-config_file",
+        help="config.json with app configuration. If not supplied, it will be taken from the repository",
+        default=None
+    )
+    parser.add_argument(
+        "-virtual_env",
+        help="Python environment to use for starting up the app. If not supplied it will use the current environment",
+        default=None,
+    )
+    parser.add_argument(
+        "-app_port",
+        help="Port to serve the app. Default is 5003",
+        type=int,
+        default=5003,
+    )
+
+    return parser.parse_args()
+
+if __name__ == "__main__":
+    main()
