@@ -13,12 +13,14 @@ HYDRODASHBOARDS_DIR = Path(hydrodashboards.__file__).parent
 CONFIG_FILE = Path(hydrodashboards.__file__).parent.joinpath("bokeh", "config.py")
 
 
-
 def main():
     args = get_args()
     print(args.app_dir)
     bokeh(app_dir=args.app_dir,
-          config_file=args.config_file)
+          config_file=args.config_file,
+          virtual_env=args.virtual_env,
+          app_port=args.app_port
+          )
 
 
 def reverse_bokeh_select(virtual_env: Union[str, Path]):
@@ -207,7 +209,10 @@ def bokeh(app_dir: Union[str, Path],
         )
 
 def get_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Build dashboard")
+    parser = argparse.ArgumentParser(description="""
+        Build your Bokeh dashboard.
+        """)
+    
     parser.add_argument(
         "-app_dir",
         help="Directory in which to store the app",
