@@ -187,6 +187,13 @@ def update_on_search_period_value(attrname, old, new):
     search_x_range.start = data.periods.search_start
     search_x_range.end = data.periods.search_end
     view_x_range.bounds = (data.periods.search_start, data.periods.search_end)
+    view_x_range.start, view_x_range.end = data.periods.view_start, data.periods.view_end
+
+    # update sources
+    update_time_series_sources()
+
+    # updating the figure_layout y_ranges
+    time_figure_widget.update_time_series_y_ranges(time_figure_layout)
 
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
@@ -372,7 +379,7 @@ We define all sources used in this main document
 
 locations_source = sources.locations_source()
 locations_source.selected.on_change("indices", update_on_locations_source_select)
-time_series_sources = sources.time_series_sources
+time_series_sources = sources.time_series_sources()
 search_source = sources.time_series_template()
 
 """
@@ -540,7 +547,7 @@ try:
             data.periods.set_view_period(start_date, end_date)
             view_period.value = (data.periods.view_start, data.periods.view_end)
 
-    if (len(locations.value) == 0) & (len(parameters.value) == 0):
+    if (len(locations.value) > 0) & (len(parameters.value) > 0):
         start_time_series_loader()
 
 

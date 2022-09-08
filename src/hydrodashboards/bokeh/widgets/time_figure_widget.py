@@ -112,9 +112,10 @@ def update_time_series_y_ranges(time_figure_layout):
     def update_range(fig):
         fig.y_range.reset_start, fig.y_range.reset_end = _ends(fig.renderers)
 
-    top_figs = time_figure_layout.children[0].children
-    for fig in top_figs:
-        update_range(fig)
+    if type(time_figure_layout.children[0]) != Div:
+        top_figs = time_figure_layout.children[0].children
+        for fig in top_figs:
+            update_range(fig)
 
 
 def search_fig(search_time_figure_layout, time_series, x_range, periods, color="#1f77b4", search_source=None):
