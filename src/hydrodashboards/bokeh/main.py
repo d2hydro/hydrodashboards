@@ -540,7 +540,8 @@ try:
             data.periods.set_view_period(start_date, end_date)
             view_period.value = (data.periods.view_start, data.periods.view_end)
 
-    start_time_series_loader()
+    if (len(locations.value) == 0) & (len(parameters.value) == 0):
+        start_time_series_loader()
 
 
 except AttributeError as e:
