@@ -184,7 +184,7 @@ def top_fig(group: tuple,
 
     label, time_series = group
     # define tools
-    time_hover = HoverTool(tooltips=[("datum-tijd", "@datetime{%F}"),
+    time_hover = HoverTool(tooltips=[("datum-tijd", "@datetime{%F %H:%M}"),
                                      ("waarde", "@value{(0.00)}")],
                            formatters={"@datetime": "datetime"})
     time_hover.toggleable = False
