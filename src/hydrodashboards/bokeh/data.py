@@ -51,7 +51,8 @@ class Data:
         self._fews_root_parameters = self._fews_api.get_parameters(
             filter_id=self.config.root_filter
         )
-        self._fews_root_locations = self._fews_api.get_locations(filter_id=self.config.root_filter)
+        self._fews_root_locations = self._fews_api.get_locations(filter_id=self.config.root_filter,
+                                                                 attributes=self.config.location_attributes)
         self._fews_filters = self._fews_api.get_filters(filter_id=self.config.root_filter)
 
         # time properties
@@ -60,7 +61,8 @@ class Data:
 
         # data-classes linked to dashboard
         self.filters = Filters.from_fews(self._fews_filters)
-        self.locations = Locations.from_fews(self._fews_root_locations)
+        self.locations = Locations.from_fews(self._fews_root_locations,
+                                             attributes=self.config.location_attributes)
         self.parameters = Parameters.from_fews(
             pi_parameters=self._fews_root_parameters,
             pi_qualifiers=self._fews_qualifiers,

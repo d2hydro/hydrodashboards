@@ -16,6 +16,7 @@ from hydrodashboards.bokeh.widgets import (
     search_period_widget,
     update_graph_widget,
     view_period_widget,
+    thresholds_widget,
 )
 from bokeh.models.widgets import Div, Select
 from hydrodashboards.bokeh.log_utils import import_logger
@@ -364,6 +365,11 @@ def press_up_event(event=None):
     time_figure_widget.update_time_series_y_ranges(time_figure_layout)
 
 
+def toggle_thresholds(active):
+    logger.debug(inspect.stack()[0][3])
+    time_figure_widget.toggle_threshold_graphs(time_figure_layout, active)
+
+
 """
 We read the config
 """
@@ -428,6 +434,9 @@ map_options = map_figure_widget.make_options(
 # Status widget
 app_status = Div(text=data.app_status(html_type=HTML_TYPE))
 
+# Thresholds widget
+thresholds_button = thresholds_widget.make_button(toggle_thresholds)
+
 # Time figure widget
 view_x_range = time_figure_widget.make_x_range(data.periods, graph="top_figs")
 view_x_range.on_change("end", update_on_view_x_range_change)
@@ -478,6 +487,7 @@ curdoc().add_root(column(map_options, name="map_options", sizing_mode="stretch_b
 curdoc().add_root(column(app_status, name="app_status", sizing_mode="stretch_both"))
 
 # time-figure layout
+curdoc().add_root(column(thresholds_button,name="thresholds_button",sizing_mode="stretch_both"))
 time_figure_layout = column(time_figure, name="time_figure", sizing_mode="stretch_both")
 curdoc().add_root(time_figure_layout)
 curdoc().add_root(

@@ -60,6 +60,10 @@ def empty_fig():
     return Div(text="No graph has been generated")
 
 
+def valid_layout(time_figure_layout):
+    return type(time_figure_layout.children[0]) != Div
+
+
 def make_x_range(data, graph="top_figs"):
     if graph == "top_figs":
         x_range = Range1d(start=data.view_start,
@@ -112,10 +116,19 @@ def update_time_series_y_ranges(time_figure_layout):
     def update_range(fig):
         fig.y_range.reset_start, fig.y_range.reset_end = _ends(fig.renderers)
 
-    if type(time_figure_layout.children[0]) != Div:
+    if valid_layout(time_figure_layout):
         top_figs = time_figure_layout.children[0].children
         for fig in top_figs:
             update_range(fig)
+
+
+def toggle_threshold_graphs(time_figure_layout, active):
+    if valid_layout(time_figure_layout):
+        figs = time_figure_layout[0].children
+        for fig in figs:
+            for renderer in fig.renderers:
+                if renderer.name == "threshold":
+                    renderer.visible = active
 
 
 def search_fig(search_time_figure_layout, time_series, x_range, periods, color="#1f77b4", search_source=None):
@@ -179,11 +192,12 @@ def search_fig(search_time_figure_layout, time_series, x_range, periods, color="
 
 def top_fig(group: tuple,
             x_range: Range1d,
+            thresholds=[],
             press_up_event=None):
 
     """Generate a time-figure from supplied bokeh input parameters."""
 
-    label, time_series = group
+    parameter_group, time_series = group
     # define tools
     time_hover = HoverTool(tooltips=[("datum-tijd", "@datetime{%F %H:%M}"),
                                      ("waarde", "@value{(0.00)}")],
@@ -206,7 +220,7 @@ def top_fig(group: tuple,
     if len(parameters) == 1:
         y_axis_label = parameters[0]
     else:
-        y_axis_label = label
+        y_axis_label = parameter_group
 
 
     time_fig = figure(tools=tools,
@@ -268,10 +282,12 @@ def create_time_figures(time_figure_layout: column,
                         time_series_groups: dict,
 #                        time_series_sources: dict,
                         x_range,
+                        thresholds=[],
                         press_up_event=None):
     time_figure_layout.children.pop()
     top_figs = [top_fig(i,
                         x_range,
+                        thresholds=thresholds,
                         press_up_event=press_up_event) for i in  time_series_groups.items()]
     top_figs[-1].xaxis.visible = True
     time_figure_layout.children.append(column(*top_figs, sizing_mode="stretch_both"))

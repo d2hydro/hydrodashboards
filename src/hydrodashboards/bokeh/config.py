@@ -11,6 +11,7 @@ class Config:
     fews_url: str
     root_filter: str
     language: str = "dutch"
+    thresholds: list = field(default_factory=list)
     filter_colors: dict = field(default_factory=dict)
     map_overlays: dict = field(default_factory=dict)
     exclude_pars: list = field(default_factory=list)
@@ -23,3 +24,7 @@ class Config:
         config_json = Path(config_json)
         config_dict = json.loads(config_json.read_text())
         return cls(**config_dict)
+
+    @property
+    def location_attributes(self):
+        return [i["attribute"] for i in self.thresholds]

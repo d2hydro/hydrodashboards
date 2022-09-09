@@ -79,7 +79,7 @@ class Locations(Filter):
         return [i for i in itertools.chain(*labels_gen)]
 
     @classmethod
-    def from_fews(cls, pi_locations: gpd.GeoDataFrame, language="dutch"):
+    def from_fews(cls, pi_locations: gpd.GeoDataFrame, attributes=[], language="dutch"):
         """
         Initalize Locations class from FEWS pi_locations
 
@@ -96,7 +96,8 @@ class Locations(Filter):
             columns={"short_name": "name", "parent_location_id": "parent_id"}
         )
         df.index.name = "id"
-        df.drop(columns=[i for i in df.columns if i not in COLUMNS], inplace=True)
+        cols = COLUMNS + attributes
+        df.drop(columns=[i for i in df.columns if i not in cols], inplace=True)
         return cls(language=language, locations=df)
 
     def parent_id_from_ts_header(self, header):
