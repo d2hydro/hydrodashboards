@@ -13,12 +13,13 @@ from bokeh.models import (
 from bokeh.palettes import Category10_10 as palette
 import pandas as pd
 from itertools import cycle
-from hydrodashboards.bokeh.sources import time_series_template, view_period_patch_source, time_series_to_source
+from hydrodashboards.bokeh.sources import time_series_template, view_period_patch_source, time_series_to_source, thresholds_to_source
 
 colors = cycle(palette)
 #%%
 SIZING_MODE = "stretch_both"
 DELTA = 0.1
+THRESHOLD_NAME = "threshold"
 
 
 def range_defaults():
@@ -56,8 +57,12 @@ def date_time_range_as_datetime(date_time_range):
 
     return start, end
 
+
 def empty_fig():
-    return Div(text="No graph has been generated")
+    return Div(text='<p style="text-align:right;">No graph has been generated</p>',
+               align="end",
+               sizing_mode="stretch_width",
+               width_policy="max")
 
 
 def valid_layout(time_figure_layout):
@@ -100,7 +105,7 @@ def make_y_range(time_series, bounds=None):
 
 def update_time_series_y_ranges(time_figure_layout):
     def _get_sources(renderers):
-        return [i.data_source for i in renderers if len(i.data_source.data["value"]) > 0]
+        return [i.data_source for i in renderers if (len(i.data_source.data["value"]) > 0) & (i.name != THRESHOLD_NAME)]
 
     def _ends(renderers):
         sources = _get_sources(renderers)
@@ -124,11 +129,13 @@ def update_time_series_y_ranges(time_figure_layout):
 
 def toggle_threshold_graphs(time_figure_layout, active):
     if valid_layout(time_figure_layout):
-        figs = time_figure_layout[0].children
-        for fig in figs:
+        top_figs = time_figure_layout.children[0].children
+        for fig in top_figs:
             for renderer in fig.renderers:
-                if renderer.name == "threshold":
+                if renderer.name == THRESHOLD_NAME:
+                    print(renderer.name, active)
                     renderer.visible = active
+                    print(renderer.data_source.data)
 
 
 def search_fig(search_time_figure_layout, time_series, x_range, periods, color="#1f77b4", search_source=None):
@@ -192,7 +199,8 @@ def search_fig(search_time_figure_layout, time_series, x_range, periods, color="
 
 def top_fig(group: tuple,
             x_range: Range1d,
-            thresholds=[],
+            threshold_groups={},
+            threshold_visible=False,
             press_up_event=None):
 
     """Generate a time-figure from supplied bokeh input parameters."""
@@ -249,14 +257,31 @@ def top_fig(group: tuple,
     x_start, x_end = date_time_range_as_datetime(x_range)
     for i in time_series:
         label = i.label
+        source = time_series_to_source(i,
+                                       start_date_time=x_start,
+                                       end_date_time=x_end)
+        print(source.data)
         time_fig.line(x="datetime",
                       y="value",
-                      source=time_series_to_source(i,
-                                                   start_date_time=x_start,
-                                                   end_date_time=x_end),
+                      source=source,
                       color=next(colors),
                       legend_label=label,
                       name=label)
+
+    # add thresholds to figure
+    thresholds = threshold_groups[parameter_group]
+    for k, v in thresholds.items():
+        print(k)
+        source = thresholds_to_source(v)
+        print(source.data)
+        time_fig.multi_line(xs="datetime",
+                            ys="value",
+                            source=thresholds_to_source(v),
+                            name=THRESHOLD_NAME,
+                            line_width=v["line_width"],
+                            line_dash="dashed",
+                            visible=threshold_visible,
+                            color=v["color"])
 
     # make up legend
     time_fig.legend.click_policy = "hide"
@@ -280,14 +305,15 @@ def top_fig(group: tuple,
 
 def create_time_figures(time_figure_layout: column,
                         time_series_groups: dict,
-#                        time_series_sources: dict,
+                        threshold_groups: dict,
+                        threshold_visible: bool,
                         x_range,
-                        thresholds=[],
                         press_up_event=None):
     time_figure_layout.children.pop()
     top_figs = [top_fig(i,
                         x_range,
-                        thresholds=thresholds,
+                        threshold_groups=threshold_groups,
+                        threshold_visible=threshold_visible,
                         press_up_event=press_up_event) for i in  time_series_groups.items()]
     top_figs[-1].xaxis.visible = True
     time_figure_layout.children.append(column(*top_figs, sizing_mode="stretch_both"))
@@ -295,8 +321,9 @@ def create_time_figures(time_figure_layout: column,
     time_series_sources = {}
     for i in top_figs:
         for j in i.renderers:
-            time_series_sources[j.name] = {}
-            time_series_sources[j.name]["source"] = j.data_source
-            time_series_sources[j.name]["color"] = j.glyph.line_color
+            if j.name != THRESHOLD_NAME:
+                time_series_sources[j.name] = {}
+                time_series_sources[j.name]["source"] = j.data_source
+                time_series_sources[j.name]["color"] = j.glyph.line_color
 
     return time_series_sources

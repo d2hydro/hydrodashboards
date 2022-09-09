@@ -408,3 +408,31 @@ class Data:
 
         # finalize time_series_sets with search_start and search_end
         self.time_series_sets.set_search_period(*self.periods.search_dates)
+
+    def threshold_groups(self, time_series_groups):
+        threshold_groups = {i: {} for i in list(self.parameters.get_groups().values())}
+
+        def _get_label_and_value(df, threshold):
+            df[i["attribute"]] = df[i["attribute"]].astype(float)
+            df = df[df[i["attribute"]].notna()]
+            if len(df) > 0:
+                value = df[i["attribute"]].to_list()
+                label = [f"{threshold['name']} {i}" for i in df["name"]]
+                color = threshold["color"]
+                line_width = threshold["line_width"]
+
+                return dict(label=label, value=value, color=color, line_width=line_width)
+            else:
+                return {}
+
+        for k, v in threshold_groups.items():
+            thresholds = [i for i in self.config.thresholds if i["parameter_group"] == k]
+            if thresholds:
+                location_ids = [i.location for i in time_series_groups[k]]
+                for i in thresholds:
+                    df = self.locations.locations.loc[location_ids]
+                    threshold = _get_label_and_value(df, i)
+                    if threshold:
+                        v[i["name"]] = threshold
+
+        return threshold_groups

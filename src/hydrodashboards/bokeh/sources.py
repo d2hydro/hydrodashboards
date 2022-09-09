@@ -3,6 +3,13 @@ import numpy as np
 import pandas as pd
 
 
+def thresholds_to_source(thresholds):
+    value = [[i] * 2 for i in thresholds["value"]]
+    datetime = [np.array(["1900-01-01T00:00:00", "2100-01-01T00:00:00"], dtype="datetime64") for i in value]
+    label = np.array(thresholds["label"])
+    return ColumnDataSource(data={"datetime": datetime, "value": value, "label": label})
+
+
 def time_series_to_source(time_series,
                           start_date_time=None,
                           end_date_time=None,

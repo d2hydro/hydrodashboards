@@ -255,12 +255,17 @@ def update_time_series_view():
         active_only=True
         )
 
+    threshold_groups = data.threshold_groups(time_series_groups)
+
     time_series_sources = time_figure_widget.create_time_figures(
         time_figure_layout=time_figure_layout,
         time_series_groups=time_series_groups,
+        threshold_groups=threshold_groups,
+        threshold_visible=thresholds_button.active,
         x_range=view_x_range,
         press_up_event=press_up_event
         )
+
 
     # update search_time_series
     search_time_series.options = data.time_series_sets.active_labels
