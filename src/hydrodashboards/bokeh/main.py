@@ -441,6 +441,8 @@ app_status = Div(text=data.app_status(html_type=HTML_TYPE))
 
 # Thresholds widget
 thresholds_button = thresholds_widget.make_button(toggle_thresholds)
+if not config.thresholds:
+    thresholds_button.disabled = True
 
 # Time figure widget
 view_x_range = time_figure_widget.make_x_range(data.periods, graph="top_figs")
