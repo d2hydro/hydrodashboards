@@ -494,7 +494,9 @@ curdoc().add_root(column(map_options, name="map_options", sizing_mode="stretch_b
 curdoc().add_root(column(app_status, name="app_status", sizing_mode="stretch_both"))
 
 # time-figure layout
-curdoc().add_root(column(thresholds_button,name="thresholds_button",sizing_mode="stretch_both"))
+curdoc().add_root(
+    column(thresholds_button, name="thresholds_button", sizing_mode="stretch_both")
+    )
 time_figure_layout = column(time_figure, name="time_figure", sizing_mode="stretch_both")
 curdoc().add_root(time_figure_layout)
 curdoc().add_root(
