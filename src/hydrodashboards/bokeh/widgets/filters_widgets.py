@@ -25,7 +25,7 @@ clearFilterValues();
 """)
 
 
-def clear_with_control(filters_layout):
+def clear_control(filters_layout):
     for i in filters_layout.children:
         i.js_on_change("value", custom_js(i, filters_layout))
 

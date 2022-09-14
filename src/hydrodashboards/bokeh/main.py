@@ -480,7 +480,7 @@ curdoc().add_root(column(column(Div(text=f"<h3>{config.title}</h3>")),
                          sizing_mode="stretch_width"))
 
 filters_layout = column(filters, name="filters", sizing_mode="stretch_width")
-filters_widgets.clear_with_control(filters_layout)
+filters_widgets.clear_control(filters_layout)
 curdoc().add_root(filters_layout)
 curdoc().add_root(column(locations, name="locations", sizing_mode="stretch_width"))
 curdoc().add_root(column(parameters, name="parameters", sizing_mode="stretch_width"))
