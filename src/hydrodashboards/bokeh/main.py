@@ -404,7 +404,7 @@ In this section we define all widgets. We pass callbacks and sources to every wi
 
 # Filters widget
 on_change = [("value", update_on_filter_value)]
-filters = filters_widgets.make_filters(data=data.filters, on_change=on_change)
+filters = filters_widgets.make_filters(data=data.filters, on_change=on_change, ctrl_key=True)
 
 # Locations widget
 on_change = [("value", update_on_locations_value)]

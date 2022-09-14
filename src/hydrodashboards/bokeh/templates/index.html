@@ -61,7 +61,7 @@
           
           AnimationUtils.dispatchResizeEvent();
         }
-        function myFunction1() {
+        function popMapLegend() {
           var but_leg = document.getElementById("button_leg_bar");
           var maplayer_icon=document.getElementById("maplayer_icon");
           var map_opt = document.getElementById("map_opt");
@@ -74,6 +74,25 @@
             dummy.style.display= "block";
           }
           }
+		  let ctrlKey = false;
+		   const keyDown = () => {
+  document.addEventListener('keydown', function (e) {
+		if (e.key == "Control") {
+		ctrlKey = true
+  }});
+};
+		   const keyUp = () => {
+  document.addEventListener('keyup', function (e) {
+		if (e.key == "Control") {
+		ctrlKey = false
+  }});
+};
+function clearFilterValues(title) {
+	if (ctrlKey == false) {
+  console.log(title);
+}};
+keyDown();
+keyUp();
     </script>
 
 {% endblock %}
@@ -142,7 +161,7 @@
                                 {{ embed(roots.map_figure)}}
                             </div>
                             <div class="test" id ="button_leg_bar" >
-                                <button onclick="myFunction1()" class="maplayer_icon" id="maplayer_icon" aria-hidden="true"></button>
+                                <button onclick="popMapLegend()" class="maplayer_icon" id="maplayer_icon" aria-hidden="true"></button>
                             </div>
                             <div class="map_opt" id="map_opt">
                                  {{ embed(roots.map_options) }}
