@@ -6,7 +6,7 @@ MAX_FILTER_LEN = 5
 SIZING_MODE = "stretch_width"
 
 
-def custom_js(filter, filters_layout):
+def clear_control_js(filter, filters_layout):
     return CustomJS(args={"filter": filter,
                           "filters_layout": filters_layout},
                     code="""
@@ -27,7 +27,7 @@ clearFilterValues();
 
 def clear_control(filters_layout):
     for i in filters_layout.children:
-        i.js_on_change("value", custom_js(i, filters_layout))
+        i.js_on_change("value", clear_control_js(i, filters_layout))
 
 
 def make_filter(data, on_change=[]) -> MultiSelect:
