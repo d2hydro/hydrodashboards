@@ -404,7 +404,7 @@ In this section we define all widgets. We pass callbacks and sources to every wi
 
 # Filters widget
 on_change = [("value", update_on_filter_value)]
-filters = filters_widgets.make_filters(data=data.filters, on_change=on_change, ctrl_key=True)
+filters = filters_widgets.make_filters(data=data.filters, on_change=on_change)
 
 # Locations widget
 on_change = [("value", update_on_locations_value)]
@@ -478,7 +478,10 @@ In this section we add all widgets to the curdoc
 curdoc().add_root(column(column(Div(text=f"<h3>{config.title}</h3>")),
                          name="app_title",
                          sizing_mode="stretch_width"))
-curdoc().add_root(column(filters, name="filters", sizing_mode="stretch_width"))
+
+filters_layout = column(filters, name="filters", sizing_mode="stretch_width")
+filters_widgets.clear_with_control(filters_layout)
+curdoc().add_root(filters_layout)
 curdoc().add_root(column(locations, name="locations", sizing_mode="stretch_width"))
 curdoc().add_root(column(parameters, name="parameters", sizing_mode="stretch_width"))
 curdoc().add_root(

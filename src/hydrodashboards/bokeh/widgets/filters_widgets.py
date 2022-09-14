@@ -1,19 +1,36 @@
 from bokeh.models.widgets import MultiSelect
 from bokeh.models import CustomJS
-from bokeh.layouts import column
 from typing import List
 
 MAX_FILTER_LEN = 5
 SIZING_MODE = "stretch_width"
 
-def custom_js(title):
-    return CustomJS(args=dict(title=title),
+
+def custom_js(filter, filters_layout):
+    return CustomJS(args={"filter": filter,
+                          "filters_layout": filters_layout},
                     code="""
-    clearFilterValues(title)
-    """)
+function clearFilter(item) {
+    if (item.title != filter.title) {
+        item.value = []
+    }
+}
+
+function clearFilterValues() {
+    if ((ctrlKey == false) && (filter.value.length > 0)) {
+        filters_layout.children.forEach(item => clearFilter(item))
+    }
+}
+clearFilterValues();
+""")
 
 
-def make_filter(data, on_change=[], ctrl_key=False) -> MultiSelect:
+def clear_with_control(filters_layout):
+    for i in filters_layout.children:
+        i.js_on_change("value", custom_js(i, filters_layout))
+
+
+def make_filter(data, on_change=[]) -> MultiSelect:
     """Return a Bokeh MultiSelect filter from data filter."""
     bokeh_filter = MultiSelect(title=data.title, value=data.value, options=data.options)
     bokeh_filter.size = min(len(bokeh_filter.options), MAX_FILTER_LEN)
@@ -21,15 +38,13 @@ def make_filter(data, on_change=[], ctrl_key=False) -> MultiSelect:
 
     for i in on_change:
         bokeh_filter.on_change(*i)
-        if ctrl_key:
-            bokeh_filter.js_on_change("value", custom_js(data.title))
 
     return bokeh_filter
 
 
-def make_filters(data, on_change=[], ctrl_key=False) -> list:
+def make_filters(data, on_change=[]) -> list:
     """Return list of Bokeh MultiSelect filters from data filters."""
-    return [make_filter(data=i, on_change=on_change, ctrl_key=ctrl_key) for i in data.filters]
+    return [make_filter(data=i, on_change=on_change) for i in data.filters]
 
 
 def get_filters_values(filters) -> List[MultiSelect]:

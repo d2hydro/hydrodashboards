@@ -82,15 +82,11 @@
   }});
 };
 		   const keyUp = () => {
-  document.addEventListener('keyup', function (e) {
+        document.addEventListener('keyup', function (e) {
 		if (e.key == "Control") {
 		ctrlKey = false
   }});
 };
-function clearFilterValues(title) {
-	if (ctrlKey == false) {
-  console.log(title);
-}};
 keyDown();
 keyUp();
     </script>
