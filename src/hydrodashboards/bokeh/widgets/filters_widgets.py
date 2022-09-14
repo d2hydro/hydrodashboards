@@ -5,7 +5,18 @@ from typing import List
 MAX_FILTER_LEN = 5
 SIZING_MODE = "stretch_width"
 
-custom_js = CustomJS(code="""console.log(KeyboardEvent.ctrlKey)""")
+def custom_js ():
+    return CustomJS(code=""" const keyCodes = () => {
+  document.addEventListener('keydown', function (e) {
+    console.log(
+      'keyCodeDEP', e.which,
+      'key', e.key,
+      'code', e.code,
+      'location', e.location
+    );
+  });
+};
+keyCodes();""")
 
 
 def make_filter(data, on_change=[]) -> MultiSelect:
@@ -16,7 +27,7 @@ def make_filter(data, on_change=[]) -> MultiSelect:
 
     for i in on_change:
         bokeh_filter.on_change(*i)
-        bokeh_filter.js_on_change("value", custom_js)
+        bokeh_filter.js_on_change("value", custom_js())
 
     return bokeh_filter
 
