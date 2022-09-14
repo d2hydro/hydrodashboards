@@ -1,8 +1,11 @@
 from bokeh.models.widgets import MultiSelect
+from bokeh.models import CustomJS
 from typing import List
 
 MAX_FILTER_LEN = 5
 SIZING_MODE = "stretch_width"
+
+custom_js = CustomJS(code="""console.log(KeyboardEvent.ctrlKey)""")
 
 
 def make_filter(data, on_change=[]) -> MultiSelect:
@@ -13,6 +16,7 @@ def make_filter(data, on_change=[]) -> MultiSelect:
 
     for i in on_change:
         bokeh_filter.on_change(*i)
+        bokeh_filter.js_on_change("value", custom_js)
 
     return bokeh_filter
 
