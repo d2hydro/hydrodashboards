@@ -133,9 +133,7 @@ def toggle_threshold_graphs(time_figure_layout, active):
         for fig in top_figs:
             for renderer in fig.renderers:
                 if renderer.name == THRESHOLD_NAME:
-                    print(renderer.name, active)
                     renderer.visible = active
-                    print(renderer.data_source.data)
 
 
 def search_fig(search_time_figure_layout, time_series, x_range, periods, color="#1f77b4", search_source=None):
@@ -260,7 +258,6 @@ def top_fig(group: tuple,
         source = time_series_to_source(i,
                                        start_date_time=x_start,
                                        end_date_time=x_end)
-        print(source.data)
         time_fig.line(x="datetime",
                       y="value",
                       source=source,
@@ -271,9 +268,7 @@ def top_fig(group: tuple,
     # add thresholds to figure
     thresholds = threshold_groups[parameter_group]
     for k, v in thresholds.items():
-        print(k)
         source = thresholds_to_source(v)
-        print(source.data)
         time_fig.multi_line(xs="datetime",
                             ys="value",
                             source=thresholds_to_source(v),
