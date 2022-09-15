@@ -59,7 +59,7 @@ def date_time_range_as_datetime(date_time_range):
 
 
 def empty_fig():
-    return Div(text='<p style="text-align:right;">No graph has been generated</p>',
+    return Div(text='<p style="margin-left:400px;">No graph has been generated</p>',
                align="end",
                sizing_mode="stretch_width",
                width_policy="max")
