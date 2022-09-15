@@ -156,20 +156,11 @@ a, a:hover, a:focus {
 	padding-left: 10px;
 	padding-top: 10px;
     background: #3A4453;
-	width:300px;
-	height:200px;
-	position:absolute;
+	height:88px;
 
 }
-#sidebar .sidebar-bokeh1 {
-	width: 100%;
-	padding-right: 14px;
-	padding-left:14px;
-	height: 282px;
-	padding-top:0px;
-	margin-top:5px;
+#sidebar .sidebar-bokeh1
 
-}
 #sidebar .sidebar-bokeh2 {
     width: 100%;
 	padding-right: 14px;

@@ -475,9 +475,9 @@ In this section we add all widgets to the curdoc
 
 
 # left column layout
-curdoc().add_root(column(column(Div(text=f"<h3>{config.title}</h3>")),
+curdoc().add_root(column(Div(text=f"<h3>{config.title}</h3>")),
                          name="app_title",
-                         sizing_mode="stretch_width"))
+                         sizing_mode="stretch_width")
 
 filters_layout = column(filters, name="filters", sizing_mode="stretch_width")
 filters_widgets.clear_control(filters_layout)

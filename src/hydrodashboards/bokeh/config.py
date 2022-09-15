@@ -10,6 +10,7 @@ class Config:
     bounds: list
     fews_url: str
     root_filter: str
+    filter_dimensions: dict
     language: str = "dutch"
     thresholds: list = field(default_factory=list)
     filter_colors: dict = field(default_factory=dict)
@@ -28,3 +29,9 @@ class Config:
     @property
     def location_attributes(self):
         return [i["attribute"] for i in self.thresholds]
+
+    @property
+    def filter_height(self):
+        filters = self.filter_dimensions["filters"]
+        children = self.filter_dimensions["child_filters"]
+        return 61 * filters + (children - filters) * 17

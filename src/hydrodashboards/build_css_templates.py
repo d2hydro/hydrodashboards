@@ -13,3 +13,14 @@ map_opt = """
   border-radius:4px;
 }}
 """
+
+filter_bar = """
+#sidebar .sidebar-bokeh1 {{
+    width: 100%;
+    padding-right: 14px;
+    padding-left:14px;
+    height: {filter_height}px;
+    padding-top:0px;
+    margin-top:5px;
+}}
+"""

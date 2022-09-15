@@ -3,7 +3,7 @@ import shutil
 import fewspy
 import hydrodashboards
 from hydrodashboards.bokeh.config import Config
-from hydrodashboards.build_css_templates import map_opt
+from hydrodashboards.build_css_templates import map_opt, filter_bar
 import argparse
 import sys
 import json
@@ -133,7 +133,7 @@ def bokeh(app_dir: Union[str, Path],
 
     css_dir = static_dir / "css"
     css_dir.mkdir(parents=True)
-    template_css = HYDRODASHBOARDS_DIR.joinpath("bokeh", "static", "css", "styles.css")
+    template_css = HYDRODASHBOARDS_DIR.joinpath("bokeh", "static", "css", "styles_template.css")
     styles_css = css_dir / "styles.css"
 
     map_options_height = int(200 + 18 * len(config.map_overlays))
@@ -149,8 +149,11 @@ def bokeh(app_dir: Union[str, Path],
                     map_options_height=map_options_height,
                     map_options_left=map_options_left,
                     map_options_width=map_options_width)
+                ).replace(
+                    "#sidebar .sidebar-bokeh1",
+                    filter_bar.format(filter_height=config.filter_height)
                 )
-                )
+                    )
 
     icons_dir = static_dir / "icons"
     icons_src_dir = HYDRODASHBOARDS_DIR.joinpath("bokeh", "static", "icons")
