@@ -352,7 +352,7 @@ def update_on_view_period_value_throttled(attrname, old, new):
     update_time_series_sources()
 
     # updating the figure_layout y_ranges
-    time_figure_widget.update_time_series_y_ranges(time_figure_layout)
+    time_figure_widget.update_time_series_y_ranges(time_figure_layout, fit_y_axis=True)
 
 
 def update_on_view_x_range_change(attrname, old, new):

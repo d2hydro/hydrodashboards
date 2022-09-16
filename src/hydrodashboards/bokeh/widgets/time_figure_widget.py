@@ -103,7 +103,7 @@ def make_y_range(time_series, bounds=None):
     return y_range
 
 
-def update_time_series_y_ranges(time_figure_layout):
+def update_time_series_y_ranges(time_figure_layout, fit_y_axis=False):
     def _get_sources(renderers):
         return [i.data_source for i in renderers if (len(i.data_source.data["value"]) > 0) & (i.name != THRESHOLD_NAME)]
 
@@ -118,13 +118,16 @@ def update_time_series_y_ranges(time_figure_layout):
             start, end = range_defaults()
         return start, end
 
-    def update_range(fig):
-        fig.y_range.reset_start, fig.y_range.reset_end = _ends(fig.renderers)
+    def update_range(fig, fit_y_axis=False):
+        ends = _ends(fig.renderers)
+        if fit_y_axis:
+            fig.y_range.start, fig.y_range.end = ends
+        fig.y_range.reset_start, fig.y_range.reset_end = ends
 
     if valid_layout(time_figure_layout):
         top_figs = time_figure_layout.children[0].children
         for fig in top_figs:
-            update_range(fig)
+            update_range(fig, fit_y_axis=fit_y_axis)
 
 
 def toggle_threshold_graphs(time_figure_layout, active):
