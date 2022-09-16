@@ -4,6 +4,7 @@ import fewspy
 import hydrodashboards
 from hydrodashboards.bokeh.config import Config
 from hydrodashboards.build_css_templates import map_opt, filter_bar
+from hydrodashboards.build_html_templates import thresholds_button
 import argparse
 import sys
 import json
@@ -122,11 +123,13 @@ def bokeh(app_dir: Union[str, Path],
     templates_dir = app_dir / "templates"
     templates_dir.mkdir()
 
-    template_html = HYDRODASHBOARDS_DIR.joinpath("bokeh", "templates", "index.html")
+    template_html = HYDRODASHBOARDS_DIR.joinpath("bokeh", "templates", "index_template.html")
     index_html = templates_dir / "index.html"
-    index_html.write_text(
-        template_html.read_text().replace("/bokeh/", f"/{app_dir.name}/")
-        )
+    html = template_html.read_text()
+    html.replace("/bokeh/", f"/{app_dir.name}/")
+    if config.thresholds:
+        html.replace("/thresholds_button/", thresholds_button)
+    index_html.write_text(html)
 
     # %% provide statics
     static_dir = app_dir / "static"

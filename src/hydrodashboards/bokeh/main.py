@@ -257,11 +257,15 @@ def update_time_series_view():
 
     threshold_groups = data.threshold_groups(time_series_groups)
 
+    if config.thresholds:
+        thresholds_active = thresholds_button.active
+    else:
+        thresholds_active = False
     time_series_sources = time_figure_widget.create_time_figures(
         time_figure_layout=time_figure_layout,
         time_series_groups=time_series_groups,
         threshold_groups=threshold_groups,
-        threshold_visible=thresholds_button.active,
+        threshold_visible=thresholds_active,
         x_range=view_x_range,
         press_up_event=press_up_event
         )
@@ -440,9 +444,8 @@ map_options = map_figure_widget.make_options(
 app_status = Div(text=data.app_status(html_type=HTML_TYPE))
 
 # Thresholds widget
-thresholds_button = thresholds_widget.make_button(toggle_thresholds)
-if not config.thresholds:
-    thresholds_button.disabled = True
+if config.thresholds:
+    thresholds_button = thresholds_widget.make_button(toggle_thresholds)
 
 # Time figure widget
 view_x_range = time_figure_widget.make_x_range(data.periods, graph="top_figs")
@@ -497,9 +500,10 @@ curdoc().add_root(column(map_options, name="map_options", sizing_mode="stretch_b
 curdoc().add_root(column(app_status, name="app_status", sizing_mode="stretch_both"))
 
 # time-figure layout
-curdoc().add_root(
-    column(thresholds_button, name="thresholds_button", sizing_mode="stretch_both")
-    )
+if config.thresholds:
+    curdoc().add_root(
+        column(thresholds_button, name="thresholds_button", sizing_mode="stretch_both")
+        )
 time_figure_layout = column(time_figure, name="time_figure", sizing_mode="stretch_both")
 curdoc().add_root(time_figure_layout)
 curdoc().add_root(

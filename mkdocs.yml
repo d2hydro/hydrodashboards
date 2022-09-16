@@ -21,3 +21,4 @@ nav:
     - Home: index.md
     - Manuals:
         - Gebruikershandleiding (NL): manuals/user_nl.md
+        - Deployment with ISS: manuals/routing_iis.md
