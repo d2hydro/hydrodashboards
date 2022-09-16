@@ -1,5 +1,5 @@
 {
-	"log_dir": "d:\\repositories\\hydrodashboards\\src\\hydrodashboards\\bokeh\\logs",
+	"log_dir": "./logs",
 	"title": "WAM Portaal",
 	"language": "dutch",
 	"bounds": [
@@ -8,6 +8,7 @@
 		250000,
 		625000
 	],
+        "filter_type": "CheckBoxGroup",
 	"filter_dimensions": {
 		"filters": 4,
 		"child_filters": 8},

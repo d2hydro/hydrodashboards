@@ -136,8 +136,8 @@ a, a:hover, a:focus {
 }
 
 #sidebar {
-   min-width: 310px;
-    max-width: 310px;
+    min-width: 270px;
+    max-width: 270px;
 	background: #495568;
     height:100vh;
     color: #fff;
@@ -146,63 +146,67 @@ a, a:hover, a:focus {
 }
 
 #sidebar.active {
-    margin-left: -310px;
+    margin-left: -270px;
 
     transform: rotateY(100deg);
 }
 
 #sidebar .sidebar-header {
-    padding-right: 10px;
-	padding-left: 10px;
+    padding-right: 20px;
+	padding-left: 20px;
 	padding-top: 10px;
     background: #3A4453;
-	height:88px;
 
 }
-#sidebar .sidebar-bokeh1
-
+#sidebar .sidebar-bokeh1 {
+	width: 100%;
+	padding-left: 20px;
+	height: 290px;
+	padding-top:0px;
+	padding-right:20px;
+	margin-top:10px;
+}
 #sidebar .sidebar-bokeh2 {
     width: 100%;
-	padding-right: 14px;
-	padding-left:14px;
-	height: 102px;
+	padding: 20px;
+	height: 100px;
+
 }
 
 #sidebar .sidebar-bokeh3 {
     width: 100%;
-	padding-right: 14px;
-	padding-left:14px;
+	padding: 20px;
+
 	height: 120px;
-	margin-top:5px;
+
 }
 
 
 #sidebar .sidebar-bokeh4 {
     width: 100%;
-	padding-right: 14px;
-	padding-left:14px;
+	padding: 20px;
+
 	height: 56px;
 }
 
 #sidebar .sidebar-bokeh5{
   width: 100%;
-  padding-right: 14px;
-	padding-left:14px;
+  padding: 20px;
+
   margin-top:5px;
   height: 55px;
 }
 
 #sidebar .sidebar-bokeh6{
   width: 100%;
-  padding-right: 14px;
-  padding-left:14px;
+  padding: 20px;
+
   height: 55px;
-   margin-top:30px;
+
 }
 a[data-toggle="collapse"] {
   position: relative;
 }
-
 /* ---------------------------------------------------
     CONTENT STYLE
 ----------------------------------------------------- */
@@ -317,6 +321,18 @@ width: 100%;
 }
 
 .map_opt
+{ 
+  display:block;
+  position: fixed;
+  background: white;
+  width: 128px;
+  top: calc(100% - 240px);
+  left: calc(100% - 154px);
+  background-color: white;
+  padding: 2px;
+  border: 1px solid #F1F2F3;
+  border-radius:4px;
+}
 
 .app_status
 {

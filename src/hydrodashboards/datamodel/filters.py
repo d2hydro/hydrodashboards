@@ -10,15 +10,6 @@ SIZING_MODE = "stretch_width"
 class LocationsFilter(Filter):
     id: str = None
     cache: dict = field(default_factory=dict)
-
-    @property
-    def labels(self):
-        return [i[1] for i in self.options]
-
-    @property
-    def active(self):
-        ids = [i[0] for i in self.options]
-        return [ids.find(i) for i in self.value]
         
 @dataclass
 class Filters:

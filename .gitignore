@@ -141,3 +141,4 @@ scripts/*
 # bokeh log_files
 *bokeh_*.txt
 src/hydrodashboards/bokeh/bootstrap/*
+*.bak

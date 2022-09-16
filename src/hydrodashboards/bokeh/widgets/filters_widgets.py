@@ -1,6 +1,6 @@
-from bokeh.models.widgets import MultiSelect
+from bokeh.models.widgets import MultiSelect, CheckboxGroup
 from bokeh.models import CustomJS
-from typing import List
+from typing import List, Union
 
 SIZING_MODE = "stretch_width"
 
@@ -29,21 +29,27 @@ def clear_control(filters_layout):
         i.js_on_change("value", clear_control_js(i, filters_layout))
 
 
-def make_filter(data, on_change=[], filter_length=5) -> MultiSelect:
+def make_filter(data, on_change=[], filter_type="MultiSelect", filter_length=5) -> Union[MultiSelect, CheckboxGroup]:
     """Return a Bokeh MultiSelect filter from data filter."""
-    bokeh_filter = MultiSelect(title=data.title, value=data.value, options=data.options)
-    bokeh_filter.size = min(len(bokeh_filter.options), filter_length)
-    bokeh_filter.sizing_mode = SIZING_MODE
+    
+    if filter_type == "MultiSelect":
+        bokeh_filter = MultiSelect(title=data.title, value=data.value, options=data.options)
+        bokeh_filter.size = min(len(bokeh_filter.options), filter_length)
 
-    for i in on_change:
-        bokeh_filter.on_change(*i)
+
+        for i in on_change:
+            bokeh_filter.on_change(*i)
+    elif filter_type == "CheckBoxGroup":
+        bokeh_filter = CheckboxGroup(active=data.active, labels=data.labels)
+
+    bokeh_filter.sizing_mode = SIZING_MODE
 
     return bokeh_filter
 
 
-def make_filters(data, on_change=[], filter_length=5) -> list:
+def make_filters(data, on_change=[], filter_type="MultiSelect", filter_length=5) -> list:
     """Return list of Bokeh MultiSelect filters from data filters."""
-    return [make_filter(data=i, on_change=on_change, filter_length=filter_length) for i in data.filters]
+    return [make_filter(data=i, on_change=on_change, filter_type=filter_type, filter_length=filter_length) for i in data.filters]
 
 
 def get_filters_values(filters) -> List[MultiSelect]:

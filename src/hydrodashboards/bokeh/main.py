@@ -408,15 +408,15 @@ In this section we define all widgets. We pass callbacks and sources to every wi
 
 # Filters widget
 on_change = [("value", update_on_filter_value)]
-filters = filters_widgets.make_filters(data=data.filters, on_change=on_change)
+filters = filters_widgets.make_filters(data=data.filters, on_change=on_change, filter_type=config.filter_type)
 
 # Locations widget
 on_change = [("value", update_on_locations_value)]
-locations = filters_widgets.make_filter(data=data.locations, on_change=on_change)
+locations = filters_widgets.make_filter(data=data.locations, on_change=on_change, filter_type=config.filter_type)
 
 # Parameters widget
 on_change = [("value", update_on_parameters_value)]
-parameters = filters_widgets.make_filter(data=data.parameters, on_change=on_change)
+parameters = filters_widgets.make_filter(data=data.parameters, on_change=on_change, filter_type=config.filter_type)
 
 # Search period widget
 on_change = [("value", update_on_search_period_value)]
