@@ -11,7 +11,15 @@ class LocationsFilter(Filter):
     id: str = None
     cache: dict = field(default_factory=dict)
 
+    @property
+    def labels(self):
+        return [i[1] for i in self.options]
 
+    @property
+    def active(self):
+        ids = [i[0] for i in self.options]
+        return [ids.find(i) for i in self.value]
+        
 @dataclass
 class Filters:
     filters: List[LocationsFilter] = field(default_factory=list)
@@ -44,3 +52,8 @@ class Filters:
     def values(self):
         values = [[j[0] for j in i.options] for i in self.filters]
         return [j for i in values for j in i]
+
+    @property
+    def labels(self):
+        labels = [[j[1] for j in i.options] for i in self.filters]
+        return [j for i in labels for j in i]
