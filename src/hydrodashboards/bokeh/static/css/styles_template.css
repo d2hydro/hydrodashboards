@@ -55,7 +55,7 @@ border-color: blue;
   transition: opacity linear 0.1s;  
   visibility: hidden;  
 }
-.bk.loader_time_fig::after {
+.bk.loader_time_fig:after {
   content: '';
   box-sizing: border-box;
   position: absolute;
