@@ -8,21 +8,21 @@
       
       
       
-        <link rel="canonical" href="https://d2hydro.github.io/hydrodashboards/">
+        <link rel="canonical" href="https://d2hydro.github.io/hydrodashboards/manuals/routing_iis/">
       
-      <link rel="icon" href="icons/logo/favicon.png">
+      <link rel="icon" href="../../icons/logo/favicon.png">
       <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.3.8">
     
     
       
-        <title>hydrodashboards documentation</title>
+        <title>Deployment with ISS - hydrodashboards documentation</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.1d29e8d0.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.1d29e8d0.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.cbb835fc.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.cbb835fc.min.css">
         
           
           
@@ -42,9 +42,9 @@
       
     
     
-      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL(".",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -68,7 +68,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#hydrodashboards" class="md-skip">
+        <a href="#routing-via-windows-internet-information-services-iis" class="md-skip">
           Skip to content
         </a>
       
@@ -82,9 +82,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="hydrodashboards documentation" class="md-header__button md-logo" aria-label="hydrodashboards documentation" data-md-component="logo">
+    <a href="../.." title="hydrodashboards documentation" class="md-header__button md-logo" aria-label="hydrodashboards documentation" data-md-component="logo">
       
-  <img src="icons/logo/globe_only.png" alt="logo">
+  <img src="../../icons/logo/globe_only.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -100,7 +100,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              Deployment with ISS
             
           </span>
         </div>
@@ -167,9 +167,9 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="hydrodashboards documentation" class="md-nav__button md-logo" aria-label="hydrodashboards documentation" data-md-component="logo">
+    <a href="../.." title="hydrodashboards documentation" class="md-nav__button md-logo" aria-label="hydrodashboards documentation" data-md-component="logo">
       
-  <img src="icons/logo/globe_only.png" alt="logo">
+  <img src="../../icons/logo/globe_only.png" alt="logo">
 
     </a>
     hydrodashboards documentation
@@ -181,6 +181,63 @@
       
       
 
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Manuals
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Manuals" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Manuals
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user_nl/" class="md-nav__link">
+        Gebruikershandleiding (NL)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
   
   
     
@@ -195,12 +252,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Home
+          Deployment with ISS
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <a href="." class="md-nav__link md-nav__link--active">
-        Home
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Deployment with ISS
       </a>
       
         
@@ -226,8 +283,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#about" class="md-nav__link">
-    About
+  <a href="#configuration-of-iis" class="md-nav__link">
+    Configuration of IIS
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#allow-web-socket-rerouting" class="md-nav__link">
+    Allow web-socket rerouting
   </a>
   
 </li>
@@ -236,61 +300,6 @@
   
 </nav>
       
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_2">
-          Manuals
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Manuals" data-md-level="1">
-        <label class="md-nav__title" for="__nav_2">
-          <span class="md-nav__icon md-icon"></span>
-          Manuals
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="manuals/user_nl/" class="md-nav__link">
-        Gebruikershandleiding (NL)
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="manuals/routing_iis/" class="md-nav__link">
-        Deployment with ISS
-      </a>
     </li>
   
 
@@ -336,8 +345,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#about" class="md-nav__link">
-    About
+  <a href="#configuration-of-iis" class="md-nav__link">
+    Configuration of IIS
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#allow-web-socket-rerouting" class="md-nav__link">
+    Allow web-socket rerouting
   </a>
   
 </li>
@@ -356,28 +372,51 @@
                 
 
 
-<h1 id="hydrodashboards">hydrodashboards</h1>
-<p>Open Source Dashboards for hydro data</p>
-<hr />
-<p><strong>Documentation</strong>: <a href="https://d2hydro.github.io/hydrodashboards">https://d2hydro.github.io/hydrodashboards</a></p>
-<p><strong>Source Code</strong>: <a href="https://github.com/d2hydro/hydrodashboards">https://github.com/d2hydro/hydrodashboards</a></p>
-<hr />
+<h1 id="routing-via-windows-internet-information-services-iis">Routing via Windows Internet Information Services (IIS)</h1>
+<p>Here you can find info on how to route your Bokeh HydroDashboard via Application Request Rerouting (ARR) in Windows IIS.</p>
+<p>In this tutorial we use the example of the dashboard backend application running at:</p>
+<pre><code>localhost:5006/my_dashboard
+</code></pre>
 <h2 id="installation">Installation</h2>
-<p>Hydrodashboards can be installed with pip in any environment with the following Python-packages properly installed:</p>
 <ul>
-<li>requests</li>
-<li>aiohttp</li>
-<li>pandas</li>
-<li>geopandas</li>
+<li>Install the URL Rewrite package from the downloads section on the IIS website or Microsoft Web Platform Installer.</li>
+<li>
+<p>Install the ARR (application request routing) 3.0 module from the downloads section on the IIS website or Microsoft Web Platform Installer. </p>
+<p><b>Note (!) web-socket routing is only possible from ARR 3.0.</b></p>
+</li>
 </ul>
-<p>In that activated environment you can add hydrodashboards via pip by:</p>
-<pre><code>pip install hydrodashboards
+<h2 id="configuration-of-iis">Configuration of IIS</h2>
+<ul>
+<li>From the left pane, double-click on the main tree node with your server name on it, and from the modules, double-click on <em>Application Request Routing Cache</em>. In the right pane, choose <em>Enable proxy</em>, and set HTTP version to <em>Pass through</em>:</li>
+</ul>
+<p><img alt="" src="../images/iis_manager_proxy_settings.png" title="proxy settings" /></p>
+<ul>
+<li>In the left pane, right-click on the website you created and select <em>Explore</em>. Windows explorer will open. Open, or create a web.config file:</li>
+</ul>
+<p><img alt="" src="../images/iss_web_config.png" title="web_config" /></p>
+<p>You can copy-paste this section:</p>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;configuration&gt;
+    &lt;system.webServer&gt;
+        &lt;rewrite&gt;
+            &lt;rules&gt;
+                &lt;rule name=&quot;Bokeh proxy&quot; enabled=&quot;true&quot; stopProcessing=&quot;true&quot;&gt;
+                    &lt;match url=&quot;(.*)&quot; /&gt;
+                    &lt;action type=&quot;Rewrite&quot; url=&quot;http://127.0.0.1:5006/{R:1}&quot; /&gt;
+                &lt;/rule&gt;
+            &lt;/rules&gt;
+        &lt;/rewrite&gt;
+    &lt;/system.webServer&gt;
+&lt;/configuration&gt;
 </code></pre>
-<p>We recommend to build your environment using <a href="https://www.anaconda.com/">Anaconda</a>. You can build an environment ánd install hydrodashboards by conda in one go using this <a href="https://github.com/d2hydro/hydrodashboards/blob/main/envs/environment.yml" target="_blank">environment.yml</a> from the command-line:</p>
-<pre><code>conda env create -f environment.yml
-</code></pre>
-<h2 id="about">About</h2>
-<p>Hydrodashboards is developed and maintained by <a href="https://d2hydro.nl/">D2Hydro</a> and freely available under an Open Source <a href="https://github.com/d2hydro/hydrodashboards/blob/main/LICENSE" target="_blank">MIT license</a>.</p>
+<h2 id="allow-web-socket-rerouting">Allow web-socket rerouting</h2>
+<ul>
+<li>
+<p>After restarting your IIS the backend-app should be rerouted to the root-adress of your website. If your app runs with content you're done. </p>
+<p>If not, you will only see an empty html page without content. In this case you have to enable the <em>WebSocket Protocol</em> in the <em>Add Roles and Features Wizard</em> of your server.</p>
+</li>
+</ul>
+<p><img alt="" src="../images/iss_websocket_protocol.png" title="websocket_protocol" /></p>
 
               
             </article>
@@ -392,21 +431,21 @@
     
     <nav class="md-footer__inner md-grid" aria-label="Footer" >
       
-      
         
-        <a href="manuals/user_nl/" class="md-footer__link md-footer__link--next" aria-label="Next: Gebruikershandleiding (NL)" rel="next">
+        <a href="../user_nl/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Gebruikershandleiding (NL)" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
-                Next
+                Previous
               </span>
               Gebruikershandleiding (NL)
             </div>
           </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
-          </div>
         </a>
+      
       
     </nav>
   
@@ -443,10 +482,10 @@
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.b97dbffb.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.b97dbffb.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
     
     
-      <script src="assets/javascripts/bundle.0238f547.min.js"></script>
+      <script src="../../assets/javascripts/bundle.0238f547.min.js"></script>
       
     
   </body>
