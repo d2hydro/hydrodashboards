@@ -136,8 +136,8 @@ a, a:hover, a:focus {
 }
 
 #sidebar {
-    min-width: 270px;
-    max-width: 270px;
+   min-width: 310px;
+    max-width: 310px;
 	background: #495568;
     height:100vh;
     color: #fff;
@@ -146,16 +146,17 @@ a, a:hover, a:focus {
 }
 
 #sidebar.active {
-    margin-left: -270px;
+    margin-left: -310px;
 
     transform: rotateY(100deg);
 }
 
 #sidebar .sidebar-header {
-    padding-right: 20px;
-	padding-left: 20px;
+    padding-right: 10px;
+	padding-left: 10px;
 	padding-top: 10px;
     background: #3A4453;
+	height:88px;
 
 }
 
@@ -167,55 +168,50 @@ a, a:hover, a:focus {
     padding-top:0px;
     margin-top:5px;
 }
- {
-	width: 100%;
-	padding-left: 20px;
-	height: 290px;
-	padding-top:0px;
-	padding-right:20px;
-	margin-top:10px;
-}
+
+
 #sidebar .sidebar-bokeh2 {
     width: 100%;
-	padding: 20px;
-	height: 100px;
-
+	padding-right: 14px;
+	padding-left:14px;
+	height: 102px;
 }
 
 #sidebar .sidebar-bokeh3 {
     width: 100%;
-	padding: 20px;
-
+	padding-right: 14px;
+	padding-left:14px;
 	height: 120px;
-
+	margin-top:5px;
 }
 
 
 #sidebar .sidebar-bokeh4 {
     width: 100%;
-	padding: 20px;
-
+	padding-right: 14px;
+	padding-left:14px;
 	height: 56px;
 }
 
 #sidebar .sidebar-bokeh5{
   width: 100%;
-  padding: 20px;
-
-  margin-top:5px;
+  padding-right: 14px;
+  padding-left:14px;
+  margin-top:15px;
   height: 55px;
 }
 
 #sidebar .sidebar-bokeh6{
   width: 100%;
-  padding: 20px;
-
+  padding-right: 14px;
+  padding-left:14px;
   height: 55px;
-
+   margin-top:5px;
 }
 a[data-toggle="collapse"] {
   position: relative;
 }
+
 /* ---------------------------------------------------
     CONTENT STYLE
 ----------------------------------------------------- */
@@ -291,7 +287,7 @@ width: 100%;
 
 #button_leg_bar {
   background-color: transparent;
-  background-image: url(/bokeh/static/icons/layers.svg);
+  background-image: url(/wam/static/icons/layers.svg);
   background-repeat: no-repeat;
   border-width: 0px;
   bottom: 20px;
@@ -344,18 +340,6 @@ width: 100%;
   border-radius:4px;
 }
 
-{ 
-  display:block;
-  position: fixed;
-  background: white;
-  width: 128px;
-  top: calc(100% - 240px);
-  left: calc(100% - 154px);
-  background-color: white;
-  padding: 2px;
-  border: 1px solid #F1F2F3;
-  border-radius:4px;
-}
 
 .app_status
 {
@@ -400,7 +384,7 @@ width: 100%;
 	 width: 26px;
 	 margin-left: 60px;
 	 margin-right:200px;
-	 background-image: url(/bokeh/static/icons/threshold.png);
+	 background-image: url(/wam/static/icons/threshold.png);
 	 background-repeat: no-repeat;
 	 background-position:center 2px center;
 	 background-color: white;
@@ -408,7 +392,7 @@ width: 100%;
 }
 
 .bk.bk-btn.bk-btn-default.bk-active{
-	  background-image: url(/bokeh/static/icons/threshold.png);
+	  background-image: url(/wam/static/icons/threshold.png);
 	  background-repeat: no-repeat;
 	  background-position:center 2px center;
 	  display:flex;
@@ -479,7 +463,7 @@ width: 100%;
 }
 
 .bk.bk-btn.bk-btn-success{
- background-image: url(/bokeh/static/icons/download.png);
+ background-image: url(/wam/static/icons/download.png);
  background-repeat: no-repeat;
  background-position:right 10px center;
  background-color: #3681C1;
