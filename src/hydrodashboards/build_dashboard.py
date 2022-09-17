@@ -124,11 +124,15 @@ def bokeh(app_dir: Union[str, Path],
     templates_dir.mkdir()
 
     template_html = HYDRODASHBOARDS_DIR.joinpath("bokeh", "templates", "index_template.html")
-    index_html = templates_dir / "index.html"
+
     html = template_html.read_text()
-    html.replace("/bokeh/", f"/{app_dir.name}/")
+    html = html.replace("/bokeh/", f"/{app_dir.name}/")
     if config.thresholds:
-        html.replace("/thresholds_button/", thresholds_button)
+        html = html.replace("/thresholds/", thresholds_button)
+    else:
+        html = html.replace("/thresholds/", "")
+
+    index_html = templates_dir / "index.html"
     index_html.write_text(html)
 
     # %% provide statics

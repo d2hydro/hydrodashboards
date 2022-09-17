@@ -55,7 +55,7 @@ border-color: blue;
   transition: opacity linear 0.1s;  
   visibility: hidden;  
 }
-.bk.loader_time_fig::after {
+.bk.loader_time_fig:after {
   content: '';
   box-sizing: border-box;
   position: absolute;
@@ -81,6 +81,9 @@ color: blue;
 .bk.bk-btn.bk-btn-primary{
 	background: #F16996;
 	border:1px solid black;
+}
+.bk.bk-input{
+	padding: 2px;
 }
 p {
     font-family: 'Poppins', sans-serif;
@@ -144,6 +147,7 @@ a, a:hover, a:focus {
 
 #sidebar.active {
     margin-left: -270px;
+
     transform: rotateY(100deg);
 }
 
@@ -154,7 +158,16 @@ a, a:hover, a:focus {
     background: #3A4453;
 
 }
+
 #sidebar .sidebar-bokeh1 {
+    width: 100%;
+    padding-right: 14px;
+    padding-left:14px;
+    height: 312px;
+    padding-top:0px;
+    margin-top:5px;
+}
+ {
 	width: 100%;
 	padding-left: 20px;
 	height: 290px;
@@ -166,24 +179,29 @@ a, a:hover, a:focus {
     width: 100%;
 	padding: 20px;
 	height: 100px;
+
 }
 
 #sidebar .sidebar-bokeh3 {
     width: 100%;
 	padding: 20px;
+
 	height: 120px;
+
 }
 
 
 #sidebar .sidebar-bokeh4 {
     width: 100%;
 	padding: 20px;
+
 	height: 56px;
 }
 
 #sidebar .sidebar-bokeh5{
   width: 100%;
   padding: 20px;
+
   margin-top:5px;
   height: 55px;
 }
@@ -191,12 +209,13 @@ a, a:hover, a:focus {
 #sidebar .sidebar-bokeh6{
   width: 100%;
   padding: 20px;
+
   height: 55px;
+
 }
 a[data-toggle="collapse"] {
   position: relative;
 }
-
 /* ---------------------------------------------------
     CONTENT STYLE
 ----------------------------------------------------- */
@@ -310,7 +329,21 @@ width: 100%;
 	display: inline-block;
 }
 
+
 .map_opt
+{
+  display:block;
+  position: fixed;
+  background: white;
+  width: 106px;
+  top: calc(100% - 236px);
+  left: calc(100% - 126px);
+  background-color: white;
+  padding: 2px;
+  border: 1px solid #F1F2F3;
+  border-radius:4px;
+}
+
 { 
   display:block;
   position: fixed;
@@ -345,7 +378,7 @@ width: 100%;
 
 #threshold{
 	display:flex;
-	top:-62.5vh;
+	top:-60.5vh;
 	height:26px;
 	width: 26px;
 }
@@ -446,7 +479,7 @@ width: 100%;
 }
 
 .bk.bk-btn.bk-btn-success{
- background-image: url(/wik/static/icons/download.png);
+ background-image: url(/bokeh/static/icons/download.png);
  background-repeat: no-repeat;
  background-position:right 10px center;
  background-color: #3681C1;
