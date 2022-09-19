@@ -41,6 +41,7 @@ def toggle_view_time_series_controls(value=True):
     view_period.disabled = value
     view_period.bar_color = "#e6e6e6"
     download_search_time_series.disabled = value
+    download_time_series.disabled = value
 
 
 def enable_update_graph():
