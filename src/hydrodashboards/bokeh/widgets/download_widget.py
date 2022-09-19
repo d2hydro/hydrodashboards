@@ -76,8 +76,7 @@ var data = [
     XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
 
     // save workbook to file export.xlsx
-    XLSX.writeFile(wb, "export.xlsx");
-
+     XLSX.writeFile(wb, "export.xlsx");
 
 """
 
@@ -91,5 +90,7 @@ def make_button(source, search_series=True):
     button.js_event_callbacks['button_click'] = [
         CustomJS(args=dict(source=source), code=callback)
         ]
+        
+      
     print(button)
     return button

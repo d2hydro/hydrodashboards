@@ -25,6 +25,7 @@
     <script src="/bokeh/static/js/main.js"></script>
 	<script type="text/javascript" src="https://unpkg.com/xlsx@0.15.1/dist/xlsx.full.min.js"></script>
     <script type="text/javascript">
+	
         $(document).ready(function () {
             $('#sidebarCollapse').on('click', function () {
                 $('#sidebar').toggleClass('active');
@@ -77,7 +78,7 @@
           }
 		  let ctrlKey = false;
 		   const keyDown = () => {
-  document.addEventListener('keydown', function (e) {
+        document.addEventListener('keydown', function (e) {
 		if (e.key == "Control") {
 		ctrlKey = true
   }});
