@@ -8,7 +8,7 @@
 		250000,
 		625000
 	],
-        "filter_type": "CheckBoxGroup",
+        "filter_type": "MultiSelect",
 	"filter_dimensions": {
 		"filters": 4,
 		"child_filters": 8},

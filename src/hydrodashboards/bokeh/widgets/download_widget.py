@@ -57,9 +57,10 @@ if (navigator.msSaveBlob) {
 """
 
 
-def make_button(source):
+def make_button(source, search_series=True):
     button = Button(label="Download", button_type="success", disabled=True)
-    button.js_event_callbacks['button_click'] = [
-        CustomJS(args=dict(source=source), code=donwload_js)
-        ]
+    if search_series:
+        button.js_event_callbacks['button_click'] = [
+            CustomJS(args=dict(source=source), code=donwload_js)
+            ]
     return button

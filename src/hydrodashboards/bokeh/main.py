@@ -454,6 +454,9 @@ view_x_range.on_change("start", update_on_view_x_range_change)
 
 time_figure = time_figure_widget.empty_fig()
 
+# Search download time series widget
+download_time_series = download_widget.make_button(source=search_source, search_series=False)
+
 # Search time series widget
 search_time_series = Select(value=None, options=[])
 search_time_series.on_change("value", update_on_search_time_series_value)
@@ -483,7 +486,8 @@ curdoc().add_root(column(Div(text=f"<h3>{config.title}</h3>"),
                          sizing_mode="stretch_width"))
 
 filters_layout = column(filters, name="filters", sizing_mode="stretch_width")
-filters_widgets.clear_control(filters_layout)
+if config.filter_type == "MultiSelect":
+    filters_widgets.clear_control(filters_layout)
 curdoc().add_root(filters_layout)
 curdoc().add_root(column(locations, name="locations", sizing_mode="stretch_width"))
 curdoc().add_root(column(parameters, name="parameters", sizing_mode="stretch_width"))
@@ -504,6 +508,13 @@ if config.thresholds:
     curdoc().add_root(
         column(thresholds_button, name="thresholds_button", sizing_mode="stretch_both")
         )
+
+curdoc().add_root(
+    column(download_time_series,
+           name="download_time_series",
+           sizing_mode="stretch_both")
+    )
+
 time_figure_layout = column(time_figure, name="time_figure", sizing_mode="stretch_both")
 curdoc().add_root(time_figure_layout)
 curdoc().add_root(
@@ -540,46 +551,47 @@ def convert_to_datetime(date_time):
 
 
 try:
-    args = curdoc().session_context.request.arguments
-    start_date, end_date = view_period.value_as_datetime
-    update_period = False
-    if "filter_id" in args.keys():
-        filter_ids = [i.decode("utf-8") for i in args.get("filter_id")]
-        filters_widgets.set_filter_values(filters, filter_ids)
-
-    if "location_id" in args.keys():
-        location_ids = [i.decode("utf-8") for i in args.get("location_id")]
-        if "filter_id" not in args.keys():
-            # get all filters in cache
-            data.update_on_filter_select(data.filters.values)
-            # get and select the filter ids that contain one or more location_ids
-            filter_ids = [i for i in data.filters.values if locations_in_filter(location_ids, i)]
+    if config.filter_type == "MultiSelect":
+        args = curdoc().session_context.request.arguments
+        start_date, end_date = view_period.value_as_datetime
+        update_period = False
+        if "filter_id" in args.keys():
+            filter_ids = [i.decode("utf-8") for i in args.get("filter_id")]
             filters_widgets.set_filter_values(filters, filter_ids)
-
-        # make sure there is no rubbish and set loction_ids
-        location_ids = [j for j in location_ids if j in [i[0] for i in locations.options]]
-        locations.value = location_ids
-    if "parameter_id" in args.keys():
-        parameter_ids = [i.decode("utf-8") for i in args.get("parameter_id")]
-        parameter_ids = [j for j in parameter_ids if j in [i[0] for i in parameters.options]]
-        parameters.value = parameter_ids
-    if "start_date" in args.keys():
-        start_date = convert_to_datetime(args.get("start_date")[0].decode("utf-8"))
-        update_period = True
-    if "end_date" in args.keys():
-        end_date = convert_to_datetime(args.get("end_date")[0].decode("utf-8"))
-        update_period = True
-    if update_period:
-        end_date = min(data.periods.view_end, end_date)
-        if start_date < end_date:
-            search_start = start_date - timedelta(days=1)
-            search_end = min(start_date - timedelta(days=1), data.periods.search_end)
-            data.periods.set_search_period(search_start, search_end)
-            data.periods.set_view_period(start_date, end_date)
-            view_period.value = (data.periods.view_start, data.periods.view_end)
-
-    if (len(locations.value) > 0) & (len(parameters.value) > 0):
-        start_time_series_loader()
+    
+        if "location_id" in args.keys():
+            location_ids = [i.decode("utf-8") for i in args.get("location_id")]
+            if "filter_id" not in args.keys():
+                # get all filters in cache
+                data.update_on_filter_select(data.filters.values)
+                # get and select the filter ids that contain one or more location_ids
+                filter_ids = [i for i in data.filters.values if locations_in_filter(location_ids, i)]
+                filters_widgets.set_filter_values(filters, filter_ids)
+    
+            # make sure there is no rubbish and set loction_ids
+            location_ids = [j for j in location_ids if j in [i[0] for i in locations.options]]
+            locations.value = location_ids
+        if "parameter_id" in args.keys():
+            parameter_ids = [i.decode("utf-8") for i in args.get("parameter_id")]
+            parameter_ids = [j for j in parameter_ids if j in [i[0] for i in parameters.options]]
+            parameters.value = parameter_ids
+        if "start_date" in args.keys():
+            start_date = convert_to_datetime(args.get("start_date")[0].decode("utf-8"))
+            update_period = True
+        if "end_date" in args.keys():
+            end_date = convert_to_datetime(args.get("end_date")[0].decode("utf-8"))
+            update_period = True
+        if update_period:
+            end_date = min(data.periods.view_end, end_date)
+            if start_date < end_date:
+                search_start = start_date - timedelta(days=1)
+                search_end = min(start_date - timedelta(days=1), data.periods.search_end)
+                data.periods.set_search_period(search_start, search_end)
+                data.periods.set_view_period(start_date, end_date)
+                view_period.value = (data.periods.view_start, data.periods.view_end)
+    
+        if (len(locations.value) > 0) & (len(parameters.value) > 0):
+            start_time_series_loader()
 
 
 except AttributeError as e:
