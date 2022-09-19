@@ -513,23 +513,23 @@ if config.thresholds:
 curdoc().add_root(
     column(download_time_series,
            name="download_time_series",
-           sizing_mode="stretch_both")
+           sizing_mode="stretch_width")
     )
 
 time_figure_layout = column(time_figure, name="time_figure", sizing_mode="stretch_both")
 curdoc().add_root(time_figure_layout)
 curdoc().add_root(
     column(
-        search_time_series, name="select_search_time_series", sizing_mode="stretch_both"
+       search_time_series, name="select_search_time_series", sizing_mode="stretch_both"
     )
 )
-curdoc().add_root(
-    column(
-        download_search_time_series,
-        name="download_search_time_series",
-        sizing_mode="stretch_width",
-    )
-)
+#curdoc().add_root(
+#    column(
+#        download_search_time_series,
+#        name="download_search_time_series",
+#        sizing_mode="stretch_width",
+#    )
+#)
 curdoc().add_root(column(view_period, name="view_period", sizing_mode="stretch_both"))
 search_time_figure_layout = column(search_time_figure, name="search_time_figure", sizing_mode="stretch_both")
 curdoc().add_root(search_time_figure_layout)

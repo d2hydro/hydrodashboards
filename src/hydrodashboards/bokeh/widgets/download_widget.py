@@ -55,6 +55,7 @@ if (navigator.msSaveBlob) {
 """
 
 download_js = """
+
 var data = [
     ["datum-tijd", "waarde"],
     [new Date(2021, 8, 1, 1, 0, 0), 0.15],
