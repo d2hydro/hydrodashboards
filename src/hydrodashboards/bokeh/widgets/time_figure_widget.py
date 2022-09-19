@@ -4,11 +4,10 @@ from bokeh.events import PanEnd, MouseWheel
 from bokeh.models.widgets import Div
 from bokeh.models import (
     HoverTool,
-    ZoomOutTool,
-    DatetimeTickFormatter,
+    FuncTickFormatter,
     Range1d,
-    WheelZoomTool,
-    NumeralTickFormatter
+    NumeralTickFormatter,
+    CustomJSHover
     )
 from bokeh.palettes import Category10_10 as palette
 import pandas as pd
@@ -20,6 +19,19 @@ colors = cycle(palette)
 SIZING_MODE = "stretch_both"
 DELTA = 0.1
 THRESHOLD_NAME = "threshold"
+
+DT_JS_FORMAT = r"""
+    var date = new Date({});
+    return date.toLocaleDateString('nl-NL', {{
+        hour: '2-digit',
+        minute: '2-digit',
+        year: 'numeric',
+        hour12: false,
+        month: 'numeric',
+        day: 'numeric'
+    }});
+"""
+
 
 
 def range_defaults():
@@ -210,7 +222,9 @@ def top_fig(group: tuple,
     # define tools
     time_hover = HoverTool(tooltips=[("datum-tijd", "@datetime{%F %H:%M}"),
                                      ("waarde", "@value{(0.00)}")],
-                           formatters={"@datetime": "datetime"})
+                           formatters={"@datetime": CustomJSHover(
+                               code=DT_JS_FORMAT.format("special_vars.data_x"))}
+                           )
     time_hover.toggleable = False
 
     tools = ["pan",
@@ -246,11 +260,7 @@ def top_fig(group: tuple,
 
     time_fig.title.align = "center"
 
-    time_fig.xaxis.formatter = DatetimeTickFormatter(hours=["%H:%M"],
-                                                     days=["%d-%m-%Y"],
-                                                     months=["%d-%m-%Y"],
-                                                     years=["%d-%m-%Y"],
-                                                     )
+    time_fig.xaxis.formatter = FuncTickFormatter(code=DT_JS_FORMAT.format("tick"))
     time_fig.xaxis.visible = False
     time_fig.yaxis[0].formatter = NumeralTickFormatter(format="0.00")
 
