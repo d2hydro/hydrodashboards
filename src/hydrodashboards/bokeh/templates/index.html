@@ -23,7 +23,7 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
     <!-- Our Custom JS -->
     <script src="/bokeh/static/js/main.js"></script>
-
+	<script type="text/javascript" src="https://unpkg.com/xlsx@0.15.1/dist/xlsx.full.min.js"></script>
     <script type="text/javascript">
         $(document).ready(function () {
             $('#sidebarCollapse').on('click', function () {
@@ -34,6 +34,7 @@
                 AnimationUtils.onResizePage();
             });
         });
+		
 
         function myFunction() {
           var but_leg = document.getElementById("button_leg_bar");
@@ -90,6 +91,7 @@
 keyDown();
 keyUp();
     </script>
+	
 
 {% endblock %}
 
@@ -171,10 +173,10 @@ keyUp();
                         <div class="row"style="margin-left:0px;margin-right:0px" > 
                             <div class="col-12" id="grafiek_upper">
                                 {{ embed(roots.time_figure) }}
-                            </div>
-							<div class="col-1" id="download_time_series">
-                                {{ embed(roots.download_time_series) }}
                             </div>   
+			<div class="col-1" id="download_time_series">
+                                {{ embed(roots.download_time_series) }}
+                            </div>  
                         </div>
                         <div class="row" id="zoekgrafiek-bar">    
                             <div class="col-4">

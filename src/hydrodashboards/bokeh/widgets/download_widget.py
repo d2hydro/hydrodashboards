@@ -63,7 +63,19 @@ var data = [
     ['', null, undefined],
     [new Date(2021, 8, 1), new Date(2021, 8, 2), new Date(2021, 8, 3)],
 ];
-saveToXlsx(data)
+
+    var wb = XLSX.utils.book_new();
+
+    // converts an array of arrays into a worksheet.
+    var ws = XLSX.utils.aoa_to_sheet(data);
+
+    // add worksheet to workbook under name Sheet1
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+
+    // save workbook to file export.xlsx
+    XLSX.writeFile(wb, "export.xlsx");
+
+
 """
 
 
@@ -76,4 +88,5 @@ def make_button(source, search_series=True):
     button.js_event_callbacks['button_click'] = [
         CustomJS(args=dict(source=source), code=callback)
         ]
+    print(button)
     return button

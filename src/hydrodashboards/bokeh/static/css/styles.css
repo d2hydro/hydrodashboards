@@ -287,7 +287,7 @@ width: 100%;
 
 #button_leg_bar {
   background-color: transparent;
-  background-image: url(/wam/static/icons/layers.svg);
+  background-image: url(/bokeh/static/icons/layers.svg);
   background-repeat: no-repeat;
   border-width: 0px;
   bottom: 20px;
@@ -384,7 +384,7 @@ width: 100%;
 	 width: 26px;
 	 margin-left: 60px;
 	 margin-right:200px;
-	 background-image: url(/wam/static/icons/threshold.png);
+	 background-image: url(/bokeh/static/icons/threshold.png);
 	 background-repeat: no-repeat;
 	 background-position:center 2px center;
 	 background-color: white;
@@ -392,7 +392,7 @@ width: 100%;
 }
 
 .bk.bk-btn.bk-btn-default.bk-active{
-	  background-image: url(/wam/static/icons/threshold.png);
+	  background-image: url(/bokeh/static/icons/threshold.png);
 	  background-repeat: no-repeat;
 	  background-position:center 2px center;
 	  display:flex;
@@ -463,7 +463,7 @@ width: 100%;
 }
 
 .bk.bk-btn.bk-btn-success{
- background-image: url(/wam/static/icons/download.png);
+ background-image: url(/bokeh/static/icons/download.png);
  background-repeat: no-repeat;
  background-position:right 10px center;
  background-color: #3681C1;
