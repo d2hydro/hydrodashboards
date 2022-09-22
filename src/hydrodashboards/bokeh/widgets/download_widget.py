@@ -55,7 +55,6 @@ if (navigator.msSaveBlob) {
 """
 
 download_js = """
-console.log("Timezone:",Intl.DateTimeFormat().resolvedOptions().timeZone);
 
 var data = [
     ["MPN_IDENT", "","MPN_IDENT", ""],
@@ -66,8 +65,8 @@ var data = [
     ["Qualifier","","Qualifier",""],
     ["datum-tijd", "waarde","datum-tijd", "waarde"],
     
-    
    
+  
     [new Date(Date.UTC(2021, 8, 1, 1, 0, 0)), 0.15,new Date(Date.UTC(2021, 8, 1, 1, 0, 0)), 0.30],
     [new Date(Date.UTC(2021, 8, 1, 1, 15, 0)), 0.20,new Date(Date.UTC(2021, 8, 1, 1, 0, 0)), 0.35],
     [new Date(Date.UTC(2021, 8, 1, 1, 30, 0)), 0.18,new Date(Date.UTC(2021, 8, 1, 1, 0, 0)), 0.40],
@@ -75,21 +74,32 @@ var data = [
     [new Date(Date.UTC(2021, 8, 1, 2, 0, 0)), 0.3],
     [new Date(Date.UTC(2021, 8, 1, 2, 15, 0)), 0.2],
     [new Date(Date.UTC(2021, 8, 1, 2, 30, 0)), 0.15]
+    
+  
 ];
 
-var filename ="MPN_IDENT";
+
+
+var filename ="test.xlsx";
     var wb = XLSX.utils.book_new();
 
     // converts an array of arrays into a worksheet.
-    var ws = XLSX.utils.aoa_to_sheet(data);
+    var ws = XLSX.utils.aoa_to_sheet(data,{ dateNF: 'yyyy-mm-dd hh:mm:ss'});
 
     // add worksheet to workbook under name Sheet1
     XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-
+    
     // save workbook to file export.xlsx
-     XLSX.writeFile(wb, filename);
+     XLSX.writeFile(wb, filename,{cellDates: true});
 
-
+ function getTimeZone(){
+    const zomer = new Date(1,8,2020).toString();
+    const timeZone_zomer = zomer.replace(/.*[(](.*)[)].*/,'$1');//extracts the content between parenthesis
+    const winter = new Date(1,1,2020).toString();
+    const timeZone_winter = winter.replace(/.*[(](.*)[)].*/,'$1');//extracts the content between parenthesis
+    return [timeZone_zomer,timeZone_winter];
+}
+console.log(getTimeZone());
 
 """
 
