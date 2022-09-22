@@ -55,18 +55,29 @@ if (navigator.msSaveBlob) {
 """
 
 download_js = """
+console.log("Timezone:",Intl.DateTimeFormat().resolvedOptions().timeZone);
 
 var data = [
-    ["datum-tijd", "waarde"],
-    [new Date(2021, 8, 1, 1, 0, 0), 0.15],
-    [new Date(2021, 8, 1, 1, 15, 0), 0.20],
-    [new Date(2021, 8, 1, 1, 30, 0), 0.18],
-    [new Date(2021, 8, 1, 1, 45, 0), 0.25],
-    [new Date(2021, 8, 1, 2, 0, 0), 0.3],
-    [new Date(2021, 8, 1, 2, 15, 0), 0.2],
-    [new Date(2021, 8, 1, 2, 30, 0), 0.15]
+    ["MPN_IDENT", "","MPN_IDENT", ""],
+    ["OBJ_LONGNAME","","OBJ_LONGNAME",""],
+    ["X_COORD, Y_COORD","","X_COORD, Y_COORD",""], 
+    ["WAM_ParameterID","","WAM_ParameterID",""],
+    ["WAM_EenheidCode","","WAM_EenheidCode",""],
+    ["Qualifier","","Qualifier",""],
+    ["datum-tijd", "waarde","datum-tijd", "waarde"],
+    
+    
+   
+    [new Date(Date.UTC(2021, 8, 1, 1, 0, 0)), 0.15,new Date(Date.UTC(2021, 8, 1, 1, 0, 0)), 0.30],
+    [new Date(Date.UTC(2021, 8, 1, 1, 15, 0)), 0.20,new Date(Date.UTC(2021, 8, 1, 1, 0, 0)), 0.35],
+    [new Date(Date.UTC(2021, 8, 1, 1, 30, 0)), 0.18,new Date(Date.UTC(2021, 8, 1, 1, 0, 0)), 0.40],
+    [new Date(Date.UTC(2021, 8, 1, 1, 45, 0)), 0.25,new Date(Date.UTC(2022, 9, 21, 11, 17, 0)), 0.45],
+    [new Date(Date.UTC(2021, 8, 1, 2, 0, 0)), 0.3],
+    [new Date(Date.UTC(2021, 8, 1, 2, 15, 0)), 0.2],
+    [new Date(Date.UTC(2021, 8, 1, 2, 30, 0)), 0.15]
 ];
 
+var filename ="MPN_IDENT";
     var wb = XLSX.utils.book_new();
 
     // converts an array of arrays into a worksheet.
@@ -76,7 +87,9 @@ var data = [
     XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
 
     // save workbook to file export.xlsx
-     XLSX.writeFile(wb, "export.xlsx");
+     XLSX.writeFile(wb, filename);
+
+
 
 """
 
