@@ -55,6 +55,19 @@ if (navigator.msSaveBlob) {
 """
 
 download_js = """
+function getTimeZone(){
+    const zomer = new Date(1,8,2020).toString();
+    const timeZone_zomer = zomer.replace(/.*[(](.*)[)].*/,'$1');//extracts the content between parenthesis
+    const winter = new Date(1,1,2020).toString();
+    const timeZone_winter = winter.replace(/.*[(](.*)[)].*/,'$1');//extracts the content between parenthesis
+    if (timeZone_zomer==timeZone_winter){
+       return [timeZone_zomer] ;   
+    }                                     
+    else {
+    return [timeZone_zomer,timeZone_winter];
+    }
+}
+const TimeZone = (getTimeZone());
 
 var data = [
     ["MPN_IDENT", "","MPN_IDENT", ""],
@@ -64,9 +77,7 @@ var data = [
     ["WAM_EenheidCode","","WAM_EenheidCode",""],
     ["Qualifier","","Qualifier",""],
     ["datum-tijd", "waarde","datum-tijd", "waarde"],
-    
-   
-  
+
     [new Date(Date.UTC(2021, 8, 1, 1, 0, 0)), 0.15,new Date(Date.UTC(2021, 8, 1, 1, 0, 0)), 0.30],
     [new Date(Date.UTC(2021, 8, 1, 1, 15, 0)), 0.20,new Date(Date.UTC(2021, 8, 1, 1, 0, 0)), 0.35],
     [new Date(Date.UTC(2021, 8, 1, 1, 30, 0)), 0.18,new Date(Date.UTC(2021, 8, 1, 1, 0, 0)), 0.40],
@@ -74,33 +85,30 @@ var data = [
     [new Date(Date.UTC(2021, 8, 1, 2, 0, 0)), 0.3],
     [new Date(Date.UTC(2021, 8, 1, 2, 15, 0)), 0.2],
     [new Date(Date.UTC(2021, 8, 1, 2, 30, 0)), 0.15]
-    
   
 ];
-
-
-
-var filename ="test.xlsx";
+var text = [["* Aan de gegevens in dit Excelbestand mogen geen rechten worden ontleend"],
+    ["* Met debietformules worden berekeningen uitgevoerd die de werkelijkheid versimpelen; dit gebeurt nooit helemaal correct; er is dus altijd een zekere foutmarge en onzekerheid die in acht moet worden genomen bij het gebruik van deze data"],
+    ["* De data is tot stand gekomen uit bewerkingen met grotendeels handmatig gevalideerde data; gaten in de tijdreeksen die hierdoor zijn ontstaan zijn niet opgevuld en beschikbaar"],  
+    ["* De projectie is in RD (Rijksdriehoekstelsel)"],
+    ["* De tijdstappen staan in "+ String(TimeZone).replace(",","/")]
+    ];
+     
+    var filename ="WAM_TimeSeries_"+String(new Date().toJSON().slice(0,10))+".xlsx";
     var wb = XLSX.utils.book_new();
-
+    
     // converts an array of arrays into a worksheet.
     var ws = XLSX.utils.aoa_to_sheet(data,{ dateNF: 'yyyy-mm-dd hh:mm:ss'});
-
+    ws['!cols'] = [{ width: 20 }, { width: 20 }, { width: 20 },{ width: 20 },{ width: 20 },{ width: 20 },
+                     { width: 20 },{ width: 20 },{ width: 20 },{ width: 20 },{ width: 20 },{ width: 20 },
+                     { width: 20 },{ width: 20 },{ width: 20 },{ width: 20 },{ width: 20 },{ width: 20 },
+                     { width: 20 },{ width: 20 },{ width: 20 },{ width: 20 },{ width: 20 },{ width: 20 } ]; //set col. widths
+    var ws_text = XLSX.utils.aoa_to_sheet(text);
     // add worksheet to workbook under name Sheet1
-    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-    
+    XLSX.utils.book_append_sheet(wb, ws_text, "disclaimer");
+    XLSX.utils.book_append_sheet(wb, ws, "gegevens");
     // save workbook to file export.xlsx
      XLSX.writeFile(wb, filename,{cellDates: true});
-
- function getTimeZone(){
-    const zomer = new Date(1,8,2020).toString();
-    const timeZone_zomer = zomer.replace(/.*[(](.*)[)].*/,'$1');//extracts the content between parenthesis
-    const winter = new Date(1,1,2020).toString();
-    const timeZone_winter = winter.replace(/.*[(](.*)[)].*/,'$1');//extracts the content between parenthesis
-    return [timeZone_zomer,timeZone_winter];
-}
-console.log(getTimeZone());
-
 """
 
 
