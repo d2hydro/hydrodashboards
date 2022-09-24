@@ -19,6 +19,7 @@ class TimeSeries:
     start_datetime: datetime = None
     end_datetime: datetime = None
     df: pd.DataFrame = None
+    tags: list = field(default_factory=list)
 
     def __post_init__(self):
         df = pd.DataFrame(columns=list(COLUMNS.keys()))
@@ -94,9 +95,6 @@ class TimeSeriesSets:
         return [i for i in self.time_series if _selector(i, periods)]
 
     def select_incomplete(self):
-        # def _selector(ts):
-        #     return ts.active & (not ts.complete) & (not ts.empty)
-
         return [i for i in self.time_series if not i.complete]
 
     def set_empty(self):

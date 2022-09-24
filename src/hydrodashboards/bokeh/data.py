@@ -169,7 +169,7 @@ class Data:
             result.time_series = [i for i in result.time_series if include_header(i)]
 
         return result
-
+       
     def _properties_from_fews_ts_headers(self, fews_time_series):
         def property_generator(header):
             parameter = concat_fews_parameter_ids(
@@ -178,12 +178,23 @@ class Data:
             parameter_name = next(
                 i[1] for i in self.parameters.options if i[0] == parameter
             )
-            location_name = self.locations.locations.loc[header.location_id]["name"]
+            location_name = self.locations.locations.at[header.location_id, "name"]
             label = f"{location_name} {parameter_name}"
+            
+            # prepare tags
+            xy = ",".join(self.locations.locations.loc[header.location_id, ["x", "y"]])
+            if header.qualifier_id is None:
+                qualifiers_tag = ""
+            else:
+                qualifiers_tag = ",".join(header.qualifier_id)
+            unit_tag = self.parameters._fews_parameters.at[header.parameter_id, "display_unit"]
+            tags = [header.location_id, location_name, xy, header.parameter_id, qualifiers_tag, unit_tag]
+
             return dict(location=header.location_id,
                         parameter=parameter,
                         parameter_name=parameter_name,
-                        label=label)
+                        label=label,
+                        tags=tags)
 
         return [property_generator(i.header) for i in fews_time_series]
 

@@ -26,6 +26,7 @@ def time_series_to_source(time_series,
         df = pd.DataFrame(df.loc[df["flag"] < 6]["value"])
     source = ColumnDataSource(df)
     source.name = time_series.label
+    source.tags = time_series.tags
     return source
 
 

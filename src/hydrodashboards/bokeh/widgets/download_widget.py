@@ -1,127 +1,112 @@
 from bokeh.models.widgets import Button
 from bokeh.models import CustomJS
+import json
 
-
-donwload_search_js = """
-function table_to_csv(source) {
-
-    const columns = Object.keys(source.data)
-    const nrows = source.get_length()
-    const lines = [columns.join(',')]
-
-    for (let i = 0; i < nrows; i++) {
-        let row = [];
-        for (let j = 0; j < columns.length; j++) {
-            const column = columns[j]
-
-            if (column == 'datetime') {
-                var dtobj = new Date(source.data[column][i])
-                row.push(dtobj.toLocaleString('nl-NL'))
-            } else if (column == 'index') {
-                row.push(source.data[column][i].toString())
-            } else if (column == 'value') {
-                row.push(source.data[column][i].toString())
-            }
-        }
-        lines.push(row.join(','))
-
-    }
-    return lines.join('\\n').concat('\\n')
-}
-
-function csv_name(source) {
-    const file_name = source.name.concat(".csv").replace(/ /g, "_")
-    console.log(file_name)
-    return file_name
-}
-
-const filename = csv_name(source)
-const filetext = table_to_csv(source)
-const blob = new Blob([filetext], {
-    type: 'text/csv;charset=utf-8;'
-})
-
-//addresses IE
-if (navigator.msSaveBlob) {
-    navigator.msSaveBlob(blob, filename)
-} else {
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
-    link.download = filename
-    link.target = '_blank'
-    link.style.visibility = 'hidden'
-    link.dispatchEvent(new MouseEvent('click'))
-}
-"""
-
-download_js = """
-function getTimeZone(){
-    const zomer = new Date(1,8,2020).toString();
-    const timeZone_zomer = zomer.replace(/.*[(](.*)[)].*/,'$1');//extracts the content between parenthesis
-    const winter = new Date(1,1,2020).toString();
-    const timeZone_winter = winter.replace(/.*[(](.*)[)].*/,'$1');//extracts the content between parenthesis
-    if (timeZone_zomer==timeZone_winter){
-       return [timeZone_zomer] ;   
-    }                                     
-    else {
-    return [timeZone_zomer,timeZone_winter];
-    }
-}
-const TimeZone = (getTimeZone());
-
-var data = [
-    ["MPN_IDENT", "","MPN_IDENT", ""],
-    ["OBJ_LONGNAME","","OBJ_LONGNAME",""],
-    ["X_COORD, Y_COORD","","X_COORD, Y_COORD",""], 
-    ["WAM_ParameterID","","WAM_ParameterID",""],
-    ["WAM_EenheidCode","","WAM_EenheidCode",""],
-    ["Qualifier","","Qualifier",""],
-    ["datum-tijd", "waarde","datum-tijd", "waarde"],
-
-    [new Date(Date.UTC(2021, 8, 1, 1, 0, 0)), 0.15,new Date(Date.UTC(2021, 8, 1, 1, 0, 0)), 0.30],
-    [new Date(Date.UTC(2021, 8, 1, 1, 15, 0)), 0.20,new Date(Date.UTC(2021, 8, 1, 1, 0, 0)), 0.35],
-    [new Date(Date.UTC(2021, 8, 1, 1, 30, 0)), 0.18,new Date(Date.UTC(2021, 8, 1, 1, 0, 0)), 0.40],
-    [new Date(Date.UTC(2021, 8, 1, 1, 45, 0)), 0.25,new Date(Date.UTC(2022, 9, 21, 11, 17, 0)), 0.45],
-    [new Date(Date.UTC(2021, 8, 1, 2, 0, 0)), 0.3],
-    [new Date(Date.UTC(2021, 8, 1, 2, 15, 0)), 0.2],
-    [new Date(Date.UTC(2021, 8, 1, 2, 30, 0)), 0.15]
-  
-];
-var text = [["* Aan de gegevens in dit Excelbestand mogen geen rechten worden ontleend"],
+disclaimer_json = json.dumps([
+    ["* Aan de gegevens in dit Excelbestand mogen geen rechten worden ontleend"],
     ["* Met debietformules worden berekeningen uitgevoerd die de werkelijkheid versimpelen; dit gebeurt nooit helemaal correct; er is dus altijd een zekere foutmarge en onzekerheid die in acht moet worden genomen bij het gebruik van deze data"],
     ["* De data is tot stand gekomen uit bewerkingen met grotendeels handmatig gevalideerde data; gaten in de tijdreeksen die hierdoor zijn ontstaan zijn niet opgevuld en beschikbaar"],  
-    ["* De projectie is in RD (Rijksdriehoekstelsel)"],
-    ["* De tijdstappen staan in "+ String(TimeZone).replace(",","/")]
-    ];
-     
-    var filename ="WAM_TimeSeries_"+String(new Date().toJSON().slice(0,10))+".xlsx";
-    var wb = XLSX.utils.book_new();
-    
-    // converts an array of arrays into a worksheet.
-    var ws = XLSX.utils.aoa_to_sheet(data,{ dateNF: 'yyyy-mm-dd hh:mm:ss'});
-    ws['!cols'] = [{ width: 20 }, { width: 20 }, { width: 20 },{ width: 20 },{ width: 20 },{ width: 20 },
-                     { width: 20 },{ width: 20 },{ width: 20 },{ width: 20 },{ width: 20 },{ width: 20 },
-                     { width: 20 },{ width: 20 },{ width: 20 },{ width: 20 },{ width: 20 },{ width: 20 },
-                     { width: 20 },{ width: 20 },{ width: 20 },{ width: 20 },{ width: 20 },{ width: 20 } ]; //set col. widths
-    var ws_text = XLSX.utils.aoa_to_sheet(text);
-    // add worksheet to workbook under name Sheet1
-    XLSX.utils.book_append_sheet(wb, ws_text, "disclaimer");
-    XLSX.utils.book_append_sheet(wb, ws, "gegevens");
-    // save workbook to file export.xlsx
-     XLSX.writeFile(wb, filename,{cellDates: true});
+    ["* De x,y coordinaten zijn geprojecterd in: Amersfoort / RD New (epsg:28992)"]
+    ])
+
+download_js = """
+// the functions we use to get things done
+function getTimeZone() {
+    const summer = new Date(1, 8, 2020).toString();
+    const time_zone_summer = summer.replace(/.*[(](.*)[)].*/, '$1');
+    const winter = new Date(1, 1, 2020).toString();
+    const time_zone_winter = winter.replace(/.*[(](.*)[)].*/, '$1');
+    if (time_zone_summer == time_zone_winter) {
+        return String(time_zone_summer);
+    } else {
+        return String(([time_zone_summer, time_zone_winter])).replace(",", "/");
+    }
+}
+
+function makeHeader(data, tags) {
+    data.forEach((item, index) => {
+        data[index] = [item, tags[index]]
+    })
+}
+
+function addEvents(data, source) {
+    source.data["datetime"].forEach((item, index) => {
+        data.push([new Date(item), source.data["value"][index]])
+    })
+}
+
+// the constants we declare                                           
+const time_zone = getTimeZone();
+const event = new Date();
+const options = {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric'
+};
+
+// new workbook
+var filename = "TimeSeries_" + event.toLocaleDateString(options) + "T" + event.toLocaleTimeString() + ".xlsx";
+var wb = XLSX.utils.book_new();
+var col_num = 0
+
+// add disclaimer
+disclaimer = JSON.parse(disclaimer)
+disclaimer.push(["* De datumtijd-stappen zijn weergegeven in tijdzone: " + time_zone])
+var ws_disclaimer = XLSX.utils.aoa_to_sheet(disclaimer);
+
+// add data
+var ws_data = XLSX.utils.aoa_to_sheet([], {
+    dateNF: 'yyyy-mm-dd hh:mm:ss'
+});
+
+// this we need to make an iter function
+for (let i = 0; i < figure.children[0].children.length; i++) { //iterate figures
+    var renderers = figure.children[0].children[i].renderers
+    for (let j = 0; j < renderers.length; j++) { //iterate renderers
+        var renderer = renderers[j]
+        if (renderer.visible) {
+            var source = renderer.data_source
+            var tags = source.tags
+            var data = ['meetlocatie ident', 'meetlocatienaam', 'x,y', 'parameter', 'qualifiers', 'eenheid']
+
+            // add header
+            makeHeader(data, tags)
+            data.push(["datum-tijd", "waarde"])
+
+            // add data
+            addEvents(data, source)
+            XLSX.utils.sheet_add_json(ws_data, data, {
+                skipHeader: true,
+                origin: {
+                    r: 0,
+                    c: col_num
+                }
+            })
+            col_num = col_num + 2
+        }
+    }
+}
+
+
+//append worksheeds to workbook
+ws_data['!cols'] = Array(col_num).fill({
+    width: 20
+})
+XLSX.utils.book_append_sheet(wb, ws_disclaimer, "disclaimer")
+XLSX.utils.book_append_sheet(wb, ws_data, "gegevens")
+
+// save workbook to file export.xlsx
+XLSX.writeFile(wb, filename, {
+    cellDates: true
+});
 """
 
-
-def make_button(source, search_series=True):
+def make_button(time_figure_layout):
     button = Button(label="Download", button_type="success", disabled=True)
-    if search_series:
-        callback = donwload_search_js
-    else:
-        callback = download_js
     button.js_event_callbacks['button_click'] = [
-        CustomJS(args=dict(source=source), code=callback)
+        CustomJS(args=dict(figure=time_figure_layout,
+                           disclaimer=disclaimer_json),
+                 code=download_js)
         ]
-        
-      
-    print(button)
+
     return button

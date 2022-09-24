@@ -2,10 +2,13 @@
 
 from bokeh.io import curdoc
 from bokeh.layouts import column
-from data import Data
-from config import Config
+try:
+    from data import Data
+    from config import Config
+except:
+    from hydrodashboards.bokeh.data import Data
+    from hydrodashboards.bokeh.config import Config
 from pathlib import Path
-
 # import bokeh sources
 import hydrodashboards.bokeh.sources as sources
 from hydrodashboards.bokeh.widgets import (
@@ -40,7 +43,7 @@ def toggle_view_time_series_controls(value=True):
     """Enable view period (used when first graph is loaded)."""
     view_period.disabled = value
     view_period.bar_color = "#e6e6e6"
-    download_search_time_series.disabled = value
+    #download_search_time_series.disabled = value
     download_time_series.disabled = value
 
 
@@ -455,15 +458,12 @@ view_x_range.on_change("start", update_on_view_x_range_change)
 
 time_figure = time_figure_widget.empty_fig()
 
-# Search download time series widget
-download_time_series = download_widget.make_button(source=search_source, search_series=False)
-
 # Search time series widget
 search_time_series = Select(value=None, options=[])
 search_time_series.on_change("value", update_on_search_time_series_value)
 
 # Search download search time series widget
-download_search_time_series = download_widget.make_button(source=search_source)
+#download_search_time_series = download_widget.make_button(source=search_source)
 
 # View period widget
 view_period = view_period_widget.make_view_period(data.periods)
@@ -510,26 +510,23 @@ if config.thresholds:
         column(thresholds_button, name="thresholds_button", sizing_mode="stretch_both")
         )
 
+time_figure_layout = column(time_figure, name="time_figure", sizing_mode="stretch_both")
+curdoc().add_root(time_figure_layout)
+
+
+download_time_series = download_widget.make_button(time_figure_layout=time_figure_layout)
 curdoc().add_root(
     column(download_time_series,
            name="download_time_series",
            sizing_mode="stretch_width")
     )
 
-time_figure_layout = column(time_figure, name="time_figure", sizing_mode="stretch_both")
-curdoc().add_root(time_figure_layout)
+# search tim-figure layout
 curdoc().add_root(
     column(
        search_time_series, name="select_search_time_series", sizing_mode="stretch_both"
     )
 )
-#curdoc().add_root(
-#    column(
-#        download_search_time_series,
-#        name="download_search_time_series",
-#        sizing_mode="stretch_width",
-#    )
-#)
 curdoc().add_root(column(view_period, name="view_period", sizing_mode="stretch_both"))
 search_time_figure_layout = column(search_time_figure, name="search_time_figure", sizing_mode="stretch_both")
 curdoc().add_root(search_time_figure_layout)
