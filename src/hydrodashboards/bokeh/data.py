@@ -234,6 +234,8 @@ class Data:
         time_series_active = self.time_series_sets.active_length
         time_series_cache = len(self.time_series_sets)
         search_period_days = self.periods.search_period.days
+        max_events_loaded = self.time_series_sets.max_events_loaded
+        max_events_visible = self.time_series_sets.max_events_visible
 
         if html_type == "list":
             html = (
@@ -242,7 +244,8 @@ class Data:
                 f"<li>parameters: {parameters}</li></ul>"
                 f"Tijdseries:<br>"
                 f"<ul><li>geladen: {time_series_active}</li>"
-                f"<li>cache: {time_series_cache}</li></ul>"
+                f"<li>cache: {time_series_cache}</li>"
+                f"<li>max tijdstappen: {max_events_visible}/{max_events_loaded} (zichtbaar/geladen)</li></ul>"
             )
         elif html_type == "table":
             html = (
@@ -250,7 +253,8 @@ class Data:
                 f"Parameters: {parameters} | "
                 f"Tijdseries: {time_series_active} | "
                 f"Tijdseries cache: {time_series_cache} | "
-                f"Zoekperiode: {search_period_days} dagen"
+                f"Zoekperiode: {search_period_days} dagen | "
+                f"Max tijdstappen: {max_events_visible}/{max_events_loaded} (zichtbaar/geladen)"
                 )
 
         return html
@@ -401,6 +405,7 @@ class Data:
         properties = self._properties_from_fews_ts_headers(fews_ts_set.time_series)
         self.time_series_sets.append_from_dict(properties)
         self.time_series_sets.set_active(indices)
+        self.time_series_sets.set_visible(indices=indices)
 
         # set data for search time_series
         first_active = self.time_series_sets.first_active

@@ -43,8 +43,21 @@ def toggle_view_time_series_controls(value=True):
     """Enable view period (used when first graph is loaded)."""
     view_period.disabled = value
     view_period.bar_color = "#e6e6e6"
-    #download_search_time_series.disabled = value
     download_time_series.disabled = value
+
+
+def toggle_download_button_on_sources(sources):
+    if len(sources) == 0:
+        disabled = True
+        max_events_visible = 0
+    else:
+        max_events_visible = max((len(i.data["value"]) for i in sources))
+        if max_events_visible > 1000000:
+            disabled = True
+        else:
+            disabled = False
+    data.time_series_sets.max_events_visible = max_events_visible
+    download_time_series.disabled = disabled
 
 
 def enable_update_graph():
@@ -88,6 +101,16 @@ def view_x_range_as_datetime():
     end = _to_timestamp(view_x_range.end)
 
     return start, end
+
+
+def get_visible_renderers(figs):
+    renderers = (j for i in [i.renderers for i in figs] for j in i)
+    return [i for i in renderers if i.visible]
+
+
+def get_visible_sources(figs):
+    renderers = get_visible_renderers(figs)
+    return [i.data_source for i in renderers]
 
 
 """
@@ -135,7 +158,7 @@ def update_on_locations_source_select(attr, old, new):
     locations.value = ids
 
 
-def update_on_locations_value(attrname, old, new):
+def update_on_locations_value(attr, old, new):
     """Update when values in locations filter are selected"""
     logger.debug(inspect.stack()[0][3])
 
@@ -271,9 +294,9 @@ def update_time_series_view():
         threshold_groups=threshold_groups,
         threshold_visible=thresholds_active,
         x_range=view_x_range,
-        press_up_event=press_up_event
+        press_up_event=press_up_event,
+        renderers_on_change=[("visible", set_visible_labels)]
         )
-
 
     # update search_time_series
     search_time_series.options = data.time_series_sets.active_labels
@@ -312,6 +335,11 @@ def update_time_series_search():
 
     # enable view_timeseries_controls
     toggle_view_time_series_controls(value=False)
+    sources = [i["source"] for i in time_series_sources.values()]
+    toggle_download_button_on_sources(sources)
+
+    # update app status
+    app_status.text = data.app_status(html_type=HTML_TYPE)
 
     # stop loader and disable update_graph
     update_graph.css_classes = ["stoploading_time_fig"]
@@ -358,6 +386,13 @@ def update_on_view_period_value_throttled(attrname, old, new):
     # updating the figure_layout y_ranges
     time_figure_widget.update_time_series_y_ranges(time_figure_layout, fit_y_axis=True)
 
+    # toggle download button
+    figs = time_figure_layout.children[0].children
+    toggle_download_button_on_sources(get_visible_sources(figs))
+
+    # update app status
+    app_status.text = data.app_status(html_type=HTML_TYPE)
+
 
 def update_on_view_x_range_change(attrname, old, new):
     """Update view_period widget when view_x_range changes."""
@@ -381,6 +416,24 @@ def press_up_event(event=None):
 def toggle_thresholds(active):
     logger.debug(inspect.stack()[0][3])
     time_figure_widget.toggle_threshold_graphs(time_figure_layout, active)
+
+
+def set_visible_labels(attr, old, new):
+    """Get the max length of sources in active glyphs."""
+    logger.debug(inspect.stack()[0][3])
+    figs = time_figure_layout.children[0].children
+
+    # sync visible data
+    renderers = get_visible_renderers(figs)
+    labels = [i.data_source.name for i in renderers]
+    data.time_series_sets.set_visible(labels=labels)
+
+    # enable/disable download button
+    sources = [i.data_source for i in renderers]
+    toggle_download_button_on_sources(sources)
+
+    # update app status
+    app_status.text = data.app_status(html_type=HTML_TYPE)
 
 
 """
