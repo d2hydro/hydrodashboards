@@ -73,5 +73,5 @@
 	],
 	"root_filter": "WDB",
 	"ssl_verify": false,
-	"history_period": 3650
+	"history_period": 100000
 }
