@@ -214,7 +214,8 @@ def top_fig(group: tuple,
             x_range: Range1d,
             threshold_groups={},
             threshold_visible=False,
-            press_up_event=None):
+            press_up_event=None,
+            renderers_on_change=[]):
 
     """Generate a time-figure from supplied bokeh input parameters."""
 
@@ -271,25 +272,27 @@ def top_fig(group: tuple,
         source = time_series_to_source(i,
                                        start_date_time=x_start,
                                        end_date_time=x_end)
-        time_fig.line(x="datetime",
-                      y="value",
-                      source=source,
-                      color=next(colors),
-                      legend_label=label,
-                      name=label)
+        renderer = time_fig.line(x="datetime",
+                                 y="value",
+                                 source=source,
+                                 color=next(colors),
+                                 legend_label=label,
+                                 name=label)
+        for i in renderers_on_change:
+            renderer.on_change(*i)
 
     # add thresholds to figure
     thresholds = threshold_groups[parameter_group]
     for k, v in thresholds.items():
         source = thresholds_to_source(v)
-        time_fig.multi_line(xs="datetime",
-                            ys="value",
-                            source=thresholds_to_source(v),
-                            name=THRESHOLD_NAME,
-                            line_width=v["line_width"],
-                            line_dash="dashed",
-                            visible=threshold_visible,
-                            color=v["color"])
+        renderer = time_fig.multi_line(xs="datetime",
+                                       ys="value",
+                                       source=thresholds_to_source(v),
+                                       name=THRESHOLD_NAME,
+                                       line_width=v["line_width"],
+                                       line_dash="dashed",
+                                       visible=threshold_visible,
+                                       color=v["color"])
 
     # make up legend
     time_fig.legend.click_policy = "hide"
@@ -316,12 +319,14 @@ def create_time_figures(time_figure_layout: column,
                         threshold_groups: dict,
                         threshold_visible: bool,
                         x_range,
-                        press_up_event=None):
+                        renderers_on_change=[],
+                        press_up_event=None,):
     time_figure_layout.children.pop()
     top_figs = [top_fig(i,
                         x_range,
                         threshold_groups=threshold_groups,
                         threshold_visible=threshold_visible,
+                        renderers_on_change=renderers_on_change,
                         press_up_event=press_up_event) for i in  time_series_groups.items()]
     top_figs[-1].xaxis.visible = True
     time_figure_layout.children.append(column(*top_figs, sizing_mode="stretch_both"))

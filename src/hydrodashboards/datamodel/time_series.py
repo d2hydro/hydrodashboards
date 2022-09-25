@@ -13,6 +13,7 @@ class TimeSeries:
     location: str
     label: str
     active: bool = False
+    visible: bool = False
     empty: bool = True
     complete: bool = False
     datetime_created: datetime = datetime.now()
@@ -51,6 +52,7 @@ class TimeSeriesSets:
     time_series: List[TimeSeries] = field(default_factory=list)
     search_start: datetime = None
     search_end: datetime = None
+    max_events_visible: int = 0
 
     def __len__(self):
         return len(self.time_series)
@@ -70,6 +72,15 @@ class TimeSeriesSets:
     @property
     def first_active(self):
         return next((i for i in self.time_series if i.active), None)
+
+    @property
+    def max_events_loaded(self):
+        visible_ts = [i for i in self.time_series if i.visible]
+        if len(visible_ts) > 0:
+            length = max((len(i.df) for i in visible_ts))
+        else:
+            length = 0
+        return length
 
     def remove_inactive(self):
         self.time_series = [i for i in self.time_series if i.active]
@@ -108,6 +119,15 @@ class TimeSeriesSets:
                 i.active = True
             else:
                 i.active = False
+
+    def set_visible(self, indices=None, labels=None):
+        for i in self.time_series:
+            if indices is not None:
+                i.visible = (i.location, i.parameter) in indices
+            elif labels is not None:
+                i.visible = i.label in labels
+            else:
+                i.visible = False
 
     def append_from_dict(self, properties: List[dict]):
         properties = [

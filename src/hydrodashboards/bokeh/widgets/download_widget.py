@@ -80,7 +80,8 @@ for (let i = 0; i < figure.children[0].children.length; i++) { //iterate figures
                 origin: {
                     r: 0,
                     c: col_num
-                }
+                },
+                dateNF: 'yyyy-mm-dd hh:mm:ss'
             })
             col_num = col_num + 2
         }
@@ -100,6 +101,7 @@ XLSX.writeFile(wb, filename, {
     cellDates: true
 });
 """
+
 
 def make_button(time_figure_layout):
     button = Button(label="Download", button_type="success", disabled=True)
