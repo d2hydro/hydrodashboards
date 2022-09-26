@@ -19,35 +19,34 @@ body {
 @keyframes spinner {
   to {transform: rotate(360deg);}
 }
-.bk.loaderzoekgrafiek{    
-  height: 100vh;
+
+.bk.download_spinner{    
+ display:flex;  
   opacity: 1;
-  position: relative;
   transition: opacity linear 0.1s;  
-  display:block; 
   visibility: hidden;  
 }
-.bk.loaderzoekgrafiek::before {
-  content: '';
+.bk.download_spinner:after {
+ content: '';
   box-sizing: border-box;
   position: absolute;
-  top: 50%;
-  left: 50%;
+ 
   width: 20px;
   height: 20px;
-  margin-top: -10px;
-  margin-left: -10px;
+ 
   border-radius: 50%;
-  border: 2px solid #ccc;
+  border: 2px solid #F16996;
   border-top-color: #000;
   animation: spinner .6s linear infinite;
   visibility: visible;
 }
 
-.bk.stoploading{
+.bk.stoploading_download_spinner{
 color: blue;
-background-color: blue;
-border-color: blue;
+}
+
+@keyframes spinner {
+  to {transform: rotate(360deg);}
 }
 
 .bk.loader_time_fig{    
@@ -86,6 +85,27 @@ color: blue;
 .bk.bk-input{
 	padding: 2px;
 }
+
+.bk-root .choices__list--dropdown {
+	background: white;
+	color: black;
+	}
+.bk-root .choices__inner .choices__item.solid{
+	color:white;
+	}
+	
+.bk-root .choices {
+	margin-bottom:0px;
+	}
+	
+.bk-root .choices__input{
+    padding-right:40px;
+	padding-bottom:40px;
+	}
+.bk-root .choices__inner {
+	background:#F1F2F3; 
+	}
+
 p {
     font-family: 'Poppins', sans-serif;
     font-size: 1.1em;
@@ -121,6 +141,8 @@ a, a:hover, a:focus {
 .navbar-expand-lg {
    background: #495568;
    }
+   
+
 
 
 /* ---------------------------------------------------
@@ -211,6 +233,26 @@ a, a:hover, a:focus {
 }
 a[data-toggle="collapse"] {
   position: relative;
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+width: 14px;
+height: 14px;
+}
+
+::-webkit-scrollbar-track {
+background: #f5f5f5;
+border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+border-radius: 4px;
+background: #ccc;  
+}
+
+::-webkit-scrollbar-thumb:hover {
+background: #999;  
 }
 
 /* ---------------------------------------------------

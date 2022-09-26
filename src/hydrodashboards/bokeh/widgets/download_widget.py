@@ -10,6 +10,9 @@ disclaimer_json = json.dumps([
     ])
 
 download_js = """
+console.log(button.css_classes);
+button.css_classes = ["download_spinner"];
+
 // the functions we use to get things done
 function getTimeZone() {
     const summer = new Date(1, 8, 2020).toString();
@@ -33,6 +36,17 @@ function addEvents(data, source) {
     source.data["datetime"].forEach((item, index) => {
         data.push([new Date(item), source.data["value"][index]])
     })
+}
+
+function write_excel(){
+    button.css_classes = ["download_spinner"];
+    XLSX.writeFile(wb, filename, {
+    cellDates: true
+    
+})
+    window.setTimeout(function() {
+    button.css_classes = ["stoploading_download_spinner"];
+})
 }
 
 // the constants we declare                                           
@@ -60,6 +74,7 @@ var ws_data = XLSX.utils.aoa_to_sheet([], {
 });
 
 // this we need to make an iter function
+
 for (let i = 0; i < figure.children[0].children.length; i++) { //iterate figures
     var renderers = figure.children[0].children[i].renderers
     for (let j = 0; j < renderers.length; j++) { //iterate renderers
@@ -97,9 +112,9 @@ XLSX.utils.book_append_sheet(wb, ws_disclaimer, "disclaimer")
 XLSX.utils.book_append_sheet(wb, ws_data, "gegevens")
 
 // save workbook to file export.xlsx
-XLSX.writeFile(wb, filename, {
-    cellDates: true
-});
+write_excel()
+
+
 """
 
 
@@ -107,8 +122,9 @@ def make_button(time_figure_layout):
     button = Button(label="Download", button_type="success", disabled=True)
     button.js_event_callbacks['button_click'] = [
         CustomJS(args=dict(figure=time_figure_layout,
-                           disclaimer=disclaimer_json),
+                           disclaimer=disclaimer_json,
+                           button=button),
                  code=download_js)
         ]
-
+    
     return button
