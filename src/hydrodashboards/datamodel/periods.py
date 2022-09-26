@@ -66,9 +66,17 @@ class Periods:
         self.search_start = search_start
         self.search_end = search_end
 
-    def set_view_period(self, view_start, view_end):
+    @staticmethod
+    def accepted_view_period(view_start, view_end):
+        view_period = view_end - view_start
+        if view_period.total_seconds() > 1800:
+            return False
+        else:
+            return True
+
+    def set_view_period(self, view_start, view_end, force=False):
         nw_view_period = view_end - view_start
-        if nw_view_period.total_seconds() > 900:
+        if (nw_view_period.total_seconds() > 1800) | force:
             self.view_start = view_start
             self.view_end = view_end
             return True

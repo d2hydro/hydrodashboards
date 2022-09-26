@@ -113,6 +113,21 @@ def get_visible_sources(figs):
     return [i.data_source for i in renderers]
 
 
+def value_as_datetime(value):
+    ''' Convenience property to retrieve the value tuple as a tuple of
+    datetime objects.
+
+    Added in version 1.1
+    '''
+    if value is None:
+        return None
+    v1, v2 = value
+    if isinstance(v1, float):
+        v1 = datetime.utcfromtimestamp(v1 / 1000)
+    if isinstance(v2, float):
+        v1 = datetime.utcfromtimestamp(v2 / 1000)
+    return v1, v2
+
 """
 All callbacks used in the app
 """
@@ -365,9 +380,14 @@ def update_on_search_time_series_value(attrname, old, new):
 
 def update_on_view_period_value(attrname, old, new):
     """Update periods when view_period value changes"""
-    logger.debug(inspect.stack()[0][3])
+    #logger.debug(inspect.stack()[0][3])
 
-    values_accepted = data.periods.set_view_period(*view_period.value_as_datetime)
+    is_moving = all((new[0] != old[0], new[1] != old[1]))
+    if is_moving:
+        force = True
+    else:
+        force = False
+    values_accepted = data.periods.set_view_period(*view_period.value_as_datetime, force)
     if not values_accepted:
         view_period.value = (data.periods.view_start, data.periods.view_end)
 
@@ -381,14 +401,19 @@ def update_on_view_period_value_throttled(attrname, old, new):
     """Update time_series_sources as view_x_range"""
     logger.debug(inspect.stack()[0][3])
 
-    update_time_series_sources()
+    view_x_range.start, view_x_range.end = (data.periods.view_start, data.periods.view_end)
 
+    update_time_series_sources()
     # updating the figure_layout y_ranges
     time_figure_widget.update_time_series_y_ranges(time_figure_layout, fit_y_axis=True)
-
     # toggle download button
     figs = time_figure_layout.children[0].children
     toggle_download_button_on_sources(get_visible_sources(figs))
+
+    # update patch source
+    if type(search_time_figure_layout.children[0]) != Div:
+        search_time_figure_layout.children[0].renderers[0].data_source.data.update(
+            sources.view_period_patch_source(data.periods).data)
 
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
@@ -396,7 +421,7 @@ def update_on_view_period_value_throttled(attrname, old, new):
 
 def update_on_view_x_range_change(attrname, old, new):
     """Update view_period widget when view_x_range changes."""
-    logger.debug(inspect.stack()[0][3])
+    #logger.debug(inspect.stack()[0][3])
 
     start, end = view_x_range_as_datetime()
     view_x_range.reset_start = start
@@ -522,8 +547,8 @@ search_time_series.on_change("value", update_on_search_time_series_value)
 view_period = view_period_widget.make_view_period(data.periods)
 view_period.on_change("value", update_on_view_period_value)
 view_period.on_change("value_throttled", update_on_view_period_value_throttled)
-view_period.js_link("value_throttled", view_x_range, "start", attr_selector=0)
-view_period.js_link("value_throttled", view_x_range, "end", attr_selector=1)
+#view_period.js_link("value_throttled", view_x_range, "start", attr_selector=0)
+#view_period.js_link("value_throttled", view_x_range, "end", attr_selector=1)
 
 # Search time figure widget
 search_x_range = time_figure_widget.make_x_range(data.periods, graph="search_fig")
