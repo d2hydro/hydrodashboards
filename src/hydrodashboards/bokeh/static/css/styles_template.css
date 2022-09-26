@@ -14,39 +14,38 @@ body {
     font-weight: 320;
     line-height: 1.7em;
 }
-
 @keyframes spinner {
   to {transform: rotate(360deg);}
 }
-.bk.loaderzoekgrafiek{    
-  height: 100vh;
+
+.bk.download_spinner{    
+ display:flex;  
   opacity: 1;
-  position: relative;
   transition: opacity linear 0.1s;  
-  display:block; 
+
   visibility: hidden;  
 }
-.bk.loaderzoekgrafiek::before {
-  content: '';
+.bk.download_spinner:after {
+ content: '';
   box-sizing: border-box;
   position: absolute;
-  top: 50%;
-  left: 50%;
+  margin-left:340px; 
   width: 20px;
   height: 20px;
-  margin-top: -10px;
-  margin-left: -10px;
+  margin-top: -18px;
   border-radius: 50%;
-  border: 2px solid #ccc;
+  border: 2px solid #F16996;
   border-top-color: #000;
   animation: spinner .6s linear infinite;
   visibility: visible;
 }
 
-.bk.stoploading{
+.bk.stoploading_download_spinner{
 color: blue;
-background-color: blue;
-border-color: blue;
+}
+
+@keyframes spinner {
+  to {transform: rotate(360deg);}
 }
 
 .bk.loader_time_fig{    

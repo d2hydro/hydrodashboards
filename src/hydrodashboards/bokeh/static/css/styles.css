@@ -30,10 +30,10 @@ body {
  content: '';
   box-sizing: border-box;
   position: absolute;
- 
+  margin-left:340px; 
   width: 20px;
   height: 20px;
- 
+  margin-top: -18px;
   border-radius: 50%;
   border: 2px solid #F16996;
   border-top-color: #000;
@@ -44,6 +44,8 @@ body {
 .bk.stoploading_download_spinner{
 color: blue;
 }
+
+
 
 @keyframes spinner {
   to {transform: rotate(360deg);}
