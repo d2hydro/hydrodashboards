@@ -74,6 +74,6 @@
     },
     "root_filter": "WDB",
     "ssl_verify": false,
-    "thematic_view": false,
+    "thematic_view": true,
     "title": "WAM Portaal"
 }
