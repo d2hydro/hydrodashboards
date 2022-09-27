@@ -62,7 +62,7 @@ def toggle_download_button_on_sources(sources):
 
 def enable_update_graph():
     """Enable update_graph if locations ánd paramters are selected."""
-    if (len(locations.value) > 0) & (len(parameters.value) > 0):
+    if all((len(getattr(i, config.filter_selector)) > 0 for i in (locations, parameters))):
         update_graph.disabled = False
     else:
         update_graph.disabled = True
@@ -134,36 +134,56 @@ All callbacks used in the app
 
 
 # callbacks
-def update_on_theme_value(attr, old, new):
+def update_on_theme_selector(attr, old, new):
     """Updates filters in filters filter when filters filter is updated"""
     logger.debug(inspect.stack()[0][3])
 
     filters_filter = filters[1]
-    options, values = data.filters.get_filter_options(new)
+    if config.filter_type == "MultiSelect":
+        # get options and values
+        options, values, _ = data.filters.get_filter_options(values=new)
 
-    filters_filter.options = options
-    filters_filter.value = [i for i in filters_filter.value if i in values]
+        # set filters_filter
+        filters_filter.options = options
+        filters_filter.value = [i for i in filters_filter.value if i in values]
+    elif config.filter_type == "CheckBoxGroup":
+        # get labels
+        options, _, labels = data.filters.get_filter_options(actives=new)
+        active_labels = [filters_filter.labels[i] for i in filters_filter.active]
 
+        # set filters_filter
+        filters_filter.labels = labels
+        filters_filter.active = [labels.index(i) for i in active_labels if i in labels]
+        data.filters.thematic_filters[1].options = options
 
-def update_on_filter_value(attrname, old, new):
+def update_on_filter_selector(attrname, old, new):
     """Updates locations values in locations filter when filters filter is updated"""
     logger.debug(inspect.stack()[0][3])
 
-    # update datamodel
-    values = filters_widgets.get_filters_values(filters, config.thematic_view)
-    data.update_on_filter_select(values)
+    if config.filter_type == "MultiSelect":
+        # update datamodel
+        values = filters_widgets.get_filters_values(filters, config.thematic_view)
+        data.update_on_filter_select(values)
 
-    # update widgets
-    locations.options = data.locations.options
-    locations.value = data.locations.value
-    parameters.options = data.parameters.options
-    parameters.value = data.parameters.value
+        # update widgets
+        locations.options = data.locations.options
+        locations.value = data.locations.value
+        parameters.options = data.parameters.options
+        parameters.value = data.parameters.value
+    elif config.filter_type == "CheckBoxGroup":
+        actives = filters_widgets.get_filters_actives(filters, config.thematic_view)
+        data.update_on_filter_select(actives)
+
+        locations.labels = data.locations.labels
+        locations.active = data.locations.active
+        parameters.labels = data.parameters.labels
+        parameters.active = data.parameters.active
 
     # update source
     locations_source.data = data.locations.map_locations
 
     # update selected
-    indices = [locations_source.data["id"].index(i) for i in locations.value]
+    indices = [locations_source.data["id"].index(i) for i in data.locations.value]
     locations_source.selected.indices = indices
 
     # update app status
@@ -184,24 +204,36 @@ def update_on_locations_source_select(attr, old, new):
     locations.value = ids
 
 
-def update_on_locations_value(attr, old, new):
+def update_on_locations_selector(attr, old, new):
     """Update when values in locations filter are selected"""
     logger.debug(inspect.stack()[0][3])
 
-    # limit to max 10 locations
-    if len(new) > 10:
-        locations.value = old
+    if config.filter_type == "MultiSelect":
+        # limit to max 10 locations
+        if len(new) > 10:
+            locations.value = old
+        # update location source selected
+        indices = [list(locations_source.data["id"]).index(i) for i in locations.value]
+        locations_source.selected.indices = indices
 
-    # update location source selected
-    indices = [list(locations_source.data["id"]).index(i) for i in locations.value]
-    locations_source.selected.indices = indices
+        # update datamodel
+        data.update_on_locations_select(locations.value)
 
-    # update datamodel
-    data.update_on_locations_select(locations.value)
+        # update parameters options for (de)selected locations
+        parameters.options = data.parameters.options
+        parameters.value = data.parameters.value
 
-    # update parameters options for (de)selected locations
-    parameters.options = data.parameters.options
-    parameters.value = data.parameters.value
+    elif config.filter_type == "CheckBoxGroup":
+        if len(new) > 10:
+            locations.active = old
+        data.locations.set_active(new)
+
+        # update datamodel
+        data.update_on_locations_select(data.locations.value)
+
+        # update parameters options for (de)selected locations
+        parameters.labels = data.parameters.labels
+        parameters.active = data.parameters.active
 
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
@@ -210,12 +242,15 @@ def update_on_locations_value(attr, old, new):
     enable_update_graph()
 
 
-def update_on_parameters_value(attrname, old, new):
+def update_on_parameters_selector(attrname, old, new):
     """Update when values in locations filter are selected"""
     logger.debug(inspect.stack()[0][3])
 
-    # update datemodel
-    data.parameters.value = parameters.value
+    if config.filter_type == "MultiSelect":
+        # update datemodel
+        data.parameters.set_value(parameters.value)
+    elif config.filter_type == "CheckBoxGroup":
+        data.parameters.set_active(parameters.active)
 
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
@@ -501,21 +536,21 @@ In this section we define all widgets. We pass callbacks and sources to every wi
 
 # Filters widget
 if config.thematic_view:
-    on_change = {"themes": [("value", update_on_theme_value)],
-                 "filters": [("value", update_on_filter_value)]}
+    on_change = {"themes": [update_on_theme_selector],
+                 "filters": [update_on_filter_selector]}
 else:
-    on_change = [("value", update_on_filter_value)]
+    on_change = [update_on_filter_selector]
 filters = filters_widgets.make_filters(data=data.filters,
                                        on_change=on_change,
                                        filter_type=config.filter_type,
                                        thematic_view=config.thematic_view)
 
 # Locations widget
-on_change = [("value", update_on_locations_value)]
+on_change = [update_on_locations_selector]
 locations = filters_widgets.make_filter(data=data.locations, on_change=on_change, filter_type=config.filter_type)
 
 # Parameters widget
-on_change = [("value", update_on_parameters_value)]
+on_change = [update_on_parameters_selector]
 parameters = filters_widgets.make_filter(data=data.parameters, on_change=on_change, filter_type=config.filter_type)
 
 # Search period widget
@@ -580,12 +615,15 @@ curdoc().add_root(column(Div(text=f"<h3>{config.title}</h3>"),
                          name="app_title",
                          sizing_mode="stretch_width"))
 
-filters_layout = column(filters, name="filters", sizing_mode="stretch_width")
-if (config.filter_type == "MultiSelect") and (not config.thematic_view):
-    filters_widgets.clear_control(filters_layout)
+print(filters)
+filters_layout = filters_widgets.finish_filters(filters, filter_type=config.filter_type, thematic_view=config.thematic_view)
 curdoc().add_root(filters_layout)
-curdoc().add_root(column(locations, name="locations", sizing_mode="stretch_width"))
-curdoc().add_root(column(parameters, name="parameters", sizing_mode="stretch_width"))
+
+locations_layout = filters_widgets.finish_filter(locations, filter_type=config.filter_type)
+curdoc().add_root(column(locations_layout, name="locations", sizing_mode="stretch_width"))
+
+parameters_layout = filters_widgets.finish_filter(parameters, filter_type=config.filter_type)
+curdoc().add_root(column(parameters_layout, name="parameters", sizing_mode="stretch_width"))
 curdoc().add_root(
     column(search_period, name="search_period", sizing_mode="stretch_both")
 )

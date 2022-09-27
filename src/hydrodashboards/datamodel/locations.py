@@ -133,7 +133,7 @@ class Locations(Filter):
             options.sort(key=lambda a: a[1])
         values = [i[0] for i in options]
         self.options = options
-        self.value = [i for i in self.value if i in values]
+        self.set_value([i for i in self.value if i in values])
 
     def options_from_headers_df(self, headers_df: pd.DataFrame):
         """

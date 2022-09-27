@@ -51,7 +51,7 @@
         "child_filters": 8,
         "filters": 4
     },
-    "filter_type": "MultiSelect",
+    "filter_type": "CheckBoxGroup",
     "headers_full_history": [
         "WDB_FC_MPN",
         "WDB_ML_KNMI",

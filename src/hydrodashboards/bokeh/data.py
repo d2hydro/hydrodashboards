@@ -259,12 +259,12 @@ class Data:
 
         return html
 
-    def update_on_filter_select(self, values: list):
+    def update_on_filter_select(self, selected: list):
         """
         Update data-class on selected filter
 
         Args:
-            values (list): List with selected filter ids.
+            selected (list): List with selected filter ids or indices.
 
         Returns:
             None.
@@ -312,6 +312,12 @@ class Data:
 
         all_locations = []
         all_parameters = []
+
+        if self.config.filter_type == "MultiSelect":
+            values = selected
+        elif self.config.filter_type == "CheckBoxGroup":
+            values = self.filters.values_by_actives(selected)
+            print(values)
 
         for filter_id in values:
             filter_data = self.filters.get_filter(filter_id)
@@ -370,7 +376,7 @@ class Data:
         """
 
         # update locations.value to values
-        self.locations.value = values
+        self.locations.set_value(values)
 
         # update parameters to selected values
         if values:

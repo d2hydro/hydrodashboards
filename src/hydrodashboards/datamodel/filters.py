@@ -32,7 +32,7 @@ class Filters:
             else:
                 options = []
             return TimeSeriesFilter(
-                id=fews_filter["id"], title=title, value=value, options=options
+                id=fews_filter["id"], title=title, _value=value, options=options
             )
 
         children = pi_filters[0]["child"]
@@ -42,7 +42,7 @@ class Filters:
     def generate_thematic_filters(self):
         theme = {}
         theme["options"] = [(i.id, i.title) for i in self.filters]
-        theme["value"] = [i.id for i in self.filters if i.value]
+        theme["_value"] = [i.id for i in self.filters if i.value]
         theme["id"] = "themes"
         theme["title"] = "Thema's"
 
@@ -51,11 +51,26 @@ class Filters:
         filters["title"] = "Filters"
         return [TimeSeriesFilter(**theme), TimeSeriesFilter(**filters)]
 
-    def get_filter_options(self, themes):
-        options = [i.options for i in self.filters if i.id in themes]
+    def get_filter_options(self, values = [], actives = []):
+        if values:
+            options = [i.options for i in self.filters if i.id in values]
+        elif actives:
+            options = [self.filters[i].options for i in actives]
         options = [j for i in options for j in i]
         values = [i[0] for i in options]
-        return options, values
+        labels = [i[1] for i in options]
+        return options, values, labels
+
+    def values_by_actives(self, actives):
+        if self.thematic_view:
+            self.thematic_filters[1].set_active(actives)
+            values = self.thematic_filters[1].value
+        else:
+            for idx, i in enumerate(self.filters):
+                i.set_active(actives[idx])
+            values = [i.value for i in self.filters]
+            values = [j for i in values for j in i]
+        return values
 
     def get_filter(self, id):
         return next((i for i in self.filters if id in [j[0] for j in i.options]), None)

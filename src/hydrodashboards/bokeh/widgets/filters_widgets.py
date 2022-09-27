@@ -1,4 +1,5 @@
-from bokeh.models.widgets import MultiSelect, CheckboxGroup
+from bokeh.models.widgets import MultiSelect, CheckboxGroup, Div
+from bokeh.layouts import column
 from bokeh.models import CustomJS
 from typing import List, Union
 
@@ -36,15 +37,18 @@ def make_filter(data, on_change=[], filter_type="MultiSelect", filter_length=5) 
         bokeh_filter = MultiSelect(title=data.title, value=data.value, options=data.options)
         bokeh_filter.size = min(len(bokeh_filter.options), filter_length)
         bokeh_filter.css_classes = ["multiselect_filter"]
-        if type(on_change) == list:
-            for i in on_change:
-                bokeh_filter.on_change(*i)
-        elif type(on_change) == dict:
-            for i in on_change[data.id]:
-                bokeh_filter.on_change(*i)
+        selector = "value"
     elif filter_type == "CheckBoxGroup":
         bokeh_filter = CheckboxGroup(active=data.active, labels=data.labels, name=data.title)
         bokeh_filter.css_classes = ["checkbox_filter"]
+        selector = "active"
+
+    if type(on_change) == list:
+        for i in on_change:
+            bokeh_filter.on_change(selector, i)
+    elif type(on_change) == dict:
+        for i in on_change[data.id]:
+            bokeh_filter.on_change(selector, i)
 
     bokeh_filter.sizing_mode = SIZING_MODE
     
@@ -71,9 +75,37 @@ def get_filters_values(filters, thematic_view=False) -> List[MultiSelect]:
     return values
 
 
+def get_filters_actives(filters, thematic_view=False) -> List[MultiSelect]:
+    """Return a all active in a list of lists of Bokeh CheckBoxGroup filters"""
+    if thematic_view:
+        active = filters[1].active
+    else:
+        active = [i.active for i in filters]
+    return active
+
+
 def set_filter_values(filters, filter_ids):
     """Set filter values on a selected set of filter_ids."""
     for i in filters:
         value = [j[0] for j in i.options if j[0] in filter_ids]
         if value:
             i.value = value
+
+
+def finish_filter(filter, filter_type="MultiSelect"):
+    if filter_type == "CheckBoxGroup":
+        filter = [Div(text=filter.name, sizing_mode="stretch_width"), filter]
+    return filter
+
+
+def finish_filters(filters, filter_type="MultiSelect", thematic_view=False):
+    if (filter_type == "MultiSelect"):
+        filters_layout = column(filters, name="filters", sizing_mode="stretch_width")
+        if not thematic_view:
+            clear_control(filters_layout)
+    elif filter_type == "CheckBoxGroup":
+        filters = [finish_filter(i, filter_type=filter_type) for i in filters]
+        filters = [i for j in filters for i in j]
+        filters_layout = column(filters, name="filters", sizing_mode="stretch_width")
+
+    return filters_layout

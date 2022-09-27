@@ -51,7 +51,7 @@ class Parameters(Filter):
 
     def clean_value(self):
         values = [i[0] for i in self.options]
-        self.value = [i for i in self.value if i in values]
+        self.set_value([i for i in self.value if i in values])
 
     def get_groups(self, parameter_source="fews"):
         if parameter_source == "fews":

@@ -37,3 +37,10 @@ class Config:
         filters = self.filter_dimensions["filters"]
         children = self.filter_dimensions["child_filters"]
         return 61 * filters + (children - filters) * 17
+
+    @property
+    def filter_selector(self):
+        if self.filter_type == "MultiSelect":
+            return "value"
+        elif self.filter_type == "CheckBoxGroup":
+            return "active"
