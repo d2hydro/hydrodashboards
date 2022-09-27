@@ -51,11 +51,11 @@ class Filters:
         filters["title"] = "Filters"
         return [TimeSeriesFilter(**theme), TimeSeriesFilter(**filters)]
 
-    def get_filter_options(self, values = [], actives = []):
-        if values:
-            options = [i.options for i in self.filters if i.id in values]
-        elif actives:
-            options = [self.filters[i].options for i in actives]
+    def get_filter_options(self, value = None, active = None):
+        if value is not None:
+            options = [i.options for i in self.filters if i.id in value]
+        elif active is not None:
+            options = [self.filters[i].options for i in active]
         options = [j for i in options for j in i]
         values = [i[0] for i in options]
         labels = [i[1] for i in options]

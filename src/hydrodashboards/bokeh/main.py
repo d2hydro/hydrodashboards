@@ -141,14 +141,14 @@ def update_on_theme_selector(attr, old, new):
     filters_filter = filters[1]
     if config.filter_type == "MultiSelect":
         # get options and values
-        options, values, _ = data.filters.get_filter_options(values=new)
+        options, values, _ = data.filters.get_filter_options(value=new)
 
         # set filters_filter
         filters_filter.options = options
         filters_filter.value = [i for i in filters_filter.value if i in values]
     elif config.filter_type == "CheckBoxGroup":
         # get labels
-        options, _, labels = data.filters.get_filter_options(actives=new)
+        options, _, labels = data.filters.get_filter_options(active=new)
         active_labels = [filters_filter.labels[i] for i in filters_filter.active]
 
         # set filters_filter
