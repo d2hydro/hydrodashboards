@@ -10,13 +10,28 @@ disclaimer_json = json.dumps([
     ])
 
 download_js = """
+function resolveAfter1Seconds() {
+  console.log("starting fast promise");
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve("fast");
+      console.log("fast promise is done");
+      button.css_classes = ["download_spinner"];    
+    }, 50);
+  });
+}  
 
+async function sequentialStart() {
+console.log("==SEQUENTIAL START==");
 
-
-setTimeout(loading,1); 
-console.log(button.css_classes); 
-
-    
+// 1. Execution gets here almost instantly
+const fast = await resolveAfter1Seconds();
+console.log(fast); // 1. this runs  seconds
+  
+const slow = await resolveAfter2Seconds();
+console.log(slow); // 2. this runs 2 seconds after 1.
+}
+ 
 function loading() {
     button.css_classes = ["download_spinner"];    
 }
@@ -36,64 +51,61 @@ function getTimeZone() {
     } else {
         return String(([time_zone_summer, time_zone_winter])).replace(",", "/");
     }
-        setTimeout(loading,100);
     }
 
-function makeHeader(data, tags) {
-   
+function makeHeader(data, tags) {   
     data.forEach((item, index) => {
         data[index] = [item, tags[index]]
     })
 }
 
 function addEvents(data, source) {
-
     source.data["datetime"].forEach((item, index) => {
-        data.push([new Date(item), source.data["value"][index]])
-       
+        data.push([new Date(item), source.data["value"][index]])      
     })
 }
 
-function write_excel(){
+function write_excel(wb,filename){
     XLSX.writeFile(wb, filename, {
     cellDates: true
     
 })
-setTimeout(stoploading,1000); 
+setTimeout(stoploading,50); 
 }
 
-// the constants we declare                                           
-const time_zone = getTimeZone();
-setTimeout(loading,1);
-const event = new Date();
-const options = {
+function resolveAfter2Seconds(){ 
+  console.log("starting slow promise");
+  return new Promise((resolve) => {
+   setTimeout(() => {
+   resolve("slow");
+   console.log("slow promise is done");
+    // the constants we declare                                           
+    const time_zone = getTimeZone();
+    setTimeout(loading,1);
+    const event = new Date();
+    const options = {
     year: 'numeric',
     month: 'numeric',
     day: 'numeric'
-};
+    };
 
 // new workbook
-setTimeout(loading,1);
 var filename = "TimeSeries_" + event.toLocaleDateString(options) + "T" + event.toLocaleTimeString() + ".xlsx";
-setTimeout(loading,100);
 var wb = XLSX.utils.book_new();
 var col_num = 0
 
 // add disclaimer
-setTimeout(loading,1);
 disclaimer = JSON.parse(disclaimer)
 disclaimer.push(["* De datumtijd-stappen zijn weergegeven in tijdzone: " + time_zone])
 var ws_disclaimer = XLSX.utils.aoa_to_sheet(disclaimer);
 
 // add data
-setTimeout(loading,1);
 var ws_data = XLSX.utils.aoa_to_sheet([], {
     dateNF: 'yyyy-mm-dd hh:mm:ss'
 });
 
 // this we need to make an iter function
 for (let i = 0; i < figure.children[0].children.length; i++) { //iterate figures
-    setTimeout(loading,1); 
     var renderers = figure.children[0].children[i].renderers
     for (let j = 0; j < renderers.length; j++) { //iterate renderers
         var renderer = renderers[j]
@@ -124,22 +136,21 @@ for (let i = 0; i < figure.children[0].children.length; i++) { //iterate figures
     }
 }
 
-
 //append worksheeds to workbook
-setTimeout(loading,10);
 ws_data['!cols'] = Array(col_num).fill({
     width: 20
 })
-setTimeout(loading,1);
+
 XLSX.utils.book_append_sheet(wb, ws_disclaimer, "disclaimer")
-setTimeout(loading,1);
 XLSX.utils.book_append_sheet(wb, ws_data, "gegevens")
-setTimeout(loading,1);
 
 // save workbook to file export.xlsx
-write_excel()
+write_excel(wb,filename)
+  }, 500);
+  });
+}
 
-
+sequentialStart(); // 
 """
 
 

@@ -30,10 +30,10 @@ body {
  content: '';
   box-sizing: border-box;
   position: absolute;
-  margin-left:340px; 
+  margin-left:350px; 
   width: 20px;
   height: 20px;
-  margin-top: -18px;
+  margin-top: -25px;
   border-radius: 50%;
   border: 2px solid #F16996;
   border-top-color: #000;
