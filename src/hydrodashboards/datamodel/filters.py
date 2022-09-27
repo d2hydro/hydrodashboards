@@ -7,13 +7,14 @@ SIZING_MODE = "stretch_width"
 
 
 @dataclass
-class LocationsFilter(Filter):
+class TimeSeriesFilter(Filter):
     id: str = None
     cache: dict = field(default_factory=dict)
-        
+
+
 @dataclass
 class Filters:
-    filters: List[LocationsFilter] = field(default_factory=list)
+    filters: List[TimeSeriesFilter] = field(default_factory=list)
 
     @classmethod
     def from_fews(cls, pi_filters: dict = None):
@@ -24,7 +25,7 @@ class Filters:
                 options = [(i["id"], i["name"]) for i in fews_filter["child"]]
             else:
                 options = []
-            return LocationsFilter(
+            return TimeSeriesFilter(
                 id=fews_filter["id"], title=title, value=value, options=options
             )
 

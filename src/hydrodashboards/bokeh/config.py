@@ -19,6 +19,7 @@ class Config:
     exclude_pars: list = field(default_factory=list)
     headers_full_history: list = field(default_factory=list)
     ssl_verify: bool = False
+    thematic_view: bool = False
     history_period: int = 3650
 
     @classmethod

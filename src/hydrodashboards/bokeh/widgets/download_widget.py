@@ -67,7 +67,8 @@ function addEvents(data, source) {
 
 function write_excel(wb,filename){
     XLSX.writeFile(wb, filename, {
-    cellDates: true
+    cellDates: true,
+    compression: true
     
 })
 setTimeout(stoploading,50); 

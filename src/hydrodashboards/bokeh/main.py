@@ -490,7 +490,10 @@ In this section we define all widgets. We pass callbacks and sources to every wi
 
 # Filters widget
 on_change = [("value", update_on_filter_value)]
-filters = filters_widgets.make_filters(data=data.filters, on_change=on_change, filter_type=config.filter_type)
+filters = filters_widgets.make_filters(data=data.filters,
+                                       on_change=on_change,
+                                       filter_type=config.filter_type,
+                                       thematic_view=config.thematic_view)
 
 # Locations widget
 on_change = [("value", update_on_locations_value)]
@@ -547,8 +550,6 @@ search_time_series.on_change("value", update_on_search_time_series_value)
 view_period = view_period_widget.make_view_period(data.periods)
 view_period.on_change("value", update_on_view_period_value)
 view_period.on_change("value_throttled", update_on_view_period_value_throttled)
-#view_period.js_link("value_throttled", view_x_range, "start", attr_selector=0)
-#view_period.js_link("value_throttled", view_x_range, "end", attr_selector=1)
 
 # Search time figure widget
 search_x_range = time_figure_widget.make_x_range(data.periods, graph="search_fig")
