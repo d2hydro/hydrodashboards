@@ -134,12 +134,23 @@ All callbacks used in the app
 
 
 # callbacks
+def update_on_theme_value(attr, old, new):
+    """Updates filters in filters filter when filters filter is updated"""
+    logger.debug(inspect.stack()[0][3])
+
+    filters_filter = filters[1]
+    options, values = data.filters.get_filter_options(new)
+
+    filters_filter.options = options
+    filters_filter.value = [i for i in filters_filter.value if i in values]
+
+
 def update_on_filter_value(attrname, old, new):
     """Updates locations values in locations filter when filters filter is updated"""
     logger.debug(inspect.stack()[0][3])
 
     # update datamodel
-    values = filters_widgets.get_filters_values(filters)
+    values = filters_widgets.get_filters_values(filters, config.thematic_view)
     data.update_on_filter_select(values)
 
     # update widgets
@@ -489,7 +500,11 @@ In this section we define all widgets. We pass callbacks and sources to every wi
 """
 
 # Filters widget
-on_change = [("value", update_on_filter_value)]
+if config.thematic_view:
+    on_change = {"themes": [("value", update_on_theme_value)],
+                 "filters": [("value", update_on_filter_value)]}
+else:
+    on_change = [("value", update_on_filter_value)]
 filters = filters_widgets.make_filters(data=data.filters,
                                        on_change=on_change,
                                        filter_type=config.filter_type,
@@ -566,7 +581,7 @@ curdoc().add_root(column(Div(text=f"<h3>{config.title}</h3>"),
                          sizing_mode="stretch_width"))
 
 filters_layout = column(filters, name="filters", sizing_mode="stretch_width")
-if config.filter_type == "MultiSelect":
+if (config.filter_type == "MultiSelect") and (not config.thematic_view):
     filters_widgets.clear_control(filters_layout)
 curdoc().add_root(filters_layout)
 curdoc().add_root(column(locations, name="locations", sizing_mode="stretch_width"))

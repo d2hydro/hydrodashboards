@@ -60,7 +60,7 @@ class Data:
         self.periods = Periods(self.now, history_period=self.config.history_period)
 
         # data-classes linked to dashboard
-        self.filters = Filters.from_fews(self._fews_filters)
+        self.filters = Filters.from_fews(self._fews_filters, thematic_view=config.thematic_view)
         self.locations = Locations.from_fews(self._fews_root_locations,
                                              attributes=self.config.location_attributes)
         self.parameters = Parameters.from_fews(

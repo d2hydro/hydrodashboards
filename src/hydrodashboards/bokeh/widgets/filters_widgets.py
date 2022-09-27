@@ -36,9 +36,12 @@ def make_filter(data, on_change=[], filter_type="MultiSelect", filter_length=5) 
         bokeh_filter = MultiSelect(title=data.title, value=data.value, options=data.options)
         bokeh_filter.size = min(len(bokeh_filter.options), filter_length)
         bokeh_filter.css_classes = ["multiselect_filter"]
-
-        for i in on_change:
-            bokeh_filter.on_change(*i)
+        if type(on_change) == list:
+            for i in on_change:
+                bokeh_filter.on_change(*i)
+        elif type(on_change) == dict:
+            for i in on_change[data.id]:
+                bokeh_filter.on_change(*i)
     elif filter_type == "CheckBoxGroup":
         bokeh_filter = CheckboxGroup(active=data.active, labels=data.labels, name=data.title)
         bokeh_filter.css_classes = ["checkbox_filter"]
@@ -58,10 +61,14 @@ def make_filters(data, on_change=[], filter_type="MultiSelect", filter_length=5,
     return filters
 
 
-def get_filters_values(filters) -> List[MultiSelect]:
+def get_filters_values(filters, thematic_view=False) -> List[MultiSelect]:
     """Return all values from a list of Bokeh MultiSelect filters."""
-    values = [i.value for i in filters]
-    return [i for j in values for i in j]
+    if thematic_view:
+        values = filters[1].value
+    else:
+        values = [i.value for i in filters]
+        values = [i for j in values for i in j]
+    return values
 
 
 def set_filter_values(filters, filter_ids):

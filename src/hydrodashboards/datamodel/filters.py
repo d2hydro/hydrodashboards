@@ -15,9 +15,15 @@ class TimeSeriesFilter(Filter):
 @dataclass
 class Filters:
     filters: List[TimeSeriesFilter] = field(default_factory=list)
+    thematic_view: bool = False
+    thematic_filters: List[TimeSeriesFilter] = field(default_factory=list)
+
+    def __post_init__(self):
+        if self.thematic_view:
+            self.thematic_filters = self.generate_thematic_filters()
 
     @classmethod
-    def from_fews(cls, pi_filters: dict = None):
+    def from_fews(cls, pi_filters: dict = None, thematic_view=False):
         def _pi_to_dict(fews_filter: dict) -> Filter:
             title = f'{fews_filter["name"]}'
             value = []
@@ -31,7 +37,25 @@ class Filters:
 
         children = pi_filters[0]["child"]
 
-        return cls(filters=[_pi_to_dict(i) for i in children])
+        return cls(filters=[_pi_to_dict(i) for i in children], thematic_view=thematic_view)
+
+    def generate_thematic_filters(self):
+        theme = {}
+        theme["options"] = [(i.id, i.title) for i in self.filters]
+        theme["value"] = [i.id for i in self.filters if i.value]
+        theme["id"] = "themes"
+        theme["title"] = "Thema's"
+
+        filters = {}
+        filters["id"] = "filters"
+        filters["title"] = "Filters"
+        return [TimeSeriesFilter(**theme), TimeSeriesFilter(**filters)]
+
+    def get_filter_options(self, themes):
+        options = [i.options for i in self.filters if i.id in themes]
+        options = [j for i in options for j in i]
+        values = [i[0] for i in options]
+        return options, values
 
     def get_filter(self, id):
         return next((i for i in self.filters if id in [j[0] for j in i.options]), None)
