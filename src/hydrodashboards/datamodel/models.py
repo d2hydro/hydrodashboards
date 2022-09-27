@@ -28,13 +28,15 @@ class Filter:
             return self._active
         else:
             ids = [i[0] for i in self.options]
-            return [ids.find(i) for i in self._value]
+            return [ids.index(i) for i in self._value]
 
     def get_values_by_actives(self, actives):
         return [self.options[i][0] for i in actives]
 
     def set_value(self, value):
         self._value = value
+        self._active = []
 
     def set_active(self, active):
         self._active = active
+        self._value = []

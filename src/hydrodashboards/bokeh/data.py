@@ -317,7 +317,6 @@ class Data:
             values = selected
         elif self.config.filter_type == "CheckBoxGroup":
             values = self.filters.values_by_actives(selected)
-            print(values)
 
         for filter_id in values:
             filter_data = self.filters.get_filter(filter_id)

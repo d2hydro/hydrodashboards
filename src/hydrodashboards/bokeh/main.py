@@ -200,8 +200,13 @@ def update_on_locations_source_select(attr, old, new):
         ids.sort()
         ids = ids[:10]
 
+    data.locations.set_value(ids)
+
     # update locations and data.locations value
-    locations.value = ids
+    if config.filter_type == "MultiSelect":
+        locations.value = data.locations.value
+    elif config.filter_type == "CheckBoxGroup":
+        locations.active = data.locations.active
 
 
 def update_on_locations_selector(attr, old, new):
@@ -212,11 +217,9 @@ def update_on_locations_selector(attr, old, new):
         # limit to max 10 locations
         if len(new) > 10:
             locations.value = old
-        # update location source selected
-        indices = [list(locations_source.data["id"]).index(i) for i in locations.value]
-        locations_source.selected.indices = indices
 
         # update datamodel
+        data.locations.set_value(new)
         data.update_on_locations_select(locations.value)
 
         # update parameters options for (de)selected locations
@@ -226,14 +229,18 @@ def update_on_locations_selector(attr, old, new):
     elif config.filter_type == "CheckBoxGroup":
         if len(new) > 10:
             locations.active = old
-        data.locations.set_active(new)
-
+        
         # update datamodel
+        data.locations.set_active(new)
         data.update_on_locations_select(data.locations.value)
 
         # update parameters options for (de)selected locations
         parameters.labels = data.parameters.labels
         parameters.active = data.parameters.active
+
+    # update location source selected
+    indices = [list(locations_source.data["id"]).index(i) for i in data.locations.value]
+    locations_source.selected.indices = indices
 
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
@@ -615,7 +622,6 @@ curdoc().add_root(column(Div(text=f"<h3>{config.title}</h3>"),
                          name="app_title",
                          sizing_mode="stretch_width"))
 
-print(filters)
 filters_layout = filters_widgets.finish_filters(filters, filter_type=config.filter_type, thematic_view=config.thematic_view)
 curdoc().add_root(filters_layout)
 
