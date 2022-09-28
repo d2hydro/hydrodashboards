@@ -36,11 +36,9 @@ def make_filter(data, on_change=[], filter_type="MultiSelect", filter_length=5) 
     if filter_type == "MultiSelect":
         bokeh_filter = MultiSelect(title=data.title, value=data.value, options=data.options)
         bokeh_filter.size = min(len(bokeh_filter.options), filter_length)
-        bokeh_filter.css_classes = ["multiselect_filter"]
         selector = "value"
     elif filter_type == "CheckBoxGroup":
         bokeh_filter = CheckboxGroup(active=data.active, labels=data.labels, name=data.title)
-        bokeh_filter.css_classes = ["checkbox_filter"]
         selector = "active"
 
     if type(on_change) == list:
@@ -51,7 +49,6 @@ def make_filter(data, on_change=[], filter_type="MultiSelect", filter_length=5) 
             bokeh_filter.on_change(selector, i)
 
     bokeh_filter.sizing_mode = SIZING_MODE
-    
 
     return bokeh_filter
 
@@ -92,9 +89,10 @@ def set_filter_values(filters, filter_ids):
             i.value = value
 
 
-def finish_filter(filter, filter_type="MultiSelect"):
+def finish_filter(filter, filter_type="MultiSelect", css_class_num=1):
     if filter_type == "CheckBoxGroup":
-        filter = [Div(text=filter.name, sizing_mode="stretch_width"), filter]
+        div = Div(text=filter.name, sizing_mode="stretch_width", css_classes = ["filter_title"])
+        filter = [div, filter]
     return filter
 
 
@@ -109,3 +107,11 @@ def finish_filters(filters, filter_type="MultiSelect", thematic_view=False):
         filters_layout = column(filters, name="filters", sizing_mode="stretch_width")
 
     return filters_layout
+
+
+def add_css_classes(filters, locations, parameters):
+    class_num = 1
+    for i in filters + [locations] + [parameters]:
+        if type(i) in [CheckboxGroup, MultiSelect]:
+            i.css_classes = [f"filter_{class_num}"]
+            class_num += 1

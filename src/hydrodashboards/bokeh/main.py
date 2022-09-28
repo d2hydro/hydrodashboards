@@ -621,11 +621,11 @@ In this section we add all widgets to the curdoc
 curdoc().add_root(column(Div(text=f"<h3>{config.title}</h3>"),
                          name="app_title",
                          sizing_mode="stretch_width"))
-
+filters_widgets.add_css_classes(filters, locations, parameters)
 filters_layout = filters_widgets.finish_filters(filters, filter_type=config.filter_type, thematic_view=config.thematic_view)
 curdoc().add_root(filters_layout)
 
-locations_layout = filters_widgets.finish_filter(locations, filter_type=config.filter_type)
+locations_layout= filters_widgets.finish_filter(locations, filter_type=config.filter_type)
 curdoc().add_root(column(locations_layout, name="locations", sizing_mode="stretch_width"))
 
 parameters_layout = filters_widgets.finish_filter(parameters, filter_type=config.filter_type)
