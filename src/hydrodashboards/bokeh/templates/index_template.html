@@ -111,12 +111,18 @@ keyUp();
             <div class="sidebar-bokeh3">
                 {{ embed(roots.parameters) }}
             </div>
-            <div class="sidebar-bokeh6">    
+            <div class="sidebar-bokeh5">    
                 {{ embed(roots.search_period) }}
             </div>            
-            <div class="sidebar-bokeh5">
-                {{ embed(roots.update_graph) }}
-            </div>         
+           </div> 
+	   <div class="row" id="update_download">  			
+		<div class="col-9">
+		    {{ embed(roots.update_graph) }}
+		</div>	
+		<div class="col-2">
+		    {{ embed(roots.download_time_series) }}
+		</div>	
+	  </div>	      
         </nav>
 
         <!-- Page Content Holder -->
@@ -184,9 +190,7 @@ keyUp();
                             <div class="col-5" style="margin-left:-240px;">
                                 {{ embed(roots.select_search_time_series) }}
                             </div> 
-                            <div class="col-2 offset-1">
-                                {{ embed(roots.download_time_series) }}
-                            </div>
+                          
                         </div>
                         <div class="row" id="zoekgrafiek-en-slider" >
                             <div class="col-12"id="grafiek-slider">

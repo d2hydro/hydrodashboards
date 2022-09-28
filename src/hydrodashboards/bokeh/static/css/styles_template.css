@@ -6,6 +6,7 @@
 body {
     font-family: 'Poppins', sans-serif;
     background: #fafafa;
+   height:100%;
 }
 
 .bk-root {
@@ -26,22 +27,40 @@ body {
   visibility: hidden;  
 }
 .bk.download_spinner:after {
- content: '';
+  content: '';
   box-sizing: border-box;
   position: absolute;
-  margin-left:340px; 
+  top: 50%;
+  left: 50%;
   width: 20px;
   height: 20px;
-  margin-top: -18px;
+  margin-top: -10px;
+  margin-left: -10px;
   border-radius: 50%;
   border: 2px solid #F16996;
   border-top-color: #000;
   animation: spinner .6s linear infinite;
   visibility: visible;
 }
-
 .bk.stoploading_download_spinner{
 color: blue;
+}
+
+.bk.bk-btn.bk-btn-success{
+ background-color:#282F3A;
+ background-image: url(/bokeh/static/icons/download.png);
+ background-repeat: no-repeat;
+ background-position: center;
+ color: white;
+ display:inline-block;
+  float: left;
+ display:flex;
+ align-items: left;
+ border-width:0px;
+ height: 30px;
+ min-width:40px;
+ 
+ 
 }
 
 @keyframes spinner {
@@ -78,8 +97,15 @@ color: blue;
 .bk.bk-btn.bk-btn-primary:hover:after{
 }
 .bk.bk-btn.bk-btn-primary{
-	background: #F16996;
+		background: #F16996;
 	border:1px solid black;
+	display:flex;
+	border-color:#495568;
+	height: 30px;
+	width:230px;
+	margin-left:0px;
+	position: inline-block;
+	bottom:auto;
 }
 .bk.bk-input{
 	padding: 2px;
@@ -157,7 +183,7 @@ a, a:hover, a:focus {
 #sidebar {
    min-width: 310px;
     max-width: 310px;
-	background: #495568;
+	background: #3A4453;
     height:100vh;
     color: #fff;
     transition: all 0.6s cubic-bezier(0.945, 0.020, 0.270, 0.665);
@@ -171,11 +197,12 @@ a, a:hover, a:focus {
 }
 
 #sidebar .sidebar-header {
-    padding-right: 10px;
+     padding-right: 10px;
 	padding-left: 10px;
 	padding-top: 10px;
-    background: #3A4453;
-	height:88px;
+    background: #282f3a;
+	height:59px;
+	margin-bottom:5px;
 
 }
 #sidebar .sidebar-bokeh1
@@ -183,64 +210,122 @@ a, a:hover, a:focus {
 #sidebar .sidebar-bokeh2 {
     width: 100%;
 	padding-right: 14px;
-	padding-left:14px;
-	height: 102px;
+	padding-left:14px;	
+
 }
 
 #sidebar .sidebar-bokeh3 {
     width: 100%;
 	padding-right: 14px;
-	padding-left:14px;
-	height: 102px;
-	margin-top:5px;
+	padding-left:14px;	
 }
+
+
 
 
 #sidebar .sidebar-bokeh4 {
     width: 100%;
 	padding-right: 14px;
 	padding-left:14px;
-	height: 56px;
 }
+
 
 #sidebar .sidebar-bokeh5{
   width: 100%;
   padding-right: 14px;
-	padding-left:14px;
-  margin-top:5px;
-  height: 55px;
+  padding-left:14px;
 }
+
+
 
 #sidebar .sidebar-bokeh6{
   width: 100%;
   padding-right: 14px;
   padding-left:14px;
-  height: 55px;
-   margin-top:5px;
+ 
 }
+
+#sidebar .sidebar-bokeh7{
+  width: 100%;
+  padding-right: 14px;
+  padding-left:14px;
+}
+
+#sidebar #update_download{
+  padding-right: 14px;
+  padding-left:14px;
+  margin-top:12px;
+ 
+}
+
 a[data-toggle="collapse"] {
   position: relative;
 }
-
-/* Scrollbar styles */
-::-webkit-scrollbar {
-width: 14px;
-height: 14px;
+:root {
+  accent-color: #F16996;
 }
 
-::-webkit-scrollbar-track {
-background: #f5f5f5;
-border-radius: 4px;
+.bk.bk-input.flatpickr-input{color: white;background-color:#495568;min-width:130px;
+padding: 6px;min-height:20px;border: 0px;color: white}
+/* --------
+.bk.bk-input{color: white;background-color:#495568;
+padding: 6px;min-height:20px;border: 1px;color: white; accent-color: red;}
+----- */
+
+.bk.filter_title{
+	display: inline-block; min-width: 272px; height: 22px;background-color:#282F3A;color:white;margin-top:10px;padding:4px;box-shadow: 5px 10px 20px #495568 inset
+  }
+.bk.app_title{display:inline-block; min-width: 270px;}
+
+.bk.filter_checkboxgroup_1{
+color: white; overflow-y: auto;background:#495568;
+padding: 6px;min-height:74px;
+}
+.bk.filter_checkboxgroup_2{
+color: white; overflow-y: auto;background:#495568;
+padding: 6px;min-height:98px;
+}
+.bk.filter_checkboxgroup_3{
+color: white; overflow-y: auto;background:#495568;
+padding: 6px;min-height:104px;
+}
+.bk.filter_checkboxgroup_4{
+color: white; overflow-y: auto;background:#495568;
+padding: 6px;min-height:86px;
 }
 
-::-webkit-scrollbar-thumb {
-border-radius: 4px;
-background: #ccc;  
+.bk.filter_multiselect_1{
+color: white; background:#3A4453;
+padding: 0px
+}
+.bk.filter_multiselect_2{
+color: white; background:#3A4453;
+padding: 0px
+}
+.bk.filter_multiselect_3{
+color: white; background:#3A4453;
+padding: 0px
+}
+.bk.filter_multiselect_4{
+color: white; background:#3A4453;
+padding: 0px
 }
 
-::-webkit-scrollbar-thumb:hover {
-background: #999;  
+.bk.filter_multiselect_5{
+color: white;background:#3A4453;
+padding: 0px
 }
+.bk.filter_multiselect_6{
+color: white;background:#3A4453;
+padding: 0px
+}
+option.bk{
+ 
+}
+
+
+
+
 /* ---------------------------------------------------
     CONTENT STYLE
 ----------------------------------------------------- */
@@ -512,6 +597,41 @@ width: 100%;
 
 .menu-animation-slider.animation-active {
     padding-right: 57px;
+}
+/* ---------------------------------------------------
+    styles on scrollbar
+----------------------------------------------------- */
+/* Scrollbar styles */
+
+
+::-webkit-scrollbar {
+	width: 12px;
+	height:10px;
+	background-color: #424D5E;
+	border-radius:4px;
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: #3A4453;
+	border-radius:4px;
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
+}
+::-webkit-scrollbar-thumb:hover {
+    background: black;
+}
+::-webkit-scrollbar-corner{
+	background-color: #495568;
+	
+}
+
+::-webkit-scrollbar-track{
+	background-color:#495568
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
+	border-radius:4px;
+	
+}
+::-webkit-scrollbar-button:horizontal:decrement:hover {
+   /* Select the down or left scroll button when it's being hovered by the mouse */
 }
 
 /* ---------------------------------------------------
