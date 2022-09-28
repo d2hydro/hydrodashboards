@@ -34,9 +34,13 @@ class Config:
 
     @property
     def filter_height(self):
-        filters = self.filter_dimensions["filters"]
-        children = self.filter_dimensions["child_filters"]
-        return 61 * filters + (children - filters) * 17
+        if self.thematic_view:
+            height = 240
+        else:
+            filters = self.filter_dimensions["filters"]
+            children = self.filter_dimensions["child_filters"]
+            height = 61 * filters + (children - filters) * 17
+        return height
 
     @property
     def filter_selector(self):
