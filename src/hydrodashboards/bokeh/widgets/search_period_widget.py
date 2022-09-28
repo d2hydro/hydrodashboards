@@ -9,6 +9,7 @@ def make_search_period(data, on_change):
         min_date=data.history_start.strftime("%Y-%m-%d"),
         max_date=data.search_end.strftime("%Y-%m-%d"),
         sizing_mode="stretch_width",
+        css_classes=["search_period"]
     )
     end_date_picker = DatePicker(
         title=data.search_end_title,
@@ -16,6 +17,7 @@ def make_search_period(data, on_change):
         min_date=data.search_start.strftime("%Y-%m-%d"),
         max_date=data.search_end.strftime("%Y-%m-%d"),
         sizing_mode="stretch_width",
+        css_classes=["search_period"]
     )
     start_date_picker.js_link("value", end_date_picker, "min_date")
     end_date_picker.js_link("value", start_date_picker, "max_date")
