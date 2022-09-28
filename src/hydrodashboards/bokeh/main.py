@@ -618,7 +618,8 @@ In this section we add all widgets to the curdoc
 
 
 # left column layout
-curdoc().add_root(column(Div(text=f"<h3>{config.title}</h3>"),
+curdoc().add_root(column(Div(text=f"<h3>{config.title}</h3>",
+                             css_classes=["app_title"]),
                          name="app_title",
                          sizing_mode="stretch_width"))
 filters_widgets.add_css_classes(filters, locations, parameters)
@@ -668,6 +669,8 @@ curdoc().add_root(
 curdoc().add_root(column(view_period, name="view_period", sizing_mode="stretch_both"))
 search_time_figure_layout = column(search_time_figure, name="search_time_figure", sizing_mode="stretch_both")
 curdoc().add_root(search_time_figure_layout)
+
+curdoc().title = config.title
 
 """
 In this section we parse all url parameters
