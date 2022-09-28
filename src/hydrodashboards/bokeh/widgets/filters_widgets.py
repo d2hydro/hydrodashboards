@@ -112,6 +112,8 @@ def finish_filters(filters, filter_type="MultiSelect", thematic_view=False):
 def add_css_classes(filters, locations, parameters):
     class_num = 1
     for i in filters + [locations] + [parameters]:
-        if type(i) in [CheckboxGroup, MultiSelect]:
-            i.css_classes = [f"filter_{class_num}"]
-            class_num += 1
+        if type(i) == MultiSelect:
+            i.css_classes = [f"filter_multiselect_{class_num}"]
+        elif type(i) == CheckboxGroup:
+            i.css_classes = [f"filter_checkboxgroup_{class_num}"]
+        class_num += 1

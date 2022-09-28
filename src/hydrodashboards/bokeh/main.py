@@ -669,8 +669,6 @@ curdoc().add_root(column(view_period, name="view_period", sizing_mode="stretch_b
 search_time_figure_layout = column(search_time_figure, name="search_time_figure", sizing_mode="stretch_both")
 curdoc().add_root(search_time_figure_layout)
 
-curdoc().title = config.title
-
 """
 In this section we parse all url parameters
 """
