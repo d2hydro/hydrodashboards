@@ -156,7 +156,7 @@ sequentialStart(); //
 
 
 def make_button(time_figure_layout):
-    button = Button(label="Download", button_type="success", disabled=True)
+    button = Button(label="", button_type="success", disabled=True)
     
     button.js_event_callbacks['button_click'] = [
         CustomJS(args=dict(figure=time_figure_layout,
