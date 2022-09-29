@@ -33,6 +33,10 @@ DT_JS_FORMAT = r"""
 """
 
 
+def trucate_label(label, length):
+    if len(label) > length:
+        label = f"{label[0:length-3]}..."
+    return label
 
 def range_defaults():
     return  -DELTA/2, DELTA/2
@@ -241,10 +245,7 @@ def top_fig(group: tuple,
 
     y_range = make_y_range(time_series)
     parameters = list(set([i.parameter_name for i in time_series]))
-    if len(parameters) == 1:
-        y_axis_label = parameters[0]
-    else:
-        y_axis_label = parameter_group
+    y_axis_label = parameter_group
 
 
     time_fig = figure(tools=tools,
@@ -254,7 +255,8 @@ def top_fig(group: tuple,
                       y_axis_label=y_axis_label,
                       active_scroll="xwheel_zoom",
                       active_drag="box_zoom",
-                      toolbar_location="above")
+                      toolbar_location="above",
+                      css_classes=["time_figure"])
 
     time_fig.toolbar.logo = None
     time_fig.toolbar.autohide = False
@@ -269,6 +271,7 @@ def top_fig(group: tuple,
     x_start, x_end = date_time_range_as_datetime(x_range)
     for i in time_series:
         label = i.label
+        legend_label = trucate_label(i.label, 30)
         source = time_series_to_source(i,
                                        start_date_time=x_start,
                                        end_date_time=x_end)
@@ -276,7 +279,7 @@ def top_fig(group: tuple,
                                  y="value",
                                  source=source,
                                  color=next(colors),
-                                 legend_label=label,
+                                 legend_label=legend_label,
                                  name=label)
         for i in renderers_on_change:
             renderer.on_change(*i)
@@ -296,6 +299,7 @@ def top_fig(group: tuple,
 
     # make up legend
     time_fig.legend.click_policy = "hide"
+    time_fig.legend.visible = True
 
     if len(time_fig.legend) > 0:
         time_fig.add_layout(time_fig.legend[0], "right")
