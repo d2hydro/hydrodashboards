@@ -210,15 +210,10 @@ def update_on_locations_source_select(attr, old, new):
 
     # get selected ids
     ids = [locations_source.data["id"][i] for i in locations_source.selected.indices]
-    print("len=", len(ids))
 
     if len(ids) > 10:
         ids.sort()
         ids = ids[:10]
-
-    if config.filter_type == "CheckBoxGroup":
-        if len(new) > 10:
-            locations.active = old
 
     data.locations.set_value(ids)
     # update locations and data.locations value
