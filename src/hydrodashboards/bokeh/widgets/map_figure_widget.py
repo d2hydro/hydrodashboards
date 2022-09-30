@@ -91,7 +91,6 @@ def make_map(
         "pan",
         "reset",
         "box_select",
-        "lasso_select",
         map_hover,
         "save",
     ]
