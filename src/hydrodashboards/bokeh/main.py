@@ -200,18 +200,23 @@ def update_on_locations_source_select(attr, old, new):
 
     # get selected ids
     ids = [locations_source.data["id"][i] for i in locations_source.selected.indices]
+    print("len=",len(ids))
+    
     if len(ids) > 10:
-        ids.sort()
-        ids = ids[:10]
-
+       ids.sort()
+       ids = ids[:10]
+     
+        
+    if config.filter_type == "CheckBoxGroup":
+         if len(new) > 10:
+             locations.active = old
+   
     data.locations.set_value(ids)
-
     # update locations and data.locations value
     if config.filter_type == "MultiSelect":
         locations.value = data.locations.value
     elif config.filter_type == "CheckBoxGroup":
         locations.active = data.locations.active
-
 
 def update_on_locations_selector(attr, old, new):
     """Update when values in locations filter are selected"""
@@ -221,7 +226,7 @@ def update_on_locations_selector(attr, old, new):
         # limit to max 10 locations
         if len(new) > 10:
             locations.value = old
-
+ 
         # update datamodel
         data.locations.set_value(new)
         data.update_on_locations_select(locations.value)
@@ -241,6 +246,7 @@ def update_on_locations_selector(attr, old, new):
         # update parameters options for (de)selected locations
         parameters.labels = data.parameters.labels
         parameters.active = data.parameters.active
+
 
     # update location source selected
     indices = [list(locations_source.data["id"]).index(i) for i in data.locations.value]
