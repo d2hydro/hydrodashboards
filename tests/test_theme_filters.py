@@ -13,16 +13,22 @@ from hydrodashboards.bokeh.main import *
 
 
 # %% choose theme grondwater
-# def test_reupdate_themes_filter():
-filters[0].active = [1]
+def test_reupdate_themes_groundwater():
+    filters[0].active = [1]
+    #choose filter peilbuis
+    filters[1].active = [0]
+    #choose themes grondwater and oppervlaktewater
+    filters[0].active = [0, 1]
 
-# %% choose filter peilbuis
+
+# %%filters[0] is Thema en filters[1] is filters 
+#chosse filter oppervlaktewater
+filters[0].active = [0]
+# %%#choose filter gemaal
 filters[1].active = [0]
-
-# %% choose themes grondwater and oppervlaktewater
-filters[0].active = [0, 1]
-
-
-# %%
-#update_time_series_view()
-#update_time_series_search()
+# %%#choose Abelstok
+locations.active = [0]
+# %%#choose parameter
+parameters.active = [0]
+# %%#choose Grondwater
+filters[0].active = [1]
