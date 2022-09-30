@@ -2,12 +2,18 @@ from bokeh.models.widgets import Button
 from bokeh.models import CustomJS
 import json
 
-disclaimer_json = json.dumps([
-    ["* Aan de gegevens in dit Excelbestand mogen geen rechten worden ontleend"],
-    ["* Met debietformules worden berekeningen uitgevoerd die de werkelijkheid versimpelen; dit gebeurt nooit helemaal correct; er is dus altijd een zekere foutmarge en onzekerheid die in acht moet worden genomen bij het gebruik van deze data"],
-    ["* De data is tot stand gekomen uit bewerkingen met grotendeels handmatig gevalideerde data; gaten in de tijdreeksen die hierdoor zijn ontstaan zijn niet opgevuld en beschikbaar"],  
-    ["* De x,y coordinaten zijn geprojecterd in: Amersfoort / RD New (epsg:28992)"]
-    ])
+disclaimer_json = json.dumps(
+    [
+        ["* Aan de gegevens in dit Excelbestand mogen geen rechten worden ontleend"],
+        [
+            "* Met debietformules worden berekeningen uitgevoerd die de werkelijkheid versimpelen; dit gebeurt nooit helemaal correct; er is dus altijd een zekere foutmarge en onzekerheid die in acht moet worden genomen bij het gebruik van deze data"
+        ],
+        [
+            "* De data is tot stand gekomen uit bewerkingen met grotendeels handmatig gevalideerde data; gaten in de tijdreeksen die hierdoor zijn ontstaan zijn niet opgevuld en beschikbaar"
+        ],
+        ["* De x,y coordinaten zijn geprojecterd in: Amersfoort / RD New (epsg:28992)"],
+    ]
+)
 
 download_js = """
 function resolveAfter1Seconds() {
@@ -157,14 +163,14 @@ sequentialStart(); //
 
 def make_button(time_figure_layout):
     button = Button(label="", button_type="success", disabled=True)
-    
-    button.js_event_callbacks['button_click'] = [
-        CustomJS(args=dict(figure=time_figure_layout,
-                           disclaimer=disclaimer_json,
-                           button=button),
-                           code=download_js)
-                         
-                         
-        ]
+
+    button.js_event_callbacks["button_click"] = [
+        CustomJS(
+            args=dict(
+                figure=time_figure_layout, disclaimer=disclaimer_json, button=button
+            ),
+            code=download_js,
+        )
+    ]
 
     return button

@@ -9,6 +9,7 @@ import argparse
 import sys
 import json
 from typing import Union
+
 VIRTUAL_ENV = Path(sys.executable).parent.as_posix()
 HYDRODASHBOARDS_DIR = Path(hydrodashboards.__file__).parent
 CONFIG_FILE = Path(hydrodashboards.__file__).parent.joinpath("bokeh", "config.py")
@@ -17,11 +18,12 @@ CONFIG_FILE = Path(hydrodashboards.__file__).parent.joinpath("bokeh", "config.py
 def main():
     args = get_args()
     print(args.app_dir)
-    bokeh(app_dir=args.app_dir,
-          config_file=args.config_file,
-          virtual_env=args.virtual_env,
-          app_port=args.app_port
-          )
+    bokeh(
+        app_dir=args.app_dir,
+        config_file=args.config_file,
+        virtual_env=args.virtual_env,
+        app_port=args.app_port,
+    )
 
 
 def reverse_bokeh_select(virtual_env: Union[str, Path]):
@@ -33,7 +35,7 @@ def reverse_bokeh_select(virtual_env: Union[str, Path]):
     # path to bokeh_min_js
     bokeh_min_js = Path(virtual_env).joinpath(
         r"Lib\site-packages\bokeh\server\static\js\bokeh.min.js"
-        )
+    )
 
     # rename to backup
     bokeh_min_js_backup = Path(str(bokeh_min_js) + ".backup")
@@ -59,6 +61,7 @@ def copy_environment(virtual_env: Union[str, Path], reverse_bokeh_select=True):
 def config_to_json(config_file: Path, config_json: Path):
     # import the config_py
     import os
+
     config_file = Path(config_file)
     os.chdir(config_file.parent)
     import config as cfg_py
@@ -76,10 +79,12 @@ def config_to_json(config_file: Path, config_json: Path):
     Path(config_json).write_text(json.dumps(cfg_dict, indent=2))
 
 
-def bokeh(app_dir: Union[str, Path],
-          config_file: Union[str, Path] = None,
-          virtual_env: Union[str, Path] = None,
-          app_port: int = 5003):
+def bokeh(
+    app_dir: Union[str, Path],
+    config_file: Union[str, Path] = None,
+    virtual_env: Union[str, Path] = None,
+    app_port: int = 5003,
+):
     """
     Build a Bokeh dashboard
 
@@ -123,7 +128,9 @@ def bokeh(app_dir: Union[str, Path],
     templates_dir = app_dir / "templates"
     templates_dir.mkdir()
 
-    template_html = HYDRODASHBOARDS_DIR.joinpath("bokeh", "templates", "index_template.html")
+    template_html = HYDRODASHBOARDS_DIR.joinpath(
+        "bokeh", "templates", "index_template.html"
+    )
 
     html = template_html.read_text()
     html = html.replace("/bokeh/", f"/{app_dir.name}/")
@@ -140,24 +147,26 @@ def bokeh(app_dir: Union[str, Path],
 
     css_dir = static_dir / "css"
     css_dir.mkdir(parents=True)
-    template_css = HYDRODASHBOARDS_DIR.joinpath("bokeh", "static", "css", "styles_template.css")
+    template_css = HYDRODASHBOARDS_DIR.joinpath(
+        "bokeh", "static", "css", "styles_template.css"
+    )
     styles_css = css_dir / "styles.css"
 
     map_options_height = int(200 + 18 * len(config.map_overlays))
     map_options_left = int(55 + 6.5 * max([len(i) for i in config.map_overlays.keys()]))
     map_options_width = int(map_options_left - 20)
     styles_css.write_text(
-        template_css.read_text().replace(
-            "/bokeh/",
-            f"/{app_dir.name}/"
-            ).replace(
-                ".map_opt",
-                map_opt.format(
-                    map_options_height=map_options_height,
-                    map_options_left=map_options_left,
-                    map_options_width=map_options_width)
-                )
-                )
+        template_css.read_text()
+        .replace("/bokeh/", f"/{app_dir.name}/")
+        .replace(
+            ".map_opt",
+            map_opt.format(
+                map_options_height=map_options_height,
+                map_options_left=map_options_left,
+                map_options_width=map_options_width,
+            ),
+        )
+    )
 
     icons_dir = static_dir / "icons"
     icons_src_dir = HYDRODASHBOARDS_DIR.joinpath("bokeh", "static", "icons")
@@ -198,7 +207,8 @@ def bokeh(app_dir: Union[str, Path],
 
     # copy __init__.py
     hydrodashboards_dir.joinpath("__init__.py").write_text(
-        Path(hydrodashboards.__file__).read_text())
+        Path(hydrodashboards.__file__).read_text()
+    )
 
     # %% write serve_bokeh.bat
     if virtual_env is None:
@@ -213,13 +223,16 @@ def bokeh(app_dir: Union[str, Path],
         rem serve {app_dir.name}
         bokeh serve {app_dir.name} --port {app_port}
         """
-        )
+    )
+
 
 def get_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="""
+    parser = argparse.ArgumentParser(
+        description="""
         Build your Bokeh dashboard.
-        """)
-    
+        """
+    )
+
     parser.add_argument(
         "-app_dir",
         help="Directory in which to store the app",
@@ -227,7 +240,7 @@ def get_args() -> argparse.Namespace:
     parser.add_argument(
         "-config_file",
         help="config.json with app configuration. If not supplied, it will be taken from the repository",
-        default=None
+        default=None,
     )
     parser.add_argument(
         "-virtual_env",
@@ -242,6 +255,7 @@ def get_args() -> argparse.Namespace:
     )
 
     return parser.parse_args()
+
 
 if __name__ == "__main__":
     main()

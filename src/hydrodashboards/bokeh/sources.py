@@ -5,18 +5,24 @@ import pandas as pd
 
 def thresholds_to_source(thresholds):
     value = [[i] * 2 for i in thresholds["value"]]
-    datetime = [np.array(["1900-01-01T00:00:00", "2100-01-01T00:00:00"], dtype="datetime64") for i in value]
+    datetime = [
+        np.array(["1900-01-01T00:00:00", "2100-01-01T00:00:00"], dtype="datetime64")
+        for i in value
+    ]
     label = np.array(thresholds["label"])
     return ColumnDataSource(data={"datetime": datetime, "value": value, "label": label})
 
 
-def time_series_to_source(time_series,
-                          start_date_time=None,
-                          end_date_time=None,
-                          unreliables=False,
-                          excluded_date_times=None):
+def time_series_to_source(
+    time_series,
+    start_date_time=None,
+    end_date_time=None,
+    unreliables=False,
+    excluded_date_times=None,
+):
     def _index_mask(index, start_date_time, end_date_time):
         return (index > start_date_time) & (index <= end_date_time)
+
     df = time_series.df
     if (start_date_time is not None) and (end_date_time is not None):
         df = df.loc[_index_mask(df.index, start_date_time, end_date_time)]
@@ -48,12 +54,16 @@ def locations_source():
 
 
 def time_series_template():
-    return ColumnDataSource(data = {i: np.array([]) for i in ["datetime", "value"]})
+    return ColumnDataSource(data={i: np.array([]) for i in ["datetime", "value"]})
 
 
 def view_period_patch_source(data):
-    return ColumnDataSource(data = {"x":[data.view_start, data.view_start, data.view_end, data.view_end],
-                                    "y": [-10**9, 10**9, 10**9, -10**9]})
+    return ColumnDataSource(
+        data={
+            "x": [data.view_start, data.view_start, data.view_end, data.view_end],
+            "y": [-(10**9), 10**9, 10**9, -(10**9)],
+        }
+    )
 
 
 def time_series_sources(time_series=[], unreliables=False, active_only=False):
@@ -62,7 +72,12 @@ def time_series_sources(time_series=[], unreliables=False, active_only=False):
             return i.active
         else:
             return True
-    return {i.label: time_series_to_source(i, unreliables) for i in time_series if _active(i)}
+
+    return {
+        i.label: time_series_to_source(i, unreliables)
+        for i in time_series
+        if _active(i)
+    }
 
 
 def update_time_series_sources(sources, time_series=[], unreliables=False):

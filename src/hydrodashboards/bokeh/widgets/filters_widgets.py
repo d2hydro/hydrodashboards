@@ -7,9 +7,9 @@ SIZING_MODE = "stretch_width"
 
 
 def clear_control_js(filter, filters_layout):
-    return CustomJS(args={"filter": filter,
-                          "filters_layout": filters_layout},
-                    code="""
+    return CustomJS(
+        args={"filter": filter, "filters_layout": filters_layout},
+        code="""
 function clearFilter(item) {
     if (item.title != filter.title) {
         item.value = []
@@ -22,7 +22,8 @@ function clearFilterValues() {
     }
 }
 clearFilterValues();
-""")
+""",
+    )
 
 
 def clear_control(filters_layout):
@@ -30,15 +31,21 @@ def clear_control(filters_layout):
         i.js_on_change("value", clear_control_js(i, filters_layout))
 
 
-def make_filter(data, on_change=[], filter_type="MultiSelect", filter_length=5) -> Union[MultiSelect, CheckboxGroup]:
+def make_filter(
+    data, on_change=[], filter_type="MultiSelect", filter_length=5
+) -> Union[MultiSelect, CheckboxGroup]:
     """Return a Bokeh MultiSelect filter from data filter."""
-    
+
     if filter_type == "MultiSelect":
-        bokeh_filter = MultiSelect(title=data.title, value=data.value, options=data.options)
+        bokeh_filter = MultiSelect(
+            title=data.title, value=data.value, options=data.options
+        )
         bokeh_filter.size = min(len(bokeh_filter.options), filter_length)
         selector = "value"
     elif filter_type == "CheckBoxGroup":
-        bokeh_filter = CheckboxGroup(active=data.active, labels=data.labels, name=data.title)
+        bokeh_filter = CheckboxGroup(
+            active=data.active, labels=data.labels, name=data.title
+        )
         selector = "active"
 
     if type(on_change) == list:
@@ -53,12 +60,30 @@ def make_filter(data, on_change=[], filter_type="MultiSelect", filter_length=5) 
     return bokeh_filter
 
 
-def make_filters(data, on_change=[], filter_type="MultiSelect", filter_length=5, thematic_view=False) -> list:
+def make_filters(
+    data, on_change=[], filter_type="MultiSelect", filter_length=5, thematic_view=False
+) -> list:
     """Return list of Bokeh MultiSelect filters from data filters."""
     if thematic_view:
-        filters = [make_filter(data=i, on_change=on_change, filter_type=filter_type, filter_length=filter_length) for i in data.thematic_filters]
+        filters = [
+            make_filter(
+                data=i,
+                on_change=on_change,
+                filter_type=filter_type,
+                filter_length=filter_length,
+            )
+            for i in data.thematic_filters
+        ]
     else:
-        filters = [make_filter(data=i, on_change=on_change, filter_type=filter_type, filter_length=filter_length) for i in data.filters]
+        filters = [
+            make_filter(
+                data=i,
+                on_change=on_change,
+                filter_type=filter_type,
+                filter_length=filter_length,
+            )
+            for i in data.filters
+        ]
     return filters
 
 
@@ -91,13 +116,15 @@ def set_filter_values(filters, filter_ids):
 
 def finish_filter(filter, filter_type="MultiSelect", css_class_num=1):
     if filter_type == "CheckBoxGroup":
-        div = Div(text=filter.name, sizing_mode="stretch_width", css_classes = ["filter_title"])
+        div = Div(
+            text=filter.name, sizing_mode="stretch_width", css_classes=["filter_title"]
+        )
         filter = [div, filter]
     return filter
 
 
 def finish_filters(filters, filter_type="MultiSelect", thematic_view=False):
-    if (filter_type == "MultiSelect"):
+    if filter_type == "MultiSelect":
         filters_layout = column(filters, name="filters", sizing_mode="stretch_width")
         if not thematic_view:
             clear_control(filters_layout)

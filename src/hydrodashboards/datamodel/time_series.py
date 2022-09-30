@@ -88,7 +88,9 @@ class TimeSeriesSets:
 
     def within_period(self, start_datetime: datetime, end_datetime: datetime):
         if (self.search_start is not None) | (self.search_end is not None):
-            within_period = (self.search_start <= start_datetime) & (self.search_end >= start_datetime)
+            within_period = (self.search_start <= start_datetime) & (
+                self.search_end >= start_datetime
+            )
         else:
             within_period = None
         return within_period

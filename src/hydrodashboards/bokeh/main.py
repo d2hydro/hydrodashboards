@@ -2,6 +2,7 @@
 
 from bokeh.io import curdoc
 from bokeh.layouts import column
+
 try:
     from data import Data
     from config import Config
@@ -9,6 +10,7 @@ except:
     from hydrodashboards.bokeh.data import Data
     from hydrodashboards.bokeh.config import Config
 from pathlib import Path
+
 # import bokeh sources
 import hydrodashboards.bokeh.sources as sources
 from hydrodashboards.bokeh.widgets import (
@@ -62,7 +64,9 @@ def toggle_download_button_on_sources(sources):
 
 def enable_update_graph():
     """Enable update_graph if locations ánd paramters are selected."""
-    if all((len(getattr(i, config.filter_selector)) > 0 for i in (locations, parameters))):
+    if all(
+        (len(getattr(i, config.filter_selector)) > 0 for i in (locations, parameters))
+    ):
         update_graph.disabled = False
     else:
         update_graph.disabled = True
@@ -75,25 +79,30 @@ def update_time_series_sources(stream=False):
         time_series = data.time_series_sets.get_by_label(k)
         if stream:
             exluded_date_times = v["source"].data["datetime"]
-            _source = sources.time_series_to_source(time_series=time_series,
-                                                    start_date_time=start,
-                                                    end_date_time=end,
-                                                    excluded_date_times=exluded_date_times,
-                                                    unreliables=False)
+            _source = sources.time_series_to_source(
+                time_series=time_series,
+                start_date_time=start,
+                end_date_time=end,
+                excluded_date_times=exluded_date_times,
+                unreliables=False,
+            )
             v["source"].stream(_source.data)
         else:
-            _source = sources.time_series_to_source(time_series=time_series,
-                                                    start_date_time=start,
-                                                    end_date_time=end,
-                                                    unreliables=False)
+            _source = sources.time_series_to_source(
+                time_series=time_series,
+                start_date_time=start,
+                end_date_time=end,
+                unreliables=False,
+            )
             v["source"].data.update(_source.data)
 
 
 def view_x_range_as_datetime():
     """Get the view_x_range start and end as datetime."""
+
     def _to_timestamp(i):
         if isinstance(i, (float, int)):
-            return pd.Timestamp(i * 10 ** 6)
+            return pd.Timestamp(i * 10**6)
         else:
             return i
 
@@ -114,11 +123,11 @@ def get_visible_sources(figs):
 
 
 def value_as_datetime(value):
-    ''' Convenience property to retrieve the value tuple as a tuple of
+    """Convenience property to retrieve the value tuple as a tuple of
     datetime objects.
 
     Added in version 1.1
-    '''
+    """
     if value is None:
         return None
     v1, v2 = value
@@ -127,6 +136,7 @@ def value_as_datetime(value):
     if isinstance(v2, float):
         v1 = datetime.utcfromtimestamp(v2 / 1000)
     return v1, v2
+
 
 """
 All callbacks used in the app
@@ -200,23 +210,23 @@ def update_on_locations_source_select(attr, old, new):
 
     # get selected ids
     ids = [locations_source.data["id"][i] for i in locations_source.selected.indices]
-    print("len=",len(ids))
-    
+    print("len=", len(ids))
+
     if len(ids) > 10:
-       ids.sort()
-       ids = ids[:10]
-     
-        
+        ids.sort()
+        ids = ids[:10]
+
     if config.filter_type == "CheckBoxGroup":
-         if len(new) > 10:
-             locations.active = old
-   
+        if len(new) > 10:
+            locations.active = old
+
     data.locations.set_value(ids)
     # update locations and data.locations value
     if config.filter_type == "MultiSelect":
         locations.value = data.locations.value
     elif config.filter_type == "CheckBoxGroup":
         locations.active = data.locations.active
+
 
 def update_on_locations_selector(attr, old, new):
     """Update when values in locations filter are selected"""
@@ -226,7 +236,7 @@ def update_on_locations_selector(attr, old, new):
         # limit to max 10 locations
         if len(new) > 10:
             locations.value = old
- 
+
         # update datamodel
         data.locations.set_value(new)
         data.update_on_locations_select(locations.value)
@@ -238,7 +248,7 @@ def update_on_locations_selector(attr, old, new):
     elif config.filter_type == "CheckBoxGroup":
         if len(new) > 10:
             locations.active = old
-        
+
         # update datamodel
         data.locations.set_active(new)
         data.update_on_locations_select(data.locations.value)
@@ -246,7 +256,6 @@ def update_on_locations_selector(attr, old, new):
         # update parameters options for (de)selected locations
         parameters.labels = data.parameters.labels
         parameters.active = data.parameters.active
-
 
     # update location source selected
     indices = [list(locations_source.data["id"]).index(i) for i in data.locations.value]
@@ -296,7 +305,10 @@ def update_on_search_period_value(attrname, old, new):
     search_x_range.start = data.periods.search_start
     search_x_range.end = data.periods.search_end
     view_x_range.bounds = (data.periods.search_start, data.periods.search_end)
-    view_x_range.start, view_x_range.end = data.periods.view_start, data.periods.view_end
+    view_x_range.start, view_x_range.end = (
+        data.periods.view_start,
+        data.periods.view_end,
+    )
 
     # update sources
     update_time_series_sources()
@@ -348,7 +360,7 @@ def start_time_series_loader():
 
 def update_time_series_view():
     """Update time_series and stop time_fig_loader"""
-    global time_series_sources # we update the global variable time_series_sources
+    global time_series_sources  # we update the global variable time_series_sources
 
     logger.debug(inspect.stack()[0][3])
     data.update_time_series()
@@ -356,9 +368,8 @@ def update_time_series_view():
     # update time_series_layout (top figures)
     parameter_groups = data.parameters.get_groups()
     time_series_groups = data.time_series_sets.by_parameter_groups(
-        parameter_groups,
-        active_only=True
-        )
+        parameter_groups, active_only=True
+    )
 
     threshold_groups = data.threshold_groups(time_series_groups)
 
@@ -373,8 +384,8 @@ def update_time_series_view():
         threshold_visible=thresholds_active,
         x_range=view_x_range,
         press_up_event=press_up_event,
-        renderers_on_change=[("visible", set_visible_labels)]
-        )
+        renderers_on_change=[("visible", set_visible_labels)],
+    )
 
     # update search_time_series
     search_time_series.options = data.time_series_sets.active_labels
@@ -389,8 +400,8 @@ def update_time_series_view():
         x_range=search_x_range,
         periods=data.periods,
         color=time_series_sources[search_time_series.value]["color"],
-        search_source=search_source
-        )
+        search_source=search_source,
+    )
 
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
@@ -429,42 +440,46 @@ def update_on_search_time_series_value(attrname, old, new):
     logger.debug(inspect.stack()[0][3])
 
     # change search time_series
-    time_figure_widget.search_fig(search_time_figure_layout,
-                                  time_series=data.time_series_sets.get_by_label(
-                                      label=search_time_series.value
-                                      ),
-                                  x_range=search_x_range,
-                                  periods=data.periods,
-                                  color=time_series_sources[
-                                      search_time_series.value
-                                      ]["color"],
-                                  search_source=search_source)
+    time_figure_widget.search_fig(
+        search_time_figure_layout,
+        time_series=data.time_series_sets.get_by_label(label=search_time_series.value),
+        x_range=search_x_range,
+        periods=data.periods,
+        color=time_series_sources[search_time_series.value]["color"],
+        search_source=search_source,
+    )
 
 
 def update_on_view_period_value(attrname, old, new):
     """Update periods when view_period value changes"""
-    #logger.debug(inspect.stack()[0][3])
+    # logger.debug(inspect.stack()[0][3])
 
     is_moving = all((new[0] != old[0], new[1] != old[1]))
     if is_moving:
         force = True
     else:
         force = False
-    values_accepted = data.periods.set_view_period(*view_period.value_as_datetime, force)
+    values_accepted = data.periods.set_view_period(
+        *view_period.value_as_datetime, force
+    )
     if not values_accepted:
         view_period.value = (data.periods.view_start, data.periods.view_end)
 
     # update patch source
     if type(search_time_figure_layout.children[0]) != Div:
         search_time_figure_layout.children[0].renderers[0].data_source.data.update(
-            sources.view_period_patch_source(data.periods).data)
+            sources.view_period_patch_source(data.periods).data
+        )
 
 
 def update_on_view_period_value_throttled(attrname, old, new):
     """Update time_series_sources as view_x_range"""
     logger.debug(inspect.stack()[0][3])
 
-    view_x_range.start, view_x_range.end = (data.periods.view_start, data.periods.view_end)
+    view_x_range.start, view_x_range.end = (
+        data.periods.view_start,
+        data.periods.view_end,
+    )
 
     update_time_series_sources()
     # updating the figure_layout y_ranges
@@ -476,7 +491,8 @@ def update_on_view_period_value_throttled(attrname, old, new):
     # update patch source
     if type(search_time_figure_layout.children[0]) != Div:
         search_time_figure_layout.children[0].renderers[0].data_source.data.update(
-            sources.view_period_patch_source(data.periods).data)
+            sources.view_period_patch_source(data.periods).data
+        )
 
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
@@ -484,7 +500,7 @@ def update_on_view_period_value_throttled(attrname, old, new):
 
 def update_on_view_x_range_change(attrname, old, new):
     """Update view_period widget when view_x_range changes."""
-    #logger.debug(inspect.stack()[0][3])
+    # logger.debug(inspect.stack()[0][3])
 
     start, end = view_x_range_as_datetime()
     view_x_range.reset_start = start
@@ -553,26 +569,36 @@ In this section we define all widgets. We pass callbacks and sources to every wi
 
 # Filters widget
 if config.thematic_view:
-    on_change = {"themes": [update_on_theme_selector],
-                 "filters": [update_on_filter_selector]}
+    on_change = {
+        "themes": [update_on_theme_selector],
+        "filters": [update_on_filter_selector],
+    }
 else:
     on_change = [update_on_filter_selector]
-filters = filters_widgets.make_filters(data=data.filters,
-                                       on_change=on_change,
-                                       filter_type=config.filter_type,
-                                       thematic_view=config.thematic_view)
+filters = filters_widgets.make_filters(
+    data=data.filters,
+    on_change=on_change,
+    filter_type=config.filter_type,
+    thematic_view=config.thematic_view,
+)
 
 # Locations widget
 on_change = [update_on_locations_selector]
-locations = filters_widgets.make_filter(data=data.locations, on_change=on_change, filter_type=config.filter_type)
+locations = filters_widgets.make_filter(
+    data=data.locations, on_change=on_change, filter_type=config.filter_type
+)
 
 # Parameters widget
 on_change = [update_on_parameters_selector]
-parameters = filters_widgets.make_filter(data=data.parameters, on_change=on_change, filter_type=config.filter_type)
+parameters = filters_widgets.make_filter(
+    data=data.parameters, on_change=on_change, filter_type=config.filter_type
+)
 
 # Search period widget
 on_change = [("value", update_on_search_period_value)]
-search_period = search_period_widget.make_search_period(data.periods, on_change=on_change)
+search_period = search_period_widget.make_search_period(
+    data.periods, on_change=on_change
+)
 
 
 # Update graph widget
@@ -581,7 +607,9 @@ update_graph.on_click(start_time_series_loader)
 
 # Map figure widget
 map_figure = map_figure_widget.make_map(
-    bounds=config.bounds, locations_source=locations_source, map_overlays=config.map_overlays
+    bounds=config.bounds,
+    locations_source=locations_source,
+    map_overlays=config.map_overlays,
 )
 
 # Map options widget
@@ -611,7 +639,7 @@ search_time_series = Select(value=None, options=[])
 search_time_series.on_change("value", update_on_search_time_series_value)
 
 # Search download search time series widget
-#download_search_time_series = download_widget.make_button(source=search_source)
+# download_search_time_series = download_widget.make_button(source=search_source)
 
 # View period widget
 view_period = view_period_widget.make_view_period(data.periods)
@@ -628,19 +656,32 @@ In this section we add all widgets to the curdoc
 
 
 # left column layout
-curdoc().add_root(column(Div(text=f"<h3>{config.title}</h3>",
-                             css_classes=["app_title"]),
-                         name="app_title",
-                         sizing_mode="stretch_width"))
+curdoc().add_root(
+    column(
+        Div(text=f"<h3>{config.title}</h3>", css_classes=["app_title"]),
+        name="app_title",
+        sizing_mode="stretch_width",
+    )
+)
 filters_widgets.add_css_classes(filters, locations, parameters)
-filters_layout = filters_widgets.finish_filters(filters, filter_type=config.filter_type, thematic_view=config.thematic_view)
+filters_layout = filters_widgets.finish_filters(
+    filters, filter_type=config.filter_type, thematic_view=config.thematic_view
+)
 curdoc().add_root(filters_layout)
 
-locations_layout= filters_widgets.finish_filter(locations, filter_type=config.filter_type)
-curdoc().add_root(column(locations_layout, name="locations", sizing_mode="stretch_width"))
+locations_layout = filters_widgets.finish_filter(
+    locations, filter_type=config.filter_type
+)
+curdoc().add_root(
+    column(locations_layout, name="locations", sizing_mode="stretch_width")
+)
 
-parameters_layout = filters_widgets.finish_filter(parameters, filter_type=config.filter_type)
-curdoc().add_root(column(parameters_layout, name="parameters", sizing_mode="stretch_width"))
+parameters_layout = filters_widgets.finish_filter(
+    parameters, filter_type=config.filter_type
+)
+curdoc().add_root(
+    column(parameters_layout, name="parameters", sizing_mode="stretch_width")
+)
 curdoc().add_root(
     column(search_period, name="search_period", sizing_mode="stretch_both")
 )
@@ -657,27 +698,31 @@ curdoc().add_root(column(app_status, name="app_status", sizing_mode="stretch_bot
 if config.thresholds:
     curdoc().add_root(
         column(thresholds_button, name="thresholds_button", sizing_mode="stretch_both")
-        )
+    )
 
 time_figure_layout = column(time_figure, name="time_figure", sizing_mode="stretch_both")
 curdoc().add_root(time_figure_layout)
 
 
-download_time_series = download_widget.make_button(time_figure_layout=time_figure_layout)
+download_time_series = download_widget.make_button(
+    time_figure_layout=time_figure_layout
+)
 curdoc().add_root(
-    column(download_time_series,
-           name="download_time_series",
-           sizing_mode="stretch_width")
+    column(
+        download_time_series, name="download_time_series", sizing_mode="stretch_width"
     )
+)
 
 # search tim-figure layout
 curdoc().add_root(
     column(
-       search_time_series, name="select_search_time_series", sizing_mode="stretch_both"
+        search_time_series, name="select_search_time_series", sizing_mode="stretch_both"
     )
 )
 curdoc().add_root(column(view_period, name="view_period", sizing_mode="stretch_both"))
-search_time_figure_layout = column(search_time_figure, name="search_time_figure", sizing_mode="stretch_both")
+search_time_figure_layout = column(
+    search_time_figure, name="search_time_figure", sizing_mode="stretch_both"
+)
 curdoc().add_root(search_time_figure_layout)
 
 curdoc().title = config.title
@@ -689,6 +734,7 @@ In this section we parse all url parameters
 
 def locations_in_filter(location_ids, filter_id):
     return data.locations.sets[filter_id].index.isin(location_ids).any()
+
 
 def convert_to_datetime(date_time):
     try:
@@ -705,22 +751,30 @@ try:
         if "filter_id" in args.keys():
             filter_ids = [i.decode("utf-8") for i in args.get("filter_id")]
             filters_widgets.set_filter_values(filters, filter_ids)
-    
+
         if "location_id" in args.keys():
             location_ids = [i.decode("utf-8") for i in args.get("location_id")]
             if "filter_id" not in args.keys():
                 # get all filters in cache
                 data.update_on_filter_select(data.filters.values)
                 # get and select the filter ids that contain one or more location_ids
-                filter_ids = [i for i in data.filters.values if locations_in_filter(location_ids, i)]
+                filter_ids = [
+                    i
+                    for i in data.filters.values
+                    if locations_in_filter(location_ids, i)
+                ]
                 filters_widgets.set_filter_values(filters, filter_ids)
-    
+
             # make sure there is no rubbish and set loction_ids
-            location_ids = [j for j in location_ids if j in [i[0] for i in locations.options]]
+            location_ids = [
+                j for j in location_ids if j in [i[0] for i in locations.options]
+            ]
             locations.value = location_ids
         if "parameter_id" in args.keys():
             parameter_ids = [i.decode("utf-8") for i in args.get("parameter_id")]
-            parameter_ids = [j for j in parameter_ids if j in [i[0] for i in parameters.options]]
+            parameter_ids = [
+                j for j in parameter_ids if j in [i[0] for i in parameters.options]
+            ]
             parameters.value = parameter_ids
         if "start_date" in args.keys():
             start_date = convert_to_datetime(args.get("start_date")[0].decode("utf-8"))
@@ -732,11 +786,13 @@ try:
             end_date = min(data.periods.view_end, end_date)
             if start_date < end_date:
                 search_start = start_date - timedelta(days=1)
-                search_end = min(start_date - timedelta(days=1), data.periods.search_end)
+                search_end = min(
+                    start_date - timedelta(days=1), data.periods.search_end
+                )
                 data.periods.set_search_period(search_start, search_end)
                 data.periods.set_view_period(start_date, end_date)
                 view_period.value = (data.periods.view_start, data.periods.view_end)
-    
+
         if (len(locations.value) > 0) & (len(parameters.value) > 0):
             start_time_series_loader()
 

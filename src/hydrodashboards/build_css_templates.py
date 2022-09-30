@@ -13,4 +13,3 @@ map_opt = """
   border-radius:4px;
 }}
 """
-

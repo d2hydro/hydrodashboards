@@ -6,8 +6,8 @@ from typing import List
 from .utils import (
     concat_fews_parameter_names,
     concat_fews_parameter_ids,
-    split_parameter_id_to_fews
-    )
+    split_parameter_id_to_fews,
+)
 
 
 @dataclass
@@ -55,10 +55,12 @@ class Parameters(Filter):
 
     def get_groups(self, parameter_source="fews"):
         if parameter_source == "fews":
-            groups = {i: self._fews_parameters.at[
-                split_parameter_id_to_fews(i)[0],
-                "parameter_group"
-                ] for i in self.value}
+            groups = {
+                i: self._fews_parameters.at[
+                    split_parameter_id_to_fews(i)[0], "parameter_group"
+                ]
+                for i in self.value
+            }
         return groups
 
     def update_from_options(self, options: List[tuple], reinit=True):

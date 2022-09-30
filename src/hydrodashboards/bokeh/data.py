@@ -45,24 +45,32 @@ class Data:
         self.config = config
         self.logger = logger
         # fews properties
-        self._fews_api = Api(url=self.config.fews_url,
-                             ssl_verify=self.config.ssl_verify, logger=logger)
+        self._fews_api = Api(
+            url=self.config.fews_url, ssl_verify=self.config.ssl_verify, logger=logger
+        )
         self._fews_qualifiers = self._fews_api.get_qualifiers()
         self._fews_root_parameters = self._fews_api.get_parameters(
             filter_id=self.config.root_filter
         )
-        self._fews_root_locations = self._fews_api.get_locations(filter_id=self.config.root_filter,
-                                                                 attributes=self.config.location_attributes)
-        self._fews_filters = self._fews_api.get_filters(filter_id=self.config.root_filter)
+        self._fews_root_locations = self._fews_api.get_locations(
+            filter_id=self.config.root_filter,
+            attributes=self.config.location_attributes,
+        )
+        self._fews_filters = self._fews_api.get_filters(
+            filter_id=self.config.root_filter
+        )
 
         # time properties
         self.now = now
         self.periods = Periods(self.now, history_period=self.config.history_period)
 
         # data-classes linked to dashboard
-        self.filters = Filters.from_fews(self._fews_filters, thematic_view=config.thematic_view)
-        self.locations = Locations.from_fews(self._fews_root_locations,
-                                             attributes=self.config.location_attributes)
+        self.filters = Filters.from_fews(
+            self._fews_filters, thematic_view=config.thematic_view
+        )
+        self.locations = Locations.from_fews(
+            self._fews_root_locations, attributes=self.config.location_attributes
+        )
         self.parameters = Parameters.from_fews(
             pi_parameters=self._fews_root_parameters,
             pi_qualifiers=self._fews_qualifiers,
@@ -102,13 +110,14 @@ class Data:
         return int(period.total_seconds() * 1000 / width)
 
     def _get_fews_ts(self, indices=None, request_type="headers"):
-        
+
         ## function used to bypass FEWS_BUGS["qualifier_ids"]
         def include_header(i):
-            parameter_id = concat_fews_parameter_ids(i.header.parameter_id,
-                                                     i.header.qualifier_id)
+            parameter_id = concat_fews_parameter_ids(
+                i.header.parameter_id, i.header.qualifier_id
+            )
             return parameter_id in self.parameters.value
-        
+
         only_headers = False
         thinning = None
         if request_type == "headers":
@@ -162,14 +171,14 @@ class Data:
             end_time=end_time,
             thinning=thinning,
             only_headers=only_headers
-            #parallel=parallel
+            # parallel=parallel
         )
         # included as there is a bug in qualifier_ids requests
         if (request_type == "headers") & FEWS_BUGS["qualifier_ids"]:
             result.time_series = [i for i in result.time_series if include_header(i)]
 
         return result
-       
+
     def _properties_from_fews_ts_headers(self, fews_time_series):
         def property_generator(header):
             parameter = concat_fews_parameter_ids(
@@ -180,22 +189,33 @@ class Data:
             )
             location_name = self.locations.locations.at[header.location_id, "name"]
             label = f"{location_name} {parameter_name}"
-            
+
             # prepare tags
             xy = ",".join(self.locations.locations.loc[header.location_id, ["x", "y"]])
             if header.qualifier_id is None:
                 qualifiers_tag = ""
             else:
                 qualifiers_tag = ",".join(header.qualifier_id)
-            unit_tag = self.parameters._fews_parameters.at[header.parameter_id, "display_unit"]
-            tags = [header.location_id, location_name, xy, header.parameter_id, qualifiers_tag, unit_tag]
+            unit_tag = self.parameters._fews_parameters.at[
+                header.parameter_id, "display_unit"
+            ]
+            tags = [
+                header.location_id,
+                location_name,
+                xy,
+                header.parameter_id,
+                qualifiers_tag,
+                unit_tag,
+            ]
 
-            return dict(location=header.location_id,
-                        parameter=parameter,
-                        parameter_name=parameter_name,
-                        units=header.units,
-                        label=label,
-                        tags=tags)
+            return dict(
+                location=header.location_id,
+                parameter=parameter,
+                parameter_name=parameter_name,
+                units=header.units,
+                label=label,
+                tags=tags,
+            )
 
         return [property_generator(i.header) for i in fews_time_series]
 
@@ -256,7 +276,7 @@ class Data:
                 f"Tijdseries cache: {time_series_cache} | "
                 f"Zoekperiode: {search_period_days} dagen | "
                 f"Max tijdstappen: {max_events_visible}/{max_events_loaded} (zichtbaar/geladen)"
-                )
+            )
 
         return html
 
@@ -349,7 +369,9 @@ class Data:
 
             # if not yet in sets, add it there too
             if filter_id not in self.locations.sets.keys():
-                properties = _get_propeties(filter_id, filter_name, self.config.filter_colors)
+                properties = _get_propeties(
+                    filter_id, filter_name, self.config.filter_colors
+                )
                 self.locations.add_to_sets(filter_id, headers_df, properties)
 
             # add locations and parameters to list
@@ -443,12 +465,16 @@ class Data:
                 color = threshold["color"]
                 line_width = threshold["line_width"]
 
-                return dict(label=label, value=value, color=color, line_width=line_width)
+                return dict(
+                    label=label, value=value, color=color, line_width=line_width
+                )
             else:
                 return {}
 
         for k, v in threshold_groups.items():
-            thresholds = [i for i in self.config.thresholds if i["parameter_group"] == k]
+            thresholds = [
+                i for i in self.config.thresholds if i["parameter_group"] == k
+            ]
             if thresholds:
                 location_ids = [i.location for i in time_series_groups[k]]
                 for i in thresholds:

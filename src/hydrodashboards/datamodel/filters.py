@@ -32,17 +32,19 @@ class Filters:
             else:
                 options = []
             return TimeSeriesFilter(
-                id=fews_filter["id"], title=title, _value=value, options=options
+                id=fews_filter["id"], title=title, value=value, options=options
             )
 
         children = pi_filters[0]["child"]
 
-        return cls(filters=[_pi_to_dict(i) for i in children], thematic_view=thematic_view)
+        return cls(
+            filters=[_pi_to_dict(i) for i in children], thematic_view=thematic_view
+        )
 
     def generate_thematic_filters(self):
         theme = {}
         theme["options"] = [(i.id, i.title) for i in self.filters]
-        theme["_value"] = [i.id for i in self.filters if i.value]
+        theme["value"] = [i.id for i in self.filters if i.value]
         theme["id"] = "themes"
         theme["title"] = "Thema's"
 
@@ -51,7 +53,7 @@ class Filters:
         filters["title"] = "Filters"
         return [TimeSeriesFilter(**theme), TimeSeriesFilter(**filters)]
 
-    def get_filter_options(self, value = None, active = None):
+    def get_filter_options(self, value=None, active=None):
         if value is not None:
             options = [i.options for i in self.filters if i.id in value]
         elif active is not None:
