@@ -6,7 +6,6 @@ def make_search_period(data, on_change):
     def _title_div(title):
         return Div(
             text=title,
-            sizing_mode="stretch_width",
             css_classes=["search_period_title"]
         )
     start_date_title = _title_div(data.search_start_title)
