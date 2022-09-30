@@ -12,6 +12,7 @@ class TimeSeries:
     parameter_name: str
     location: str
     label: str
+    units: str
     active: bool = False
     visible: bool = False
     empty: bool = True

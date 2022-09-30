@@ -205,7 +205,12 @@ a, a:hover, a:focus {
 	margin-bottom:5px;
 
 }
-#sidebar .sidebar-bokeh1
+
+#sidebar .sidebar-bokeh1 {
+    width: 100%;
+    padding-right: 14px;
+    padding-left:14px;
+}
 
 #sidebar .sidebar-bokeh2 {
     width: 100%;
@@ -562,23 +567,6 @@ width: 100%;
   transform: translateY(4px);
 }
 
-.bk.bk-btn.bk-btn-success{
- background-image: url(/bokeh/static/icons/download.png);
- background-repeat: no-repeat;
- background-position:right 10px center;
- background-color: #3681C1;
- color: white;
- text-align: left;
- flex: 0 0 auto;
- width:110px;
- border-color:#495568;
- margin-left:300px; 
- height: 30px;
- position: inline-block;
- margin-bottom: auto;
- margin-top:2px;
-
-}
 /* ---------------------------------------------------
     styles on menu animation 
 ----------------------------------------------------- */

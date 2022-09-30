@@ -31,9 +31,9 @@ DT_JS_FORMAT = r"""
         day: 'numeric'
     }});
 """
+LABEL_LEN = 50
 
-
-def trucate_label(label, length):
+def trucate_label(label, length=LABEL_LEN):
     if len(label) > length:
         label = f"{label[0:length-3]}..."
     return label
@@ -245,7 +245,7 @@ def top_fig(group: tuple,
 
     y_range = make_y_range(time_series)
     parameters = list(set([i.parameter_name for i in time_series]))
-    y_axis_label = parameter_group
+    y_axis_label = f"{parameter_group} [{time_series[0].units}]"
 
 
     time_fig = figure(tools=tools,
@@ -271,7 +271,7 @@ def top_fig(group: tuple,
     x_start, x_end = date_time_range_as_datetime(x_range)
     for i in time_series:
         label = i.label
-        legend_label = trucate_label(i.label, 30)
+        legend_label = trucate_label(i.label)
         source = time_series_to_source(i,
                                        start_date_time=x_start,
                                        end_date_time=x_end)

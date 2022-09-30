@@ -193,6 +193,7 @@ class Data:
             return dict(location=header.location_id,
                         parameter=parameter,
                         parameter_name=parameter_name,
+                        units=header.units,
                         label=label,
                         tags=tags)
 

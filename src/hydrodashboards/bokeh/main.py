@@ -149,12 +149,16 @@ def update_on_theme_selector(attr, old, new):
     elif config.filter_type == "CheckBoxGroup":
         # get labels
         options, _, labels = data.filters.get_filter_options(active=new)
+
         active_labels = [filters_filter.labels[i] for i in filters_filter.active]
+
+        # update data
+        data.filters.thematic_filters[1].options = options
 
         # set filters_filter
         filters_filter.labels = labels
         filters_filter.active = [labels.index(i) for i in active_labels if i in labels]
-        data.filters.thematic_filters[1].options = options
+
 
 def update_on_filter_selector(attrname, old, new):
     """Updates locations values in locations filter when filters filter is updated"""
