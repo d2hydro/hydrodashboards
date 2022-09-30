@@ -4,7 +4,7 @@
 @import "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700";
 
 body {
-    font-family: 'Poppins', sans-serif;
+    font-family: 400 1.6rem/1.5 Noto Sans,sans-serif;
     background: #fafafa;
    height:100%;
 }
@@ -166,7 +166,8 @@ a, a:hover, a:focus {
 	
 }
 .navbar-expand-lg {
-   background: #495568;
+    background-color:#292E3B;
+	
    }
    
 
@@ -188,7 +189,7 @@ a, a:hover, a:focus {
 #sidebar {
    min-width: 310px;
     max-width: 310px;
-	background: #3A4453;
+	background: #171921;
     height:100vh;
     color: #fff;
     transition: all 0.6s cubic-bezier(0.945, 0.020, 0.270, 0.665);
@@ -204,7 +205,9 @@ a, a:hover, a:focus {
     padding-right: 10px;
 	padding-left: 10px;
 	padding-top: 10px;
-    background: #282f3a;
+    background-color:#222530;
+	font: 400 1.6rem/1.5 Noto Sans,sans-serif;
+	
 	height:59px;
 	margin-bottom:5px;
 }
@@ -268,7 +271,7 @@ a[data-toggle="collapse"] {
 
 
 
-.bk.bk-input.flatpickr-input{color: white;background-color:#495568;min-width:130px;
+.bk.bk-input.flatpickr-input{color: white;background-color:#222530;min-width:130px;
 padding: 6px;min-height:20px;border: 0px;color: white}
 /* --------
 .bk.bk-input{color: white;background-color:#495568;
@@ -276,50 +279,50 @@ padding: 6px;min-height:20px;border: 1px;color: white; accent-color: red;}
 ----- */
 
 .bk.filter_title{
-	display: inline-block; min-width: 272px; height: 22px;background-color:#282F3A;color:white;margin-top:10px;padding:4px;box-shadow: 5px 10px 20px #495568 inset
+	display: inline-block; min-width: 272px; height: 22px;background-color:#495568;color:white;margin-top:10px;padding:4px;box-shadow: 5px 10px 20px #222530  inset
   }
 .bk.app_title{display:inline-block; min-width: 270px;}
 
 .bk.filter_checkboxgroup_1{
-color: white; overflow-y: auto;background:#495568;
+color: white; overflow-y: auto;background:#222530;
 padding: 6px;min-height:74px;
 }
 .bk.filter_checkboxgroup_2{
-color: white; overflow-y: auto;background:#495568;
+color: white; overflow-y: auto;background:#222530;
 padding: 6px;min-height:98px;
 }
 .bk.filter_checkboxgroup_3{
-color: white; overflow-y: auto;background:#495568;
+color: white; overflow-y: auto;background:#222530;
 padding: 6px;min-height:104px;
 }
 .bk.filter_checkboxgroup_4{
-color: white; overflow-y: auto;background:#495568;
+color: white; overflow-y: auto;background:#222530;
 padding: 6px;min-height:86px;
 }
 
 .bk.filter_multiselect_1{
-color: white; background:#3A4453;
+color: white; background:#222530;
 padding: 0px
 }
 .bk.filter_multiselect_2{
-color: white; background:#3A4453;
+color: white; background:#222530;
 padding: 0px
 }
 .bk.filter_multiselect_3{
-color: white; background:#3A4453;
+color: white; background:#222530;
 padding: 0px
 }
 .bk.filter_multiselect_4{
-color: white; background:#3A4453;
+color: white; background:#222530;
 padding: 0px
 }
 
 .bk.filter_multiselect_5{
-color: white;background:#3A4453;
+color: white;background:#222530;
 padding: 0px
 }
 .bk.filter_multiselect_6{
-color: white;background:#3A4453;
+color: white;background:#222530;
 padding: 0px
 }
 option.bk{
