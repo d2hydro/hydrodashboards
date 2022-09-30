@@ -13,12 +13,16 @@ from hydrodashboards.bokeh.main import *
 
 
 # %% choose theme grondwater
-themes_filter = filters[0]
-filtes_filter = filters[1]
-themes_filter.active = [1]
+# def test_reupdate_themes_filter():
+filters[0].active = [1]
 
 # %% choose filter peilbuis
-themes_filter.active = [0]
+filters[1].active = [0]
 
 # %% choose themes grondwater and oppervlaktewater
-themes_filter.active = [0, 1]
+filters[0].active = [0, 1]
+
+
+# %%
+#update_time_series_view()
+#update_time_series_search()
