@@ -8,9 +8,9 @@ Open Source Dashboards for hydro data
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ---
 
-**Documentation**: [https://d2hydro.github.io/fewspy](https://d2hydro.github.io/hydrodashboards)
+**Documentation**: [https://d2hydro.github.io/hydrodashboards](https://d2hydro.github.io/hydrodashboards)
 
-**Source Code**: [https://github.com/d2hydro/fewspy](https://github.com/d2hydro/hydrodashboards)
+**Source Code**: [https://github.com/d2hydro/hydrodashboards](https://github.com/d2hydro/hydrodashboards)
 
 ---
 
@@ -27,7 +27,7 @@ In that activated environment you can add hydrodashboards via pip by:
 ```
 pip install hydrodashboards
 ```
-We recommend to build your environment using [Anaconda](https://www.anaconda.com/). You can build an environment ánd install fewspy by conda in one go using this <a href="https://github.com/d2hydro/hydrodashboards/blob/main/envs/environment.yml" target="_blank">environment.yml</a> from the command-line:
+We recommend to build your environment using [Anaconda](https://www.anaconda.com/). You can build an environment ánd install hydrodashboards by conda in one go using this <a href="https://github.com/d2hydro/hydrodashboards/blob/main/envs/environment.yml" target="_blank">environment.yml</a> from the command-line:
 ```
 conda env create -f environment.yml
 ```
