@@ -20,6 +20,7 @@ jobs:
       run: |
         # Activate the test environment
         C:\Miniconda\condabin\conda.bat activate test
-        C:\Miniconda\condabin\conda.bat install pytest pytest-black pytest-flakes
+        # Install package in edit-mode
         pip install -e .
+        # Run pytest
         pytest tests/
