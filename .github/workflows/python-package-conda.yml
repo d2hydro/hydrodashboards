@@ -1,4 +1,4 @@
-name: Github Actions in Windows
+name: Test
 
 on: [push]
 
@@ -11,14 +11,15 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: 3.10
     - name: Install dependencies
       run: |
-        C:\Miniconda\condabin\conda.bat env update --file environment.yml --name base
+        C:\Miniconda\condabin\conda.bat env create -f envs\environment_test.yml
         C:\Miniconda\condabin\conda.bat init powershell
-    - name: Test with pytest
+    - name: Test
       run: |
-        # Activate the base environment
-        C:\Miniconda\condabin\conda.bat activate base
+        # Activate the test environment
+        C:\Miniconda\condabin\conda.bat activate test
         C:\Miniconda\condabin\conda.bat install pytest pytest-black pytest-flakes
-        pytest
+        pip install -e .
+        pytest tests/

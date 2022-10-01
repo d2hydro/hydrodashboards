@@ -2,6 +2,8 @@
 
 Open Source Dashboards for hydro data
 
+[<img src="https://github.com/d2hydro/hydrodashboards/actions/workflows/python-package-conda.yml/badge.svg">](https://github.com/d2hydro/hydrodashboards/actions/workflows/python-package-conda.yml)
+
 ---
 
 **Documentation**: [https://d2hydro.github.io/fewspy](https://d2hydro.github.io/hydrodashboards)
