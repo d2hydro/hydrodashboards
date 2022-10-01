@@ -1,0 +1,15 @@
+name: bokeh
+
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - aiohttp
+  - requests
+  - pandas
+  - geopandas
+  - bokeh
+  - pydantic
+  - pip:
+    - fewspy
