@@ -24,4 +24,4 @@ jobs:
         pip install -e .
         pytest --cov-report term-missing --cov=src --cov-report=xml tests\
     - name: Upload coverage
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v2
