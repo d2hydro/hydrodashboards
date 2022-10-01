@@ -8,19 +8,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
+    - uses: conda-incubator/setup-miniconda@v2
       with:
+        activate-environment: test
+        environment-file: envs\environment_test.yml
         python-version: 3.10
-    - name: Install dependencies
-      run: |
-        C:\Miniconda\condabin\conda.bat env create -f envs\environment_test.yml
-        C:\Miniconda\condabin\conda.bat init powershell
+        auto-activate-base: false
     - name: Test
+      shell: pwsh
       run: |
-        # Activate the test environment
-        C:\Miniconda\condabin\conda.bat activate test
-        # Install package in edit-mode
+        conda info
+        conda list
         pip install -e .
-        # Run pytest
-        pytest tests/
+        pytest tests\
