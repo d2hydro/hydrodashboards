@@ -23,5 +23,5 @@ jobs:
         conda list
         pip install -e .
         pytest --cov-report term-missing --cov=src --cov-report=xml tests\
-     - name: Upload code coverage
-       uses: codecov/codecov-action@v3
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
