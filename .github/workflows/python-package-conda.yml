@@ -10,10 +10,12 @@ jobs:
     - uses: actions/checkout@v2
     - uses: conda-incubator/setup-miniconda@v2
       with:
+        python-version: 3.10
+        miniconda-version: "latest"
+        channels: conda-forge,defaults
+        channel-priority: true
         activate-environment: test
         environment-file: envs\environment_test.yml
-        python-version: 3.10
-        auto-activate-base: false
     - name: Test
       shell: pwsh
       run: |
