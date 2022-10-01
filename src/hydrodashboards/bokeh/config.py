@@ -33,18 +33,12 @@ class Config:
         return [i["attribute"] for i in self.thresholds]
 
     @property
-    def filter_height(self):
-        if self.thematic_view:
-            height = 240
-        else:
-            filters = self.filter_dimensions["filters"]
-            children = self.filter_dimensions["child_filters"]
-            height = 61 * filters + (children - filters) * 17
-        return height
-
-    @property
     def filter_selector(self):
         if self.filter_type == "MultiSelect":
             return "value"
         elif self.filter_type == "CheckBoxGroup":
             return "active"
+
+    def to_json(self, config_json):
+        config_json = Path(config_json)
+        config_json.write_text(json.dumps(self.__dict__, sort_keys=True, indent=4))

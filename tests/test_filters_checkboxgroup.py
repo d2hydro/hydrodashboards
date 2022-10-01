@@ -29,7 +29,7 @@ def test_keep_filter_peilbuis_selected():
 
 
 def test_switch_theme():
-    # chosse filter oppervlaktewater
+    # choose filter oppervlaktewater
     filters[0].active = [0]
     labels = ["Gemaal", "Stuw", "Inlaat", "Sluis", "Meetpunt (hydrologisch)"]
     assert filters[1].labels == labels
@@ -50,3 +50,13 @@ def test_switch_theme():
     assert locations.labels == []
     assert parameters.labels == []
     filters[0].active = []
+
+
+def test_fysisch_chemisch():
+    # choose filter fysisch/chemisch
+    filters[0].active = [2]
+    # choose meetlocaties
+    filters[1].active = [0]
+    first_loc = data.locations.sets[data.filters.thematic_filters[1].value[0]].iloc[0]
+    assert first_loc.line_color == "orange"
+    assert first_loc.fill_color == "black"

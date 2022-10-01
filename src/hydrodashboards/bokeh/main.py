@@ -9,7 +9,6 @@ try:
 except:
     from hydrodashboards.bokeh.data import Data
     from hydrodashboards.bokeh.config import Config
-from pathlib import Path
 
 # import bokeh sources
 import hydrodashboards.bokeh.sources as sources
@@ -26,6 +25,7 @@ from hydrodashboards.bokeh.widgets import (
 from bokeh.models.widgets import Div, Select
 from hydrodashboards.bokeh.log_utils import import_logger
 import inspect
+from pathlib import Path
 
 from hydrodashboards.bokeh.language import update_graph_title
 
@@ -34,11 +34,23 @@ import pandas as pd
 
 LANG = "dutch"
 HTML_TYPE = "table"
+CONFIG_JSON = Path(__file__).parent.joinpath("config.json")
 
 
 """
 Supporting functions
 """
+
+
+def filters_on_change():
+    if config.thematic_view:
+        on_change = {
+            "themes": [update_on_theme_selector],
+            "filters": [update_on_filter_selector],
+        }
+    else:
+        on_change = [update_on_filter_selector]
+    return on_change
 
 
 def toggle_view_time_series_controls(value=True):
@@ -72,29 +84,18 @@ def enable_update_graph():
         update_graph.disabled = True
 
 
-def update_time_series_sources(stream=False):
+def update_time_series_sources():
     """Update of time_series_sources assigned to top_figs."""
     start, end = view_x_range_as_datetime()
     for k, v in time_series_sources.items():
         time_series = data.time_series_sets.get_by_label(k)
-        if stream:
-            exluded_date_times = v["source"].data["datetime"]
-            _source = sources.time_series_to_source(
-                time_series=time_series,
-                start_date_time=start,
-                end_date_time=end,
-                excluded_date_times=exluded_date_times,
-                unreliables=False,
-            )
-            v["source"].stream(_source.data)
-        else:
-            _source = sources.time_series_to_source(
-                time_series=time_series,
-                start_date_time=start,
-                end_date_time=end,
-                unreliables=False,
-            )
-            v["source"].data.update(_source.data)
+        _source = sources.time_series_to_source(
+            time_series=time_series,
+            start_date_time=start,
+            end_date_time=end,
+            unreliables=False,
+        )
+        v["source"].data.update(_source.data)
 
 
 def view_x_range_as_datetime():
@@ -120,22 +121,6 @@ def get_visible_renderers(figs):
 def get_visible_sources(figs):
     renderers = get_visible_renderers(figs)
     return [i.data_source for i in renderers]
-
-
-def value_as_datetime(value):
-    """Convenience property to retrieve the value tuple as a tuple of
-    datetime objects.
-
-    Added in version 1.1
-    """
-    if value is None:
-        return None
-    v1, v2 = value
-    if isinstance(v1, float):
-        v1 = datetime.utcfromtimestamp(v1 / 1000)
-    if isinstance(v2, float):
-        v1 = datetime.utcfromtimestamp(v2 / 1000)
-    return v1, v2
 
 
 """
@@ -214,53 +199,57 @@ def update_on_locations_source_select(attr, old, new):
     if len(ids) > 10:
         ids.sort()
         ids = ids[:10]
-
-    data.locations.set_value(ids)
-    # update locations and data.locations value
-    if config.filter_type == "MultiSelect":
-        locations.value = data.locations.value
-    elif config.filter_type == "CheckBoxGroup":
-        locations.active = data.locations.active
+        locations_source.selected.indices = [
+            locations_source.data["id"].index(i) for i in ids
+        ]
+    else:
+        data.locations.set_value(ids)
+        # update locations and data.locations value
+        if config.filter_type == "MultiSelect":
+            locations.value = data.locations.value
+        elif config.filter_type == "CheckBoxGroup":
+            locations.active = data.locations.active
 
 
 def update_on_locations_selector(attr, old, new):
     """Update when values in locations filter are selected"""
     logger.debug(inspect.stack()[0][3])
 
-    if config.filter_type == "MultiSelect":
-        # limit to max 10 locations
-        if len(new) > 10:
-            locations.value = old
+    if len(new) > 10:
+        setattr(locations, config.filter_selector, old)
+    else:
+        if config.filter_type == "MultiSelect":
+            # limit to max 10 locations
 
-        # update datamodel
-        data.locations.set_value(new)
-        data.update_on_locations_select(locations.value)
+            # update datamodel
+            data.locations.set_value(new)
+            data.update_on_locations_select(locations.value)
 
-        # update parameters options for (de)selected locations
-        parameters.options = data.parameters.options
-        parameters.value = data.parameters.value
+            # update parameters options for (de)selected locations
+            parameters.options = data.parameters.options
+            parameters.value = data.parameters.value
 
-    elif config.filter_type == "CheckBoxGroup":
-        if len(new) > 10:
-            locations.active = old
+        elif config.filter_type == "CheckBoxGroup":
 
-        # update datamodel
-        data.locations.set_active(new)
-        data.update_on_locations_select(data.locations.value)
+            # update datamodel
+            data.locations.set_active(new)
+            data.update_on_locations_select(data.locations.value)
 
-        # update parameters options for (de)selected locations
-        parameters.labels = data.parameters.labels
-        parameters.active = data.parameters.active
+            # update parameters options for (de)selected locations
+            parameters.labels = data.parameters.labels
+            parameters.active = data.parameters.active
 
-    # update location source selected
-    indices = [list(locations_source.data["id"]).index(i) for i in data.locations.value]
-    locations_source.selected.indices = indices
+        # update location source selected
+        indices = [
+            list(locations_source.data["id"]).index(i) for i in data.locations.value
+        ]
+        locations_source.selected.indices = indices
 
-    # update app status
-    app_status.text = data.app_status(html_type=HTML_TYPE)
+        # update app status
+        app_status.text = data.app_status(html_type=HTML_TYPE)
 
-    # enable update_graph button
-    enable_update_graph()
+        # enable update_graph button
+        enable_update_graph()
 
 
 def update_on_parameters_selector(attrname, old, new):
@@ -539,7 +528,7 @@ def set_visible_labels(attr, old, new):
 We read the config
 """
 
-config = Config.from_json(Path(__file__).parent.joinpath("config.json"))
+config = Config.from_json(CONFIG_JSON)
 
 """
 We initialize the dataclass
@@ -563,16 +552,10 @@ In this section we define all widgets. We pass callbacks and sources to every wi
 """
 
 # Filters widget
-if config.thematic_view:
-    on_change = {
-        "themes": [update_on_theme_selector],
-        "filters": [update_on_filter_selector],
-    }
-else:
-    on_change = [update_on_filter_selector]
+
 filters = filters_widgets.make_filters(
     data=data.filters,
-    on_change=on_change,
+    on_change=filters_on_change(),
     filter_type=config.filter_type,
     thematic_view=config.thematic_view,
 )

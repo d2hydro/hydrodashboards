@@ -91,7 +91,7 @@ def empty_fig():
         align="end",
         sizing_mode="stretch_width",
         width_policy="max",
-        css_classes=["time_figure"]
+        css_classes=["time_figure"],
     )
 
 
@@ -211,7 +211,7 @@ def search_fig(
             x_range=x_range,
             y_range=y_range,
             toolbar_location=None,
-            css_classes=["time_figure"]
+            css_classes=["time_figure"],
         )
         time_fig.toolbar.active_drag = None
         time_fig.toolbar.active_scroll = None

@@ -142,3 +142,6 @@ scripts/*
 *bokeh_*.txt
 src/hydrodashboards/bokeh/bootstrap/*
 *.bak
+
+# test_data dir
+tests/data/*

@@ -58,27 +58,6 @@ def copy_environment(virtual_env: Union[str, Path], reverse_bokeh_select=True):
         reverse_bokeh_select(virtual_env)
 
 
-def config_to_json(config_file: Path, config_json: Path):
-    # import the config_py
-    import os
-
-    config_file = Path(config_file)
-    os.chdir(config_file.parent)
-    import config as cfg_py
-
-    cfg_dict = {k.lower(): v for k, v in cfg_py.__dict__.items() if k.isupper()}
-
-    cfg_dict["log_dir"] = str(cfg_dict["log_dir"])
-    cfg_dict["history_period"] = cfg_dict["history_period"].days
-    cfg_dict["bounds"] = tuple(cfg_dict["bounds"])
-    cfg_dict.pop("max_view_period", None)
-
-    for v in cfg_dict["map_overlays"].values():
-        v["class"] = v["class"].__name__
-
-    Path(config_json).write_text(json.dumps(cfg_dict, indent=2))
-
-
 def bokeh(
     app_dir: Union[str, Path],
     config_file: Union[str, Path] = None,
@@ -103,7 +82,7 @@ def bokeh(
 
     """
 
-    # %% remove and create directory
+    # % remove and create directory
     app_dir = Path(app_dir)
 
     if app_dir.exists():
@@ -118,10 +97,7 @@ def bokeh(
         config_file = Path(config_file)
 
     config_json = app_dir.joinpath("config.json")
-    if config_file.suffix == ".py":
-        config_to_json(config_file, config_json)
-    else:
-        config_json.write_text(config_file.read_text())
+    config_json.write_text(config_file.read_text())
 
     config = Config.from_json(config_json)
     # %% provide template
@@ -197,7 +173,7 @@ def bokeh(
     # copy contents of datamodel folder to correct location
     for src in list(bokeh_src.glob("*.*")):
         dst = None
-        if src.name in ["data.py", "main.py", "theme.yaml", "config.py"]:
+        if src.name in ["data.py", "main.py", "theme.yaml", "config.py", "__init__.py"]:
             dst = app_dir.joinpath(src.name)
         else:
             dst = bokeh_dir.joinpath(src.name)
