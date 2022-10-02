@@ -1,11 +1,11 @@
-# hydrodashboards
+# HydroDashboards
 
-Open Source Dashboards for hydro data
+Open Source Dashboards for Hydro-Data
 
 [![Test](https://github.com/d2hydro/hydrodashboards/actions/workflows/python-package-conda.yml/badge.svg)](https://github.com/d2hydro/hydrodashboards/actions/workflows/python-package-conda.yml)
 [![Coverage](https://img.shields.io/codecov/c/github/d2hydro/hydrodashboards)](https://github.com/d2hydro/hydrodashboards/tree/main/tests)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ---
 
 **Documentation**: [https://d2hydro.github.io/hydrodashboards](https://d2hydro.github.io/hydrodashboards)
