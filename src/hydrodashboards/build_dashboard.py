@@ -13,7 +13,7 @@ from typing import Union
 VIRTUAL_ENV = Path(sys.executable).parent.as_posix()
 HYDRODASHBOARDS_DIR = Path(hydrodashboards.__file__).parent
 CONFIG_FILE = Path(hydrodashboards.__file__).parent.joinpath("bokeh", "config.py")
-
+VERSION = hydrodashboards.__version__
 
 def main():
     args = get_args()
@@ -162,6 +162,7 @@ def bokeh(
     datamodel_dir = app_dir.joinpath("hydrodashboards", "datamodel")
     shutil.copytree(datamodel_src, datamodel_dir)
 
+
     # %% provide hydrodashboards folder
     bokeh_src = HYDRODASHBOARDS_DIR.joinpath("bokeh")
     hydrodashboards_dir = app_dir / "hydrodashboards"
@@ -182,9 +183,7 @@ def bokeh(
             dst.write_text(src.read_text())
 
     # copy __init__.py
-    hydrodashboards_dir.joinpath("__init__.py").write_text(
-        Path(hydrodashboards.__file__).read_text()
-    )
+    hydrodashboards_dir.joinpath("__init__.py").write_text(f'__version__ = "{VERSION}"')
 
     # %% write serve_bokeh.bat
     if virtual_env is None:

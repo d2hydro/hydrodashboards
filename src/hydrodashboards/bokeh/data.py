@@ -16,6 +16,8 @@ from hydrodashboards.datamodel.utils import (
     concat_fews_parameter_ids,
 )
 
+from hydrodashboards import __version__
+
 # import functions from python modules
 from datetime import datetime
 import pandas as pd
@@ -270,6 +272,7 @@ class Data:
             )
         elif html_type == "table":
             html = (
+                f"Versie: {__version__} | "
                 f"Locaties: {locations} (max 10) | "
                 f"Parameters: {parameters} | "
                 f"Tijdseries: {time_series_active} | "
