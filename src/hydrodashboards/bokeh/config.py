@@ -11,6 +11,7 @@ class Config:
     fews_url: str
     root_filter: str
     filter_dimensions: dict
+    fews_parallel: bool = False
     filter_type: str = "MultiSelect"
     language: str = "dutch"
     thresholds: list = field(default_factory=list)

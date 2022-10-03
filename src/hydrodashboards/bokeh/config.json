@@ -9,6 +9,7 @@
         "Dummy"
     ],
     "fews_url": "https://www.hydrobase.nl/fews/nzv/FewsWebServices/rest/fewspiservice/v1",
+    "fews_parallel": false,
     "filter_colors": {
         "WDB_EL_MPN": {
             "fill": "fuchsia",
