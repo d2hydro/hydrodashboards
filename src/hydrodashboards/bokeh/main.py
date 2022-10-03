@@ -641,6 +641,7 @@ curdoc().add_root(
         sizing_mode="stretch_width",
     )
 )
+
 filters_widgets.add_css_classes(filters, locations, parameters)
 filters_layout = filters_widgets.finish_filters(
     filters, filter_type=config.filter_type, thematic_view=config.thematic_view

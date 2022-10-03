@@ -282,22 +282,7 @@ padding: 6px;min-height:20px;border: 1px;color: white; accent-color: red;}
   }
 .bk.app_title{display:inline-block; min-width: 270px;}
 
-.bk.filter_checkboxgroup_1{
-color: white; overflow-y: auto;background:#495568;
-padding: 6px;min-height:74px;
-}
-.bk.filter_checkboxgroup_2{
-color: white; overflow-y: auto;background:#495568;
-padding: 6px;min-height:98px;
-}
-.bk.filter_checkboxgroup_3{
-color: white; overflow-y: auto;background:#495568;
-padding: 6px;min-height:104px;
-}
-.bk.filter_checkboxgroup_4{
-color: white; overflow-y: auto;background:#495568;
-padding: 6px;min-height:86px;
-}
+.bk.filter_checkboxgroup
 
 .bk.filter_multiselect_1{
 color: white; background:#3A4453;

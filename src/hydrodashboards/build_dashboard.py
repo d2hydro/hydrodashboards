@@ -3,7 +3,7 @@ import shutil
 import fewspy
 import hydrodashboards
 from hydrodashboards.bokeh.config import Config
-from hydrodashboards.build_css_templates import map_opt
+from hydrodashboards.build_css_templates import map_opt, checkbox_filters
 from hydrodashboards.build_html_templates import thresholds_button
 import argparse
 import sys
@@ -141,7 +141,10 @@ def bokeh(
                 map_options_left=map_options_left,
                 map_options_width=map_options_width,
             ),
-        )
+        ).replace(
+            ".bk.filter_checkboxgroup",
+            checkbox_filters(config.filter_css_heights)
+            )
     )
 
     icons_dir = static_dir / "icons"

@@ -10,7 +10,7 @@ class Config:
     bounds: list
     fews_url: str
     root_filter: str
-    filter_dimensions: dict
+    filter_dimensions: list
     fews_parallel: bool = False
     filter_type: str = "MultiSelect"
     language: str = "dutch"
@@ -32,6 +32,19 @@ class Config:
     @property
     def location_attributes(self):
         return [i["attribute"] for i in self.thresholds]
+
+    @property
+    def filter_css_heights(self):
+        def _height(i):
+            px = 22
+            if i["items"] > 1:
+                px += 22
+                px += (i["items"] - 2) * 18
+            if i["long_names"]:
+                px += 8
+            return px
+
+        return [_height(i) for i in self.filter_dimensions]
 
     @property
     def filter_selector(self):
