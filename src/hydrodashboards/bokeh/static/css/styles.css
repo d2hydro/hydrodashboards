@@ -4,7 +4,7 @@
 @import "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700";
 
 body {
-    font-family: 400 1.6rem/1.5 Noto Sans,sans-serif;
+    font-family: 'Poppins', sans-serif;
     background: #fafafa;
    height:100%;
 }
@@ -15,15 +15,15 @@ body {
     font-weight: 320;
     line-height: 1.7em;
 }
-
 @keyframes spinner {
   to {transform: rotate(360deg);}
 }
 
 .bk.download_spinner{    
-  display:flex;  
+ display:flex;  
   opacity: 1;
   transition: opacity linear 0.1s;  
+
   visibility: hidden;  
 }
 .bk.download_spinner:after {
@@ -42,14 +42,13 @@ body {
   animation: spinner .6s linear infinite;
   visibility: visible;
 }
-
 .bk.stoploading_download_spinner{
 color: blue;
 }
 
 .bk.bk-btn.bk-btn-success{
  background-color:#282F3A;
- background-image: url(/bokeh/static/icons/download.png);
+ background-image: url(/wik/static/icons/download.png);
  background-repeat: no-repeat;
  background-position: center;
  color: white;
@@ -95,11 +94,10 @@ color: blue;
 color: blue;
 }
 
-
 .bk.bk-btn.bk-btn-primary:hover:after{
 }
 .bk.bk-btn.bk-btn-primary{
-	background: #F16996;
+		background: #F16996;
 	border:1px solid black;
 	display:flex;
 	border-color:#495568;
@@ -112,7 +110,6 @@ color: blue;
 .bk.bk-input{
 	padding: 2px;
 }
-
 .bk-root .choices__list--dropdown {
 	background: white;
 	color: black;
@@ -166,11 +163,8 @@ a, a:hover, a:focus {
 	
 }
 .navbar-expand-lg {
-    background-color:#292E3B;
-	
+   background: #495568;
    }
-   
-
 
 
 /* ---------------------------------------------------
@@ -189,7 +183,7 @@ a, a:hover, a:focus {
 #sidebar {
    min-width: 310px;
     max-width: 310px;
-	background: #171921;
+	background: #3A4453;
     height:100vh;
     color: #fff;
     transition: all 0.6s cubic-bezier(0.945, 0.020, 0.270, 0.665);
@@ -198,30 +192,31 @@ a, a:hover, a:focus {
 
 #sidebar.active {
     margin-left: -310px;
+
     transform: rotateY(100deg);
 }
 
 #sidebar .sidebar-header {
-    padding-right: 10px;
+     padding-right: 10px;
 	padding-left: 10px;
 	padding-top: 10px;
-    background-color:#222530;
-	font: 400 1.6rem/1.5 Noto Sans,sans-serif;
-	
+    background: #282f3a;
 	height:59px;
 	margin-bottom:5px;
+
 }
 
 #sidebar .sidebar-bokeh1 {
     width: 100%;
     padding-right: 14px;
-    padding-left:14px;  	
+    padding-left:14px;
 }
 
 #sidebar .sidebar-bokeh2 {
     width: 100%;
 	padding-right: 14px;
 	padding-left:14px;	
+
 }
 
 #sidebar .sidebar-bokeh3 {
@@ -230,16 +225,24 @@ a, a:hover, a:focus {
 	padding-left:14px;	
 }
 
+
+
+
 #sidebar .sidebar-bokeh4 {
     width: 100%;
 	padding-right: 14px;
 	padding-left:14px;
 }
+
+
 #sidebar .sidebar-bokeh5{
   width: 100%;
   padding-right: 14px;
   padding-left:14px;
 }
+
+
+
 #sidebar .sidebar-bokeh6{
   width: 100%;
   padding-right: 14px;
@@ -260,18 +263,14 @@ a, a:hover, a:focus {
  
 }
 
-
 a[data-toggle="collapse"] {
   position: relative;
 }
-
 :root {
   accent-color: #F16996;
 }
 
-
-
-.bk.bk-input.flatpickr-input{color: white;background-color:#222530;min-width:130px;
+.bk.bk-input.flatpickr-input{color: white;background-color:#495568;min-width:130px;
 padding: 6px;min-height:20px;border: 0px;color: white}
 /* --------
 .bk.bk-input{color: white;background-color:#495568;
@@ -279,55 +278,57 @@ padding: 6px;min-height:20px;border: 1px;color: white; accent-color: red;}
 ----- */
 
 .bk.filter_title{
-	display: inline-block; min-width: 272px; height: 22px;background-color:#495568;color:white;margin-top:10px;padding:4px;box-shadow: 5px 10px 20px #222530  inset
+	display: inline-block; min-width: 272px; height: 22px;background-color:#282F3A;color:white;margin-top:10px;padding:4px;box-shadow: 5px 10px 20px #495568 inset
   }
 .bk.app_title{display:inline-block; min-width: 270px;}
 
 .bk.filter_checkboxgroup_1{
-color: white; overflow-y: auto;background:#222530;
-padding: 6px;min-height:74px;
+color: white; overflow-y: auto;background:#495568;
+padding: 6px;min-height:80px;
 }
 .bk.filter_checkboxgroup_2{
-color: white; overflow-y: auto;background:#222530;
+color: white; overflow-y: auto;background:#495568;
 padding: 6px;min-height:98px;
 }
 .bk.filter_checkboxgroup_3{
-color: white; overflow-y: auto;background:#222530;
-padding: 6px;min-height:104px;
+color: white; overflow-y: auto;background:#495568;
+padding: 6px;min-height:106px;
 }
 .bk.filter_checkboxgroup_4{
-color: white; overflow-y: auto;background:#222530;
-padding: 6px;min-height:86px;
+color: white; overflow-y: auto;background:#495568;
+padding: 6px;min-height:88px;
 }
 
 .bk.filter_multiselect_1{
-color: white; background:#222530;
+color: white; background:#3A4453;
 padding: 0px
 }
 .bk.filter_multiselect_2{
-color: white; background:#222530;
+color: white; background:#3A4453;
 padding: 0px
 }
 .bk.filter_multiselect_3{
-color: white; background:#222530;
+color: white; background:#3A4453;
 padding: 0px
 }
 .bk.filter_multiselect_4{
-color: white; background:#222530;
+color: white; background:#3A4453;
 padding: 0px
 }
 
 .bk.filter_multiselect_5{
-color: white;background:#222530;
+color: white;background:#3A4453;
 padding: 0px
 }
 .bk.filter_multiselect_6{
-color: white;background:#222530;
+color: white;background:#3A4453;
 padding: 0px
 }
 option.bk{
  
 }
+
+
 
 
 /* ---------------------------------------------------
@@ -344,6 +345,7 @@ option.bk{
 	margin-right:0px;
 	display:block;
 	padding:0px;
+	
 }
 
 #sidebarCollapse {
@@ -404,7 +406,7 @@ width: 100%;
 
 #button_leg_bar {
   background-color: transparent;
-  background-image: url(/bokeh/static/icons/layers.svg);
+  background-image: url(/wik/static/icons/layers.svg);
   background-repeat: no-repeat;
   border-width: 0px;
   bottom: 20px;
@@ -448,9 +450,9 @@ width: 100%;
   display:block;
   position: fixed;
   background: white;
-  width: 106px;
-  top: calc(100% - 236px);
-  left: calc(100% - 126px);
+  width: 165px;
+  top: calc(100% - 434px);
+  left: calc(100% - 185px);
   background-color: white;
   padding: 2px;
   border: 1px solid #F1F2F3;
@@ -501,7 +503,7 @@ width: 100%;
 	 width: 26px;
 	 margin-left: 60px;
 	 margin-right:200px;
-	 background-image: url(/bokeh/static/icons/threshold.png);
+	 background-image: url(/wik/static/icons/threshold.png);
 	 background-repeat: no-repeat;
 	 background-position:center 2px center;
 	 background-color: white;
@@ -509,7 +511,7 @@ width: 100%;
 }
 
 .bk.bk-btn.bk-btn-default.bk-active{
-	  background-image: url(/bokeh/static/icons/threshold.png);
+	  background-image: url(/wik/static/icons/threshold.png);
 	  background-repeat: no-repeat;
 	  background-position:center 2px center;
 	  display:flex;
@@ -578,7 +580,6 @@ width: 100%;
 #button_lower:active {
   transform: translateY(4px);
 }
-
 
 /* ---------------------------------------------------
     styles on menu animation 
@@ -669,4 +670,3 @@ width: 100%;
     }
 
 }
-
