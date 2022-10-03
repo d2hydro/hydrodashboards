@@ -4,6 +4,7 @@ from bokeh.layouts import row
 
 def make_search_period(data, on_change):
     start_date_picker = DatePicker(
+        title = data.search_start_title,
         value=data.search_start.strftime("%Y-%m-%d"),
         min_date=data.history_start.strftime("%Y-%m-%d"),
         max_date=data.search_end.strftime("%Y-%m-%d"),
@@ -11,6 +12,7 @@ def make_search_period(data, on_change):
         css_classes=["search_period"],
     )
     end_date_picker = DatePicker(
+        title = data.search_start_title,
         value=data.search_end.strftime("%Y-%m-%d"),
         min_date=data.search_start.strftime("%Y-%m-%d"),
         max_date=data.search_end.strftime("%Y-%m-%d"),
