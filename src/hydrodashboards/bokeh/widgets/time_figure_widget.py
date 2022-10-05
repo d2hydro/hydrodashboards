@@ -345,6 +345,7 @@ def top_fig(
     time_fig.legend.click_policy = "hide"
     time_fig.legend.visible = True
     time_fig.legend.name = "time_figure_legend"
+    time_fig.legend.tags = ["time_figure_legend"]
 
     if len(time_fig.legend) > 0:
         time_fig.add_layout(time_fig.legend[0], "right")
