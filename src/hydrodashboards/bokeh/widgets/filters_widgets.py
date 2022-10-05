@@ -1,34 +1,8 @@
 from bokeh.models.widgets import CheckboxGroup, Div
 from bokeh.layouts import column
-from bokeh.models import CustomJS
 from typing import List
 
 SIZING_MODE = "stretch_width"
-
-
-def clear_control_js(filter, filters_layout):
-    return CustomJS(
-        args={"filter": filter, "filters_layout": filters_layout},
-        code="""
-function clearFilter(item) {
-    if (item.title != filter.title) {
-        item.value = []
-    }
-}
-
-function clearFilterValues() {
-    if ((ctrlKey == false) && (filter.value.length > 0)) {
-        filters_layout.children.forEach(item => clearFilter(item))
-    }
-}
-clearFilterValues();
-""",
-    )
-
-
-def clear_control(filters_layout):
-    for i in filters_layout.children:
-        i.js_on_change("value", clear_control_js(i, filters_layout))
 
 
 def make_filter(data, on_change=[], filter_length=5) -> CheckboxGroup:
