@@ -6,6 +6,7 @@ channels:
 
 dependencies:
   - aiohttp
+  - nest-asyncio
   - black
   - jupyter
   - pandas
@@ -15,7 +16,6 @@ dependencies:
   - mkdocstrings-python
   - mkdocs-material
   - geopandas
-  - pydantic
   - requests
   - pytest
   - pytest-cov

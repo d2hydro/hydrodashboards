@@ -6,10 +6,10 @@ channels:
 
 dependencies:
   - aiohttp
+  - nest-asyncio
   - requests
   - pandas
   - geopandas
   - bokeh
-  - pydantic
   - pip:
     - fewspy
