@@ -131,7 +131,7 @@ def bokeh(
 
     map_options_height = int(200 + 18 * len(config.map_overlays))
     map_options_left = int(55 + 6.5 * max([len(i) for i in config.map_overlays.keys()]))
-    map_options_width = int(map_options_left - 20)
+    map_options_width = int(map_options_left - 10)
     styles_css.write_text(
         template_css.read_text()
         .replace("/bokeh/", f"/{app_dir.name}/")

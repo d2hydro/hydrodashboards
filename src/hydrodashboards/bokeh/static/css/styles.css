@@ -48,7 +48,7 @@ color: blue;
 
 .bk.bk-btn.bk-btn-success{
  background-color:#282F3A;
- background-image: url(/wik/static/icons/download.png);
+ background-image: url(/bokeh/static/icons/download.png);
  background-repeat: no-repeat;
  background-position: center;
  color: white;
