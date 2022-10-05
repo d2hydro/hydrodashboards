@@ -206,55 +206,13 @@ a, a:hover, a:focus {
 
 }
 
-#sidebar .sidebar-bokeh1 {
+#sidebar .sidebar-bokeh {
     width: 100%;
     padding-right: 14px;
     padding-left:14px;
 }
 
-#sidebar .sidebar-bokeh2 {
-    width: 100%;
-	padding-right: 14px;
-	padding-left:14px;	
 
-}
-
-#sidebar .sidebar-bokeh3 {
-    width: 100%;
-	padding-right: 14px;
-	padding-left:14px;	
-}
-
-
-
-
-#sidebar .sidebar-bokeh4 {
-    width: 100%;
-	padding-right: 14px;
-	padding-left:14px;
-}
-
-
-#sidebar .sidebar-bokeh5{
-  width: 100%;
-  padding-right: 14px;
-  padding-left:14px;
-}
-
-
-
-#sidebar .sidebar-bokeh6{
-  width: 100%;
-  padding-right: 14px;
-  padding-left:14px;
- 
-}
-
-#sidebar .sidebar-bokeh7{
-  width: 100%;
-  padding-right: 14px;
-  padding-left:14px;
-}
 
 #sidebar #update_download{
   padding-right: 14px;
@@ -269,6 +227,22 @@ a[data-toggle="collapse"] {
 :root {
   accent-color: #F16996;
 }
+input[type=checkbox]{
+	cursor: pointer;
+}
+
+.bk.search_period .bk.bk-input-group label[class=bk]{display: inline-block; min-width: 130px; height: 22px;background-color:#282F3A;color:white;margin-top:10px;padding:4px;box-shadow: 5px 10px 20px #495568 inset;
+border-radius:2px	
+}
+
+
+.map_opt .bk-root .bk .bk .bk .bk.bk-input-group label[class=bk] input[type=checkbox]{
+	accent-color: lightgrey;	  
+}
+
+.map_opt .bk-root .bk .bk .bk .bk.bk-input-group label[class=bk] input[type=radio]{
+	accent-color: lightgrey;	
+}
 
 .bk.bk-input.flatpickr-input{color: white;background-color:#495568;min-width:130px;
 padding: 6px;min-height:20px;border: 0px;color: white}
@@ -278,8 +252,8 @@ padding: 6px;min-height:20px;border: 1px;color: white; accent-color: red;}
 ----- */
 
 .bk.filter_title{
-	display: inline-block; min-width: 272px; height: 22px;background-color:#282F3A;color:white;margin-top:10px;padding:4px;box-shadow: 5px 10px 20px #495568 inset
-  }
+display: inline-block; min-width: 274px; height: 22px;background-color:#282F3A;color:white;margin-top:10px;padding:4px;box-shadow: 5px 10px 20px #495568 inset;
+border-radius:2px}
 .bk.app_title{display:inline-block; min-width: 270px;}
 
 .bk.filter_checkboxgroup_1{
@@ -299,31 +273,6 @@ color: white; overflow-y: auto;background:#495568;
 padding: 6px;min-height:88px;
 }
 
-.bk.filter_multiselect_1{
-color: white; background:#3A4453;
-padding: 0px
-}
-.bk.filter_multiselect_2{
-color: white; background:#3A4453;
-padding: 0px
-}
-.bk.filter_multiselect_3{
-color: white; background:#3A4453;
-padding: 0px
-}
-.bk.filter_multiselect_4{
-color: white; background:#3A4453;
-padding: 0px
-}
-
-.bk.filter_multiselect_5{
-color: white;background:#3A4453;
-padding: 0px
-}
-.bk.filter_multiselect_6{
-color: white;background:#3A4453;
-padding: 0px
-}
 option.bk{
  
 }
@@ -456,7 +405,8 @@ width: 100%;
   background-color: white;
   padding: 2px;
   border: 1px solid #F1F2F3;
-  border-radius:4px;
+  border-radius:6px;
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 20px 30px;
 }
 
 

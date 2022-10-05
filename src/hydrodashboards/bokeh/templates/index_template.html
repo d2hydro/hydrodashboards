@@ -102,28 +102,27 @@ keyUp();
             <div class="sidebar-header">
                 {{ embed(roots.app_title) }}
             </div>
-            <div class="sidebar-bokeh1">
+            <div class="sidebar-bokeh">
                 {{ embed(roots.filters) }}
-            </div>
-             <div class="sidebar-bokeh2">
-                {{ embed(roots.locations) }}
-            </div>
-            <div class="sidebar-bokeh3">
-                {{ embed(roots.parameters) }}
-            </div>
-            <div class="sidebar-bokeh5">    
-                {{ embed(roots.search_period) }}
-            </div>            
-	   <div class="row" id="update_download">  			
-		<div class="col-9">
-		    {{ embed(roots.update_graph) }}
-		</div>	
-		<div class="col-2">
-		    {{ embed(roots.download_time_series) }}
-		</div>	
-	  </div>	      
-        </nav>
 
+
+                {{ embed(roots.locations) }}
+
+
+                {{ embed(roots.parameters) }}
+
+
+                {{ embed(roots.search_period) }}
+			</div>
+			<div class="row" id="update_download">  			
+				<div class="col-9">
+					{{ embed(roots.update_graph) }}
+				</div>	
+				<div class="col-2">
+					{{ embed(roots.download_time_series)}}
+				</div>	
+			</div>					
+        </nav>
         <!-- Page Content Holder -->
         <div id="content">
         
