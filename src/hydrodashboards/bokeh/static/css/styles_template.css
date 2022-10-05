@@ -202,7 +202,7 @@ a, a:hover, a:focus {
 	padding-top: 10px;
     background: #282f3a;
 	height:59px;
-	margin-bottom:5px;
+	margin-bottom:0px;
 
 }
 
@@ -214,7 +214,7 @@ a, a:hover, a:focus {
 #sidebar #update_download{
   padding-right: 14px;
   padding-left:14px;
-  margin-top:12px;
+  margin-top:0px;
  
 }
 
@@ -228,7 +228,7 @@ input[type=checkbox]{
 	cursor: pointer;
 }
 
-.bk.search_period .bk.bk-input-group label[class=bk]{display: inline-block; min-width: 130px; height: 22px;background-color:#282F3A;color:white;margin-top:10px;padding:4px;box-shadow: 5px 10px 20px #495568 inset;
+.bk.search_period .bk.bk-input-group label[class=bk]{display: inline-block; min-width: 130px; min-height: 25px;background-color:#282F3A;color:white;margin-top:10px;padding:4px;box-shadow: 5px 10px 20px #495568 inset;
 border-radius:2px	
 }
 
@@ -247,8 +247,8 @@ padding: 6px;min-height:20px;border: 0px;color: white}
 .bk.bk-input{color: white;background-color:#495568;
 padding: 6px;min-height:20px;border: 1px;color: white; accent-color: red;}
 ----- */
-
-display: inline-block; min-width: 274px; height: 22px;background-color:#282F3A;color:white;margin-top:10px;padding:4px;box-shadow: 5px 10px 20px #495568 inset;
+.bk.filter_title{
+display: inline-block; min-width: 274px; max-height: 25px;background-color:#282F3A;color:white;margin-top:10px;padding:4px;box-shadow: 5px 10px 20px #495568 inset;
 border-radius:2px}
 .bk.app_title{display:inline-block; min-width: 270px;}
 
