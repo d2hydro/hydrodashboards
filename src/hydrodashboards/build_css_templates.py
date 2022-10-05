@@ -24,5 +24,8 @@ bk_checkbox = """
 
 def checkbox_filters(filter_heights):
     return "".join(
-        [bk_checkbox.format(ident=idx+1, height=i) for idx, i in enumerate(filter_heights)]
-        )
+        [
+            bk_checkbox.format(ident=idx + 1, height=i)
+            for idx, i in enumerate(filter_heights)
+        ]
+    )

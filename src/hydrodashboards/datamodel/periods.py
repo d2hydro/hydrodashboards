@@ -3,12 +3,8 @@ from hydrodashboards.bokeh.language import (
     search_period_end_title,
 )
 
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 from dataclasses import dataclass
-
-
-def _get_date(date_time):
-    return date(date_time.year, date_time.month, date_time.day)
 
 
 @dataclass
@@ -65,14 +61,6 @@ class Periods:
         # set search period
         self.search_start = search_start
         self.search_end = search_end
-
-    @staticmethod
-    def accepted_view_period(view_start, view_end):
-        view_period = view_end - view_start
-        if view_period.total_seconds() > 1800:
-            return False
-        else:
-            return True
 
     def set_view_period(self, view_start, view_end, force=False):
         nw_view_period = view_end - view_start

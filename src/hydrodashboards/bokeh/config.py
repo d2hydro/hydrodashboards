@@ -12,7 +12,6 @@ class Config:
     root_filter: str
     filter_dimensions: list
     fews_parallel: bool = False
-    filter_type: str = "MultiSelect"
     language: str = "dutch"
     thresholds: list = field(default_factory=list)
     filter_colors: dict = field(default_factory=dict)
@@ -48,10 +47,7 @@ class Config:
 
     @property
     def filter_selector(self):
-        if self.filter_type == "MultiSelect":
-            return "value"
-        elif self.filter_type == "CheckBoxGroup":
-            return "active"
+        return "active"
 
     def to_json(self, config_json):
         config_json = Path(config_json)

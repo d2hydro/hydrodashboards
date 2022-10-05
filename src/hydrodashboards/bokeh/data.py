@@ -337,10 +337,7 @@ class Data:
         all_locations = []
         all_parameters = []
 
-        if self.config.filter_type == "MultiSelect":
-            values = selected
-        elif self.config.filter_type == "CheckBoxGroup":
-            values = self.filters.values_by_actives(selected)
+        values = self.filters.values_by_actives(selected)
 
         for filter_id in values:
             filter_data = self.filters.get_filter(filter_id)

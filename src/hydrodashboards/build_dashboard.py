@@ -15,6 +15,7 @@ HYDRODASHBOARDS_DIR = Path(hydrodashboards.__file__).parent
 CONFIG_FILE = Path(hydrodashboards.__file__).parent.joinpath("bokeh", "config.py")
 VERSION = hydrodashboards.__version__
 
+
 def main():
     args = get_args()
     print(args.app_dir)
@@ -141,10 +142,10 @@ def bokeh(
                 map_options_left=map_options_left,
                 map_options_width=map_options_width,
             ),
-        ).replace(
-            ".bk.filter_checkboxgroup",
-            checkbox_filters(config.filter_css_heights)
-            )
+        )
+        .replace(
+            ".bk.filter_checkboxgroup", checkbox_filters(config.filter_css_heights)
+        )
     )
 
     icons_dir = static_dir / "icons"
@@ -164,7 +165,6 @@ def bokeh(
     datamodel_src = HYDRODASHBOARDS_DIR.joinpath("datamodel")
     datamodel_dir = app_dir.joinpath("hydrodashboards", "datamodel")
     shutil.copytree(datamodel_src, datamodel_dir)
-
 
     # %% provide hydrodashboards folder
     bokeh_src = HYDRODASHBOARDS_DIR.joinpath("bokeh")

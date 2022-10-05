@@ -134,49 +134,30 @@ def update_on_theme_selector(attr, old, new):
     logger.debug(inspect.stack()[0][3])
 
     filters_filter = filters[1]
-    if config.filter_type == "MultiSelect":
-        # get options and values
-        options, values, _ = data.filters.get_filter_options(value=new)
+    # get labels
+    options, _, labels = data.filters.get_filter_options(active=new)
 
-        # set filters_filter
-        filters_filter.options = options
-        filters_filter.value = [i for i in filters_filter.value if i in values]
-    elif config.filter_type == "CheckBoxGroup":
-        # get labels
-        options, _, labels = data.filters.get_filter_options(active=new)
+    active_labels = [filters_filter.labels[i] for i in filters_filter.active]
 
-        active_labels = [filters_filter.labels[i] for i in filters_filter.active]
+    # update data
+    data.filters.thematic_filters[1].options = options
 
-        # update data
-        data.filters.thematic_filters[1].options = options
-
-        # set filters_filter
-        filters_filter.labels = labels
-        filters_filter.active = [labels.index(i) for i in active_labels if i in labels]
+    # set filters_filter
+    filters_filter.labels = labels
+    filters_filter.active = [labels.index(i) for i in active_labels if i in labels]
 
 
 def update_on_filter_selector(attrname, old, new):
     """Updates locations values in locations filter when filters filter is updated"""
     logger.debug(inspect.stack()[0][3])
 
-    if config.filter_type == "MultiSelect":
-        # update datamodel
-        values = filters_widgets.get_filters_values(filters, config.thematic_view)
-        data.update_on_filter_select(values)
+    actives = filters_widgets.get_filters_actives(filters, config.thematic_view)
+    data.update_on_filter_select(actives)
 
-        # update widgets
-        locations.options = data.locations.options
-        locations.value = data.locations.value
-        parameters.options = data.parameters.options
-        parameters.value = data.parameters.value
-    elif config.filter_type == "CheckBoxGroup":
-        actives = filters_widgets.get_filters_actives(filters, config.thematic_view)
-        data.update_on_filter_select(actives)
-
-        locations.labels = data.locations.labels
-        locations.active = data.locations.active
-        parameters.labels = data.parameters.labels
-        parameters.active = data.parameters.active
+    locations.labels = data.locations.labels
+    locations.active = data.locations.active
+    parameters.labels = data.parameters.labels
+    parameters.active = data.parameters.active
 
     # update source
     locations_source.data = data.locations.map_locations
@@ -205,10 +186,8 @@ def update_on_locations_source_select(attr, old, new):
     else:
         data.locations.set_value(ids)
         # update locations and data.locations value
-        if config.filter_type == "MultiSelect":
-            locations.value = data.locations.value
-        elif config.filter_type == "CheckBoxGroup":
-            locations.active = data.locations.active
+
+        locations.active = data.locations.active
 
 
 def update_on_locations_selector(attr, old, new):
@@ -218,26 +197,13 @@ def update_on_locations_selector(attr, old, new):
     if len(new) > 10:
         setattr(locations, config.filter_selector, old)
     else:
-        if config.filter_type == "MultiSelect":
-            # limit to max 10 locations
+        # update datamodel
+        data.locations.set_active(new)
+        data.update_on_locations_select(data.locations.value)
 
-            # update datamodel
-            data.locations.set_value(new)
-            data.update_on_locations_select(locations.value)
-
-            # update parameters options for (de)selected locations
-            parameters.options = data.parameters.options
-            parameters.value = data.parameters.value
-
-        elif config.filter_type == "CheckBoxGroup":
-
-            # update datamodel
-            data.locations.set_active(new)
-            data.update_on_locations_select(data.locations.value)
-
-            # update parameters options for (de)selected locations
-            parameters.labels = data.parameters.labels
-            parameters.active = data.parameters.active
+        # update parameters options for (de)selected locations
+        parameters.labels = data.parameters.labels
+        parameters.active = data.parameters.active
 
         # update location source selected
         indices = [
@@ -256,11 +222,7 @@ def update_on_parameters_selector(attrname, old, new):
     """Update when values in locations filter are selected"""
     logger.debug(inspect.stack()[0][3])
 
-    if config.filter_type == "MultiSelect":
-        # update datemodel
-        data.parameters.set_value(parameters.value)
-    elif config.filter_type == "CheckBoxGroup":
-        data.parameters.set_active(parameters.active)
+    data.parameters.set_active(parameters.active)
 
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
@@ -556,21 +518,16 @@ In this section we define all widgets. We pass callbacks and sources to every wi
 filters = filters_widgets.make_filters(
     data=data.filters,
     on_change=filters_on_change(),
-    filter_type=config.filter_type,
     thematic_view=config.thematic_view,
 )
 
 # Locations widget
 on_change = [update_on_locations_selector]
-locations = filters_widgets.make_filter(
-    data=data.locations, on_change=on_change, filter_type=config.filter_type
-)
+locations = filters_widgets.make_filter(data=data.locations, on_change=on_change)
 
 # Parameters widget
 on_change = [update_on_parameters_selector]
-parameters = filters_widgets.make_filter(
-    data=data.parameters, on_change=on_change, filter_type=config.filter_type
-)
+parameters = filters_widgets.make_filter(data=data.parameters, on_change=on_change)
 
 # Search period widget
 on_change = [("value", update_on_search_period_value)]
@@ -644,20 +601,16 @@ curdoc().add_root(
 
 filters_widgets.add_css_classes(filters, locations, parameters)
 filters_layout = filters_widgets.finish_filters(
-    filters, filter_type=config.filter_type, thematic_view=config.thematic_view
+    filters, thematic_view=config.thematic_view
 )
 curdoc().add_root(filters_layout)
 
-locations_layout = filters_widgets.finish_filter(
-    locations, filter_type=config.filter_type
-)
+locations_layout = filters_widgets.finish_filter(locations)
 curdoc().add_root(
     column(locations_layout, name="locations", sizing_mode="stretch_width")
 )
 
-parameters_layout = filters_widgets.finish_filter(
-    parameters, filter_type=config.filter_type
-)
+parameters_layout = filters_widgets.finish_filter(parameters)
 curdoc().add_root(
     column(parameters_layout, name="parameters", sizing_mode="stretch_width")
 )
@@ -722,60 +675,79 @@ def convert_to_datetime(date_time):
         return None
 
 
-try:
-    if config.filter_type == "MultiSelect":
-        args = curdoc().session_context.request.arguments
-        start_date, end_date = view_period.value_as_datetime
-        update_period = False
-        if "filter_id" in args.keys():
-            filter_ids = [i.decode("utf-8") for i in args.get("filter_id")]
+def args_parser(args):
+    # select filters
+    if "filter_id" in args.keys():
+        print(args.get("filter_id"))
+        filter_ids = [i.decode("utf-8") for i in args.get("filter_id")]
+        filters_widgets.set_filter_values(
+            filters, filter_ids, config.thematic_view, data.filters
+        )
+    # select locations
+    if "location_id" in args.keys():
+        location_ids = [i.decode("utf-8") for i in args.get("location_id")]
+        if "filter_id" not in args.keys():
+            # get all filters in cache
+            data.update_on_filter_select(data.filters.values)
+            # get and select the filter ids that contain one or more location_ids
+            filter_ids = [
+                i for i in data.filters.values if locations_in_filter(location_ids, i)
+            ]
+            filters_widgets.set_filter_values(
+                filters, filter_ids, config.thematic_view, data.filters
+            )
+
+        # make sure there is no rubbish and set loction_ids
+        location_ids = [
+            j for j in location_ids if j in [i[0] for i in locations.options]
+        ]
+        locations.value = location_ids
+
+
+if curdoc().session_context:
+    args = curdoc().session_context.request.arguments
+    args_parser(args)
+
+"""
+    start_date, end_date = view_period.value_as_datetime
+    update_period = False
+    if "location_id" in args.keys():
+        location_ids = [i.decode("utf-8") for i in args.get("location_id")]
+        if "filter_id" not in args.keys():
+            # get all filters in cache
+            data.update_on_filter_select(data.filters.values)
+            # get and select the filter ids that contain one or more location_ids
+            filter_ids = [
+                i for i in data.filters.values if locations_in_filter(location_ids, i)
+            ]
             filters_widgets.set_filter_values(filters, filter_ids)
 
-        if "location_id" in args.keys():
-            location_ids = [i.decode("utf-8") for i in args.get("location_id")]
-            if "filter_id" not in args.keys():
-                # get all filters in cache
-                data.update_on_filter_select(data.filters.values)
-                # get and select the filter ids that contain one or more location_ids
-                filter_ids = [
-                    i
-                    for i in data.filters.values
-                    if locations_in_filter(location_ids, i)
-                ]
-                filters_widgets.set_filter_values(filters, filter_ids)
+        # make sure there is no rubbish and set loction_ids
+        location_ids = [
+            j for j in location_ids if j in [i[0] for i in locations.options]
+        ]
+        locations.value = location_ids
+    if "parameter_id" in args.keys():
+        parameter_ids = [i.decode("utf-8") for i in args.get("parameter_id")]
+        parameter_ids = [
+            j for j in parameter_ids if j in [i[0] for i in parameters.options]
+        ]
+        parameters.value = parameter_ids
+    if "start_date" in args.keys():
+        start_date = convert_to_datetime(args.get("start_date")[0].decode("utf-8"))
+        update_period = True
+    if "end_date" in args.keys():
+        end_date = convert_to_datetime(args.get("end_date")[0].decode("utf-8"))
+        update_period = True
+    if update_period:
+        end_date = min(data.periods.view_end, end_date)
+        if start_date < end_date:
+            search_start = start_date - timedelta(days=1)
+            search_end = min(start_date - timedelta(days=1), data.periods.search_end)
+            data.periods.set_search_period(search_start, search_end)
+            data.periods.set_view_period(start_date, end_date)
+            view_period.value = (data.periods.view_start, data.periods.view_end)
 
-            # make sure there is no rubbish and set loction_ids
-            location_ids = [
-                j for j in location_ids if j in [i[0] for i in locations.options]
-            ]
-            locations.value = location_ids
-        if "parameter_id" in args.keys():
-            parameter_ids = [i.decode("utf-8") for i in args.get("parameter_id")]
-            parameter_ids = [
-                j for j in parameter_ids if j in [i[0] for i in parameters.options]
-            ]
-            parameters.value = parameter_ids
-        if "start_date" in args.keys():
-            start_date = convert_to_datetime(args.get("start_date")[0].decode("utf-8"))
-            update_period = True
-        if "end_date" in args.keys():
-            end_date = convert_to_datetime(args.get("end_date")[0].decode("utf-8"))
-            update_period = True
-        if update_period:
-            end_date = min(data.periods.view_end, end_date)
-            if start_date < end_date:
-                search_start = start_date - timedelta(days=1)
-                search_end = min(
-                    start_date - timedelta(days=1), data.periods.search_end
-                )
-                data.periods.set_search_period(search_start, search_end)
-                data.periods.set_view_period(start_date, end_date)
-                view_period.value = (data.periods.view_start, data.periods.view_end)
-
-        if (len(locations.value) > 0) & (len(parameters.value) > 0):
-            start_time_series_loader()
-
-
-except AttributeError as e:
-    logger.error(f"reading args failed with error: {e}")
-    pass
+    if (len(locations.value) > 0) & (len(parameters.value) > 0):
+        start_time_series_loader()
+"""
