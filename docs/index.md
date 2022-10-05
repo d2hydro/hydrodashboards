@@ -22,6 +22,7 @@ Fewspy is build for speed; time-series requests are handled asynchronous, giving
 Hydrodashboards can be installed with pip in any environment with the following Python-packages properly installed:
 
 * requests
+* nest-asyncio
 * aiohttp
 * pandas
 * geopandas
