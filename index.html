@@ -357,7 +357,13 @@
 
 
 <h1 id="hydrodashboards">hydrodashboards</h1>
-<p>Open Source Dashboards for hydro data</p>
+<p>A Python API for the <a href="https://publicwiki.deltares.nl/display/FEWSDOC/FEWS+PI+REST+Web+Service">Deltares FEWS PI REST Web Service</a>.</p>
+<p>Fewspy is build for speed; time-series requests are handled asynchronous, giving the results you need much faster.</p>
+<p><a href="https://github.com/d2hydro/hydrodashboards/actions/workflows/python-package-conda.yml"><img alt="test" src="https://github.com/d2hydro/hydrodashboards/actions/workflows/python-package-conda.yml/badge.svg" /></a>
+<a href="https://codecov.io/github/d2hydro/hydrodashboards"><img alt="Coverage" src="https://img.shields.io/codecov/c/github/d2hydro/hydrodashboards" /></a>
+<a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg" /></a>
+<a href="https://pypi.org/project/hydrodashboards"><img alt="Release: latest" src="https://img.shields.io/github/v/release/d2hydro/hydrodashboards" /></a>
+<a href="https://opensource.org/licenses/MIT"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" /></a></p>
 <hr />
 <p><strong>Documentation</strong>: <a href="https://d2hydro.github.io/hydrodashboards">https://d2hydro.github.io/hydrodashboards</a></p>
 <p><strong>Source Code</strong>: <a href="https://github.com/d2hydro/hydrodashboards">https://github.com/d2hydro/hydrodashboards</a></p>
@@ -366,6 +372,7 @@
 <p>Hydrodashboards can be installed with pip in any environment with the following Python-packages properly installed:</p>
 <ul>
 <li>requests</li>
+<li>nest-asyncio</li>
 <li>aiohttp</li>
 <li>pandas</li>
 <li>geopandas</li>
