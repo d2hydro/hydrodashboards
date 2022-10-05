@@ -21,6 +21,7 @@ Hydrodashboards can be installed with pip in any environment with the following 
 
 * requests
 * aiohttp
+* nest-asyncio
 * pandas
 * geopandas
 
