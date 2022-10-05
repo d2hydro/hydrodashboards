@@ -676,19 +676,21 @@ def convert_to_datetime(date_time):
 
 
 def args_parser(args):
+    start_date, end_date = view_period.value_as_datetime
+    update_period = False
     # select filters
     if "filter_id" in args.keys():
-        print(args.get("filter_id"))
         filter_ids = [i.decode("utf-8") for i in args.get("filter_id")]
         filters_widgets.set_filter_values(
             filters, filter_ids, config.thematic_view, data.filters
         )
+
     # select locations
     if "location_id" in args.keys():
         location_ids = [i.decode("utf-8") for i in args.get("location_id")]
         if "filter_id" not in args.keys():
             # get all filters in cache
-            data.update_on_filter_select(data.filters.values)
+            data.update_on_filter_select(data.filters.values, actives=False)
             # get and select the filter ids that contain one or more location_ids
             filter_ids = [
                 i for i in data.filters.values if locations_in_filter(location_ids, i)
@@ -698,56 +700,45 @@ def args_parser(args):
             )
 
         # make sure there is no rubbish and set loction_ids
-        location_ids = [
-            j for j in location_ids if j in [i[0] for i in locations.options]
+        location_values = [i[0] for i in data.locations.options]
+        locations_active = [
+            location_values.index(i) for i in location_ids if i in location_values
         ]
-        locations.value = location_ids
+        locations.active = locations_active
+
+    # select parameters
+    if "parameter_id" in args.keys():
+        parameter_ids = [i.decode("utf-8") for i in args.get("parameter_id")]
+        parameter_values = [i[0] for i in data.parameters.options]
+        parameters_active = [
+            parameter_values.index(i) for i in parameter_ids if i in parameter_values
+        ]
+        parameters.active = parameters_active
+
+    # update period
+    if "start_date" in args.keys():
+        start_date = convert_to_datetime(args.get("start_date")[0].decode("utf-8"))
+        if start_date is not None:
+            update_period = True
+    if "end_date" in args.keys():
+        end_date = convert_to_datetime(args.get("end_date")[0].decode("utf-8"))
+        if end_date is not None:
+            update_period = True
+    if update_period:
+        end_date = min(data.periods.view_end, end_date)
+        if start_date < end_date:
+            search_start = start_date - timedelta(days=1)
+            search_end = min(end_date + timedelta(days=1), data.periods.search_end)
+            data.periods.set_search_period(search_start, search_end)
+            data.periods.set_view_period(start_date, end_date)
+            search_period.children[0].value = search_start.strftime("%Y-%m-%d")
+            search_period.children[1].value = search_end.strftime("%Y-%m-%d")
+            view_period.value = (data.periods.view_start, data.periods.view_end)
+
+    if (len(locations.active) > 0) & (len(parameters.active) > 0):
+        start_time_series_loader()
 
 
 if curdoc().session_context:
     args = curdoc().session_context.request.arguments
     args_parser(args)
-
-"""
-    start_date, end_date = view_period.value_as_datetime
-    update_period = False
-    if "location_id" in args.keys():
-        location_ids = [i.decode("utf-8") for i in args.get("location_id")]
-        if "filter_id" not in args.keys():
-            # get all filters in cache
-            data.update_on_filter_select(data.filters.values)
-            # get and select the filter ids that contain one or more location_ids
-            filter_ids = [
-                i for i in data.filters.values if locations_in_filter(location_ids, i)
-            ]
-            filters_widgets.set_filter_values(filters, filter_ids)
-
-        # make sure there is no rubbish and set loction_ids
-        location_ids = [
-            j for j in location_ids if j in [i[0] for i in locations.options]
-        ]
-        locations.value = location_ids
-    if "parameter_id" in args.keys():
-        parameter_ids = [i.decode("utf-8") for i in args.get("parameter_id")]
-        parameter_ids = [
-            j for j in parameter_ids if j in [i[0] for i in parameters.options]
-        ]
-        parameters.value = parameter_ids
-    if "start_date" in args.keys():
-        start_date = convert_to_datetime(args.get("start_date")[0].decode("utf-8"))
-        update_period = True
-    if "end_date" in args.keys():
-        end_date = convert_to_datetime(args.get("end_date")[0].decode("utf-8"))
-        update_period = True
-    if update_period:
-        end_date = min(data.periods.view_end, end_date)
-        if start_date < end_date:
-            search_start = start_date - timedelta(days=1)
-            search_end = min(start_date - timedelta(days=1), data.periods.search_end)
-            data.periods.set_search_period(search_start, search_end)
-            data.periods.set_view_period(start_date, end_date)
-            view_period.value = (data.periods.view_start, data.periods.view_end)
-
-    if (len(locations.value) > 0) & (len(parameters.value) > 0):
-        start_time_series_loader()
-"""

@@ -283,7 +283,7 @@ class Data:
 
         return html
 
-    def update_on_filter_select(self, selected: list):
+    def update_on_filter_select(self, selected: list, actives=True):
         """
         Update data-class on selected filter
 
@@ -337,7 +337,10 @@ class Data:
         all_locations = []
         all_parameters = []
 
-        values = self.filters.values_by_actives(selected)
+        if actives:
+            values = self.filters.values_by_actives(selected)
+        else:
+            values = selected
 
         for filter_id in values:
             filter_data = self.filters.get_filter(filter_id)

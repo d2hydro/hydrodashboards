@@ -18,7 +18,6 @@ VERSION = hydrodashboards.__version__
 
 def main():
     args = get_args()
-    print(args.app_dir)
     bokeh(
         app_dir=args.app_dir,
         config_file=args.config_file,
