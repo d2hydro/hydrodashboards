@@ -16,9 +16,12 @@ from hydrodashboards.bokeh.main import (
     search_period,
     convert_to_datetime,
 )
-import copy
+from bokeh.plotting import Figure
 
-from datetime import timedelta
+def load_data():
+    start_time_series_loader()
+    update_time_series_view()
+    update_time_series_search()
 
 # choose theme grondwatater
 filters[0].active = [1]
@@ -31,7 +34,5 @@ locations.active =  [0,1]
 
 # choose debiet 
 parameters.active = [1]
-
-start_time_series_loader()
-update_time_series_view()
-update_time_series_search()
+#time_figure_layout.children[0].children[0]
+#load_data()

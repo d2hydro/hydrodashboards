@@ -23,7 +23,7 @@ from datetime import timedelta
 # choose theme oppervlaktewater
 filters[0].active = [0]
 # choose filter gemaal
-filters[1].active = [0,4]
+filters[1].active = [4]
 
 # choose location abelstok
 
