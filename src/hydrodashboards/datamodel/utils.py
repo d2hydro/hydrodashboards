@@ -18,5 +18,5 @@ def split_parameter_id_to_fews(parameter_id):
     if len(components) > 1:
         fews_qualifier_ids = [i.strip() for i in components[1:]]
     else:
-        fews_qualifier_ids = [""]
+        fews_qualifier_ids = ["none"]
     return fews_parameter_id, fews_qualifier_ids
