@@ -20,19 +20,18 @@ import copy
 
 from datetime import timedelta
 
-# choose theme oppervlaktewater
+# choose theme grondwatater
 filters[0].active = [1]
 # choose filter gemaal
 filters[1].active = [0]
 
 # choose location abelstok
 
-id=locations.labels.index("Triplum (KGM071)")
-locations.active =  [id]
-print(locations.active)
+locations.active =  [0,1]
 
 # choose debiet 
 parameters.active = [1]
 
 start_time_series_loader()
 update_time_series_view()
+update_time_series_search()
