@@ -234,16 +234,17 @@ class Data:
                 parameter_id = concat_fews_parameter_ids(
                     fews_ts.header.parameter_id, fews_ts.header.qualifier_id
                 )
-                ts_idx = list(self.time_series_sets.indices).index(
-                    (location_id, parameter_id)
-                )
-                ts_select = self.time_series_sets.time_series[ts_idx]
-                if not erasing_data(fews_ts.events, ts_select.df):
-                    ts_select.df = fews_ts.events
-                    ts_select.complete = complete
-                    ts_select.empty = fews_ts.events.empty
-                    ts_select.start_datetime = fews_ts.header.start_date
-                    ts_select.end_datetime = fews_ts.header.end_date
+                if (location_id, parameter_id) in self.time_series_sets.indices:
+                    ts_idx = self.time_series_sets.indices.index(
+                        (location_id, parameter_id)
+                    )
+                    ts_select = self.time_series_sets.time_series[ts_idx]
+                    if not erasing_data(fews_ts.events, ts_select.df):
+                        ts_select.df = fews_ts.events
+                        ts_select.complete = complete
+                        ts_select.empty = fews_ts.events.empty
+                        ts_select.start_datetime = fews_ts.header.start_date
+                        ts_select.end_datetime = fews_ts.header.end_date
 
     """
 
