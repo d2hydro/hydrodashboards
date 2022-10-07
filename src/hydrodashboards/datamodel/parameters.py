@@ -1,6 +1,10 @@
 from hydrodashboards.bokeh.language import parameters_title
 from hydrodashboards.datamodel.models import Filter
-import pandas as pd
+#import pandas as pd
+import os
+
+os.environ["MODIN_ENGINE"] = "dask"  # Modin will use Dask
+import modin.pandas as pd
 from dataclasses import dataclass, field
 from typing import List
 from .utils import (
