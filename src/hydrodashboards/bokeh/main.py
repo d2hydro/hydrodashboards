@@ -152,13 +152,13 @@ def update_on_filter_selector(attrname, old, new):
     logger.debug(inspect.stack()[0][3])
 
     actives = filters_widgets.get_filters_actives(filters, config.thematic_view)
+
     data.update_on_filter_select(actives)
 
     locations.labels = data.locations.labels
     locations.active = data.locations.active
     parameters.labels = data.parameters.labels
     parameters.active = data.parameters.active
-
     # update source
     locations_source.data = data.locations.map_locations
 
@@ -168,6 +168,10 @@ def update_on_filter_selector(attrname, old, new):
 
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
+
+    logger.debug(f"{inspect.stack()[0][3]} finished")
+
+
 
 
 def update_on_locations_source_select(attr, old, new):

@@ -38,11 +38,11 @@ class Parameters(Filter):
 
     def name_from_ts_header(self, header):
         parameter_id = header.parameter_id
-        parameter_name = self._fews_parameters.loc[parameter_id]["name"]
+        parameter_name = self._fews_parameters.at[parameter_id, "name"]
         if header.qualifier_id is not None:
             qualifier_names = [
-                self._fews_qualifiers.loc[i]["name"] for i in header.qualifier_id
-            ]
+                self._fews_qualifiers.at[i, "name"] for i in header.qualifier_id
+                ]
         else:
             qualifier_names = None
         parameter_name = concat_fews_parameter_names(parameter_name, qualifier_names)
