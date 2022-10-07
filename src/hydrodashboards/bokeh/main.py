@@ -30,12 +30,7 @@ from pathlib import Path
 from hydrodashboards.bokeh.language import update_graph_title
 
 from datetime import datetime, timedelta
-#import pandas as pd
-
-import os
-
-os.environ["MODIN_ENGINE"] = "dask"  # Modin will use Dask
-import modin.pandas as pd
+import pandas as pd
 
 LANG = "dutch"
 HTML_TYPE = "table"
