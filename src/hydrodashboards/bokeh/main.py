@@ -574,7 +574,7 @@ view_x_range.on_change("start", update_on_view_x_range_change)
 time_figure = time_figure_widget.empty_fig()
 
 # Search time series widget
-search_time_series = Select(value=None, options=[])
+search_time_series = Select(value=None, options=[], css_classes=["select_search_time_series"])
 search_time_series.on_change("value", update_on_search_time_series_value)
 
 # Search download search time series widget
