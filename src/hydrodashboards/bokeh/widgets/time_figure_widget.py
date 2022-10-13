@@ -290,7 +290,7 @@ def top_fig(
 
     time_fig = figure(
         tools=tools,
-        sizing_mode=SIZING_MODE,
+        sizing_mode="stretch_width",
         x_range=x_range,
         y_range=y_range,
         y_axis_label=y_axis_label,
@@ -385,7 +385,7 @@ def create_time_figures(
         for i in time_series_groups.items()
     ]
     top_figs[-1].xaxis.visible = True
-    time_figure_layout.children.append(column(*top_figs, sizing_mode="stretch_both"))
+    time_figure_layout.children.append(column(*top_figs, sizing_mode="stretch_width"))
 
     time_series_sources = {}
     for i in top_figs:
