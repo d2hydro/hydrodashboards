@@ -163,11 +163,9 @@ sequentialStart(); //
 scale_figs_js = """
 console.log(button.disabled)
 if (!button.disabled) {
-    var fig_len = figure.children[0].children.length
-    var h = document.getElementById("grafiek_upper")
-    var vh = Math.round(window.innerHeight * 0.6)
-    console.log(vh)
-    console.log(h)
+    var fig_len = figure.children[0].children.length;
+    const vh = Math.round(parent.innerHeight * 0.6);
+    
     if (fig_len == 1) {
             figure.children[0].height = vh;
             figure.children[0].children[0].height = vh;
@@ -179,6 +177,7 @@ if (!button.disabled) {
                }
                }
         }
+   
 """
 
 

@@ -625,6 +625,7 @@ select.bk.bk-input {
 
 #grafiek-lower > .bk-root > .bk > .time_figure {
     width: 100% !important;
+	overflow: auto;
 }
 
 #grafiek-slider > .bk-root > .bk {
@@ -639,6 +640,8 @@ select.bk.bk-input {
     height: 60.5vh;	
 	background-color: white;
 	margin-top:1vh;
+	overflow-y:auto;
+	overflow-x:hidden;
 }
 
 
