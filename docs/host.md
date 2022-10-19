@@ -10,7 +10,7 @@ This folder contains the file: "serve_bokeh.bat". Run this file from the command
 serve_bokeh.bat  
 ```
 The command prompt looks as follows:   
-![](images\localhost_cmd.png "Localhost cmd")  
+![](images\localhost_cmd.png  "Localhost cmd")  
 
 Open your web browser and copy the http adress to the browser. In this example: http://localhost:5003/bokeh  
 If everything went right, the bokeh dashboard is shown in your browser.  
@@ -19,7 +19,11 @@ If everything went right, the bokeh dashboard is shown in your browser.
 
 ## Behind web service (Windows IIS)
 
-Here you can find info on how to route your Bokeh HydroDashboard via Application Request Rerouting (ARR) in Windows IIS.
+Never expose the Bokeh HydroDashboard to the web directly.
+
+Here you can find info on how to route your Bokeh HydroDashboard via Application Request Rerouting (ARR) in a Windows IIS web server.
+
+![](images/host_iis.png "Web Server")
 
 ### Installation
 - Install the URL Rewrite package from the downloads section on the IIS website or Microsoft Web Platform Installer.
@@ -60,12 +64,20 @@ If not, you will only see an empty html page without content. In this case you h
 ![](images\iss_websocket_protocol.png "websocket protocol")
 
 ## Scale in production (NGiNX load balancer)
+Bokeh HydroDashboards are scalable. Here we show how we can distribute Bokeh HydroDashboards over multiple proesses using a NGiNX load balancer. With a similar setup you can distribute Bokeh HydroDashboards over (even more) multiple backend servers.
 
-We use nginx as a HTTP load balancer. For more info go to: http://nginx.org/en/docs/http/load_balancing.html  
-1. Download the stable version of nginx for windows, unzip it and put this in a chosen folder.   
-2. The folder conf contains the configuration file: nginx.conf. We need to change this file to enable load balancing. The example below shows the required configuration if we want to distribute the bokeh app traffic over 4 local hosts (5004,5005,5006 and 5007) via the least connection method. The server is listening on port 5003.  
+![](host_load_balancer.png "Load Balancer")
 
-    ```
+For more info go to: http://nginx.org/en/docs/http/load_balancing.html  
+
+### Installation
+
+Download the stable version of nginx for windows, unzip it and put this in a chosen folder.
+
+### Configuration of the load balancer
+The folder conf contains the configuration file: nginx.conf. We need to change this file to enable load balancing. The example below shows the required configuration if we want to distribute the bokeh app traffic over 4 local hosts (5004,5005,5006 and 5007) via the least connection method. The server is listening on port 5003.  
+
+    ```json
     events {}
 
     http {
@@ -91,21 +103,44 @@ We use nginx as a HTTP load balancer. For more info go to: http://nginx.org/en/d
         }
     }
     ```
-
-3. Your nginx configuration is now ready. Open the bokeh app folder, here you find the file: "serve_bokeh-loadbalancer.bat". If you view this file, you will see it   serves the bokeh application from Run this file from the 4 local hosts (5004,5005,5006 and 5007):  
-
-        start bokeh serve bokeh --port 5004 --allow-websocket-origin *   
-		start bokeh serve bokeh --port 5005 --allow-websocket-origin *   
-		start bokeh serve bokeh --port 5006 --allow-websocket-origin *   
-		start bokeh serve bokeh --port 5007 --allow-websocket-origin *   
-
+### Start Bokeh HydroDashboards
+Your nginx configuration is now ready. Open the bokeh app folder, here you find the file: "serve_bokeh-loadbalancer.bat". If you view this file, you will see it   serves the bokeh application from Run this file from the 4 local hosts (5004,5005,5006 and 5007):  
+```bat
+start bokeh serve bokeh --port 5004 --allow-websocket-origin *   
+start bokeh serve bokeh --port 5005 --allow-websocket-origin *   
+start bokeh serve bokeh --port 5006 --allow-websocket-origin *   
+start bokeh serve bokeh --port 5007 --allow-websocket-origin *   
+```
 
  Run this file from the command-line as follows:
-```
+
+```console
 serve_bokeh-loadbalancer.bat 
 ```
 
-4. Start the nginx.exe (go to the folder where you installed nginx)  
+### Start the NGiNX load balancer
+Start the nginx.exe (go to the folder where you installed nginx)  
 
-5. If you open the listening port: 5003 (see nginx conf file) in your web browser (http://localhost:5003/bokeh), you have your local load balanced website. Because port: 5003 is redirected to the root-adress of your website (see the last section "(Behind web service (Windows IIS)"), your root website is also load balanced.   
- 
+If you open the listening port: 5003 (see nginx conf file) in your web browser (http://localhost:5003/bokeh), you have your local load balanced website. Because port: 5003 is redirected to the root-adress of your website (see the last section "(Behind web service (Windows IIS)"), your root website is also load balanced.
+
+### Modify IIS configuration
+
+Modify the web.config file part of the IIS configuration described in [Configuration of IIS](#markdown-header-configuration-of-iis), refering to the NGiNX load-balancer (and not a single bokeh application)
+
+You can copy-paste this section:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <system.webServer>
+        <rewrite>
+            <rules>
+                <rule name="Bokeh proxy" enabled="true" stopProcessing="true">
+                    <match url="(.*)" />
+                    <action type="Rewrite" url="http://127.0.0.1:5003/{R:1}"/>
+                </rule>
+            </rules>
+        </rewrite>
+    </system.webServer>
+</configuration>
+```
