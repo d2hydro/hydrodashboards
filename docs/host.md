@@ -1,8 +1,21 @@
 # Host your app
 
-## Local
+## Local or individual use
+![](images/localhost.png "Localhost")  
+You can run your app locally on your computer as follows:  
+In the directory: Open the folder where you installed your bokeh app.   
+This folder contains the file: "serve_bokeh.bat". Run this file from the command line:  
 
-![](images/localhost.png "Localhost")
+```
+serve_bokeh.bat  
+```
+The command prompt looks as follows:   
+![](images\localhost_cmd.png "Localhost cmd")  
+
+Open your web browser and copy the http adress to the browser. In this example: http://localhost:5003/bokeh  
+If everything went right, the bokeh dashboard is shown in your browser.  
+
+
 
 ## Behind web service (Windows IIS)
 
@@ -47,3 +60,52 @@ If not, you will only see an empty html page without content. In this case you h
 ![](images\iss_websocket_protocol.png "websocket protocol")
 
 ## Scale in production (NGiNX load balancer)
+
+We use nginx as a HTTP load balancer. For more info go to: http://nginx.org/en/docs/http/load_balancing.html  
+1. Download the stable version of nginx for windows, unzip it and put this in a chosen folder.   
+2. The folder conf contains the configuration file: nginx.conf. We need to change this file to enable load balancing. The example below shows the required configuration if we want to distribute the bokeh app traffic over 4 local hosts (5004,5005,5006 and 5007) via the least connection method. The server is listening on port 5003.  
+
+    ```
+    events {}
+
+    http {
+        upstream bokeh {
+        least_conn;
+        server 127.0.0.1:5004;      # Bokeh Server 0
+        server 127.0.0.1:5005;      # Bokeh Server 1
+        server 127.0.0.1:5006;      # Bokeh Server 2
+        server 127.0.0.1:5007;      # Bokeh Server 3
+        }
+        server{
+        listen: 5003;
+        location / {
+            proxy_pass http://bokeh;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_http_version 1.1;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header Host $host:$server_port;
+            proxy_buffering off;
+            }
+        }
+    }
+    ```
+
+3. Your nginx configuration is now ready. Open the bokeh app folder, here you find the file: "serve_bokeh-loadbalancer.bat". If you view this file, you will see it   serves the bokeh application from Run this file from the 4 local hosts (5004,5005,5006 and 5007):  
+
+        start bokeh serve bokeh --port 5004 --allow-websocket-origin *   
+		start bokeh serve bokeh --port 5005 --allow-websocket-origin *   
+		start bokeh serve bokeh --port 5006 --allow-websocket-origin *   
+		start bokeh serve bokeh --port 5007 --allow-websocket-origin *   
+
+
+ Run this file from the command-line as follows:
+```
+serve_bokeh-loadbalancer.bat 
+```
+
+4. Start the nginx.exe (go to the folder where you installed nginx)  
+
+5. If you open the listening port: 5003 (see nginx conf file) in your web browser (http://localhost:5003/bokeh), you have your local load balanced website. Because port: 5003 is redirected to the root-adress of your website (see the last section "(Behind web service (Windows IIS)"), your root website is also load balanced.   
+ 

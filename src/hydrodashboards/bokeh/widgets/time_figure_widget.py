@@ -1,13 +1,14 @@
-from bokeh.plotting import figure
+from bokeh.plotting import figure 
 from bokeh.layouts import column
 from bokeh.events import PanEnd, MouseWheel
-from bokeh.models.widgets import Div
+from bokeh.models.widgets import Div, Button
 from bokeh.models import (
     HoverTool,
     FuncTickFormatter,
     Range1d,
     NumeralTickFormatter,
     CustomJSHover,
+    CustomJS
 )
 from bokeh.palettes import Category10_10 as palette
 import pandas as pd
@@ -42,7 +43,18 @@ LABEL_LEN = 50
 def trucate_label(label, length=LABEL_LEN):
     if len(label) > length:
         label = f"{label[0:length-3]}..."
+        
+    button_label = Button(label='Click me')
+        
+    def change_click():
+        print(label)
+        
+    button_label.on_click(change_click)
+    
+    return button_label
     return label
+
+ 
 
 
 def range_defaults():

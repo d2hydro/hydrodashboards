@@ -17,21 +17,20 @@ Open Source Dashboards for Hydro-Data
 
 ## Installation
 
-Hydrodashboards can be installed with pip in any environment with the following Python-packages properly installed:
-
-* requests
-* aiohttp
-* nest-asyncio
-* pandas
-* geopandas
-
-In that activated environment you can add hydrodashboards via pip by:
-```
-pip install hydrodashboards
-```
-We recommend to build your environment using [Anaconda](https://www.anaconda.com/). You can build an environment ánd install hydrodashboards by conda in one go using this <a href="https://github.com/d2hydro/hydrodashboards/blob/main/envs/environment.yml" target="_blank">environment.yml</a> from the command-line:
+We recommend to build your bokeh environment using [Anaconda](https://www.anaconda.com/). You can build an environment ánd install hydrodashboards by conda in one go using this <a href="https://github.com/d2hydro/hydrodashboards/blob/main/envs/environment.yml" target="_blank">environment.yml</a> from the command-line:
 ```
 conda env create -f environment.yml
+```
+
+After creating the bokeh environment, you should activate this environment from the command line:
+```
+conda activate bokeh
+```
+
+In that activated environment you can add hydrodashboards via pip by:
+
+```
+pip install hydrodashboards
 ```
 ## About
 
