@@ -91,14 +91,14 @@ Bokeh HydroDashboards are scalable. Here we show how we can distribute Bokeh Hyd
 
 ![](images\host_load_balancer.png "Load Balancer")
 
-For more info go to: http://nginx.org/en/docs/http/load_balancing.html  
+For more background on load-balancing with NGiNX: [http://nginx.org/en/docs/http/load_balancing.html](http://nginx.org/en/docs/http/load_balancing.html) 
 
 ### Installation
 
-Download the stable version of nginx for windows, unzip it and put this in a chosen folder.
+Download the stable version of [nginx for windows](http://nginx.org/en/download.html), unzip it and put this in a chosen folder.
 
 ### Configuration of the load balancer
-The folder conf contains the configuration file: nginx.conf. We need to change this file to enable load balancing. The example below shows the required configuration if we want to distribute the bokeh app traffic over 4 local hosts (5004,5005,5006 and 5007) via the least connection method. The server is listening on port 5003.  
+The folder conf contains the configuration file: nginx.conf. We need to change this file to enable load balancing. The example below shows the required configuration if we want to distribute the bokeh app traffic over 4 local hosts (5004, 5005, 5006 and 5007) via the least connection method. The NGiNX server is listening on port 5003.  
 
 ```json
 events {}
