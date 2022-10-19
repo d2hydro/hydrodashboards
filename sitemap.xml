@@ -2,17 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://d2hydro.github.io/hydrodashboards/</loc>
-         <lastmod>2022-10-05</lastmod>
+         <lastmod>2022-10-19</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://d2hydro.github.io/hydrodashboards/manuals/routing_iis/</loc>
-         <lastmod>2022-10-05</lastmod>
+         <loc>https://d2hydro.github.io/hydrodashboards/build/</loc>
+         <lastmod>2022-10-19</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://d2hydro.github.io/hydrodashboards/manuals/user_nl/</loc>
-         <lastmod>2022-10-05</lastmod>
+         <loc>https://d2hydro.github.io/hydrodashboards/host/</loc>
+         <lastmod>2022-10-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://d2hydro.github.io/hydrodashboards/user_manuals/user_nl/</loc>
+         <lastmod>2022-10-19</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>

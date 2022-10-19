@@ -8,14 +8,14 @@
       
       
       
-        <link rel="canonical" href="https://d2hydro.github.io/hydrodashboards/manuals/routing_iis/">
+        <link rel="canonical" href="https://d2hydro.github.io/hydrodashboards/user_manuals/user_nl/">
       
       <link rel="icon" href="../../icons/logo/favicon.png">
       <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.3.8">
     
     
       
-        <title>Deployment with ISS - hydrodashboards documentation</title>
+        <title>Gebruikershandleiding (NL) - hydrodashboards documentation</title>
       
     
     
@@ -68,7 +68,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#routing-via-windows-internet-information-services-iis" class="md-skip">
+        <a href="#gebruikershandleiding" class="md-skip">
           Skip to content
         </a>
       
@@ -100,7 +100,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Deployment with ISS
+              Gebruikershandleiding (NL)
             
           </span>
         </div>
@@ -198,6 +198,36 @@
 
   
   
+  
+    <li class="md-nav__item">
+      <a href="../../build/" class="md-nav__link">
+        Build your app
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../host/" class="md-nav__link">
+        Host your app
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
     
   
   
@@ -205,36 +235,22 @@
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
       
       
       
       
-        <label class="md-nav__link" for="__nav_2">
-          Manuals
+        <label class="md-nav__link" for="__nav_4">
+          User Manuals
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" aria-label="Manuals" data-md-level="1">
-        <label class="md-nav__title" for="__nav_2">
+      <nav class="md-nav" aria-label="User Manuals" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
           <span class="md-nav__icon md-icon"></span>
-          Manuals
+          User Manuals
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../user_nl/" class="md-nav__link">
-        Gebruikershandleiding (NL)
-      </a>
-    </li>
-  
-
-            
           
             
               
@@ -251,54 +267,9 @@
         
       
       
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Deployment with ISS
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
       <a href="./" class="md-nav__link md-nav__link--active">
-        Deployment with ISS
+        Gebruikershandleiding (NL)
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
-    Installation
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#configuration-of-iis" class="md-nav__link">
-    Configuration of IIS
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#allow-web-socket-routing" class="md-nav__link">
-    Allow web-socket routing
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
       
     </li>
   
@@ -331,35 +302,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
-    Installation
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#configuration-of-iis" class="md-nav__link">
-    Configuration of IIS
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#allow-web-socket-routing" class="md-nav__link">
-    Allow web-socket routing
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -372,43 +314,8 @@
                 
 
 
-<h1 id="routing-via-windows-internet-information-services-iis">Routing via Windows Internet Information Services (IIS)</h1>
-<p>Here you can find info on how to route your Bokeh HydroDashboard via Application Request Rerouting (ARR) in Windows IIS.</p>
-<p>In this tutorial we use the example of the dashboard backend application running at:</p>
-<pre><code>localhost:5006/my_dashboard
-</code></pre>
-<h2 id="installation">Installation</h2>
-<ul>
-<li>Install the URL Rewrite package from the downloads section on the IIS website or Microsoft Web Platform Installer.</li>
-<li>
-<p>Install the ARR (application request routing) 3.0 module from the downloads section on the IIS website or Microsoft Web Platform Installer. </p>
-<p><b>Note (!) web-socket routing is only possible from ARR 3.0.</b></p>
-</li>
-</ul>
-<h2 id="configuration-of-iis">Configuration of IIS</h2>
-<p>From the left pane, double-click on the main tree node with your server name on it, and from the modules, double-click on <em>Application Request Routing Cache</em>. In the right pane, choose <em>Enable proxy</em>, and set HTTP version to <em>Pass through</em>:</p>
-<p><img alt="" src="../images/iis_manager_proxy_settings.png" title="proxy settings" /></p>
-<p>In the left pane, right-click on the website you created and select <em>Explore</em>. Windows explorer will open in <em>inetpub\your_website</em>. Open, or create a new <em>web.config</em> file at this location, so <em>inetpub\your_website\web.config</em>:</p>
-<p><img alt="" src="../images/iss_web_config.png" title="web config" /></p>
-<p>You can copy-paste this section:</p>
-<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;configuration&gt;
-    &lt;system.webServer&gt;
-        &lt;rewrite&gt;
-            &lt;rules&gt;
-                &lt;rule name=&quot;Bokeh proxy&quot; enabled=&quot;true&quot; stopProcessing=&quot;true&quot;&gt;
-                    &lt;match url=&quot;(.*)&quot; /&gt;
-                    &lt;action type=&quot;Rewrite&quot; url=&quot;http://127.0.0.1:5006/{R:1}&quot; /&gt;
-                &lt;/rule&gt;
-            &lt;/rules&gt;
-        &lt;/rewrite&gt;
-    &lt;/system.webServer&gt;
-&lt;/configuration&gt;
-</code></pre>
-<h2 id="allow-web-socket-routing">Allow web-socket routing</h2>
-<p>After restarting your IIS the backend-app should be re-routed to the root-adress of your website. If your app runs with content you're done. </p>
-<p>If not, you will only see an empty html page without content. In this case you have to enable the <em>WebSocket Protocol</em> in the <em>Add Roles and Features Wizard</em> of your server:</p>
-<p><img alt="" src="../images/iss_websocket_protocol.png" title="websocket protocol" /></p>
+<h1 id="gebruikershandleiding">Gebruikershandleiding</h1>
+<p>Dit document is nog in ontwikkeling</p>
 
               
             </article>
@@ -424,7 +331,7 @@
     <nav class="md-footer__inner md-grid" aria-label="Footer" >
       
         
-        <a href="../user_nl/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Gebruikershandleiding (NL)" rel="prev">
+        <a href="../../host/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Host your app" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -433,7 +340,7 @@
               <span class="md-footer__direction">
                 Previous
               </span>
-              Gebruikershandleiding (NL)
+              Host your app
             </div>
           </div>
         </a>

@@ -247,24 +247,54 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="build/" class="md-nav__link">
+        Build your app
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="host/" class="md-nav__link">
+        Host your app
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
     
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_2">
-          Manuals
+        <label class="md-nav__link" for="__nav_4">
+          User Manuals
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" aria-label="Manuals" data-md-level="1">
-        <label class="md-nav__title" for="__nav_2">
+      <nav class="md-nav" aria-label="User Manuals" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
           <span class="md-nav__icon md-icon"></span>
-          Manuals
+          User Manuals
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -274,22 +304,8 @@
   
   
     <li class="md-nav__item">
-      <a href="manuals/user_nl/" class="md-nav__link">
+      <a href="user_manuals/user_nl/" class="md-nav__link">
         Gebruikershandleiding (NL)
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="manuals/routing_iis/" class="md-nav__link">
-        Deployment with ISS
       </a>
     </li>
   
@@ -368,19 +384,14 @@
 <p><strong>Source Code</strong>: <a href="https://github.com/d2hydro/hydrodashboards">https://github.com/d2hydro/hydrodashboards</a></p>
 <hr />
 <h2 id="installation">Installation</h2>
-<p>Hydrodashboards can be installed with pip in any environment with the following Python-packages properly installed:</p>
-<ul>
-<li>requests</li>
-<li>nest-asyncio</li>
-<li>aiohttp</li>
-<li>pandas</li>
-<li>geopandas</li>
-</ul>
+<p>We recommend to build your bokeh environment using <a href="https://www.anaconda.com/">Anaconda</a>. You can build an environment ánd install hydrodashboards by conda in one go using this <a href="https://github.com/d2hydro/hydrodashboards/blob/main/envs/environment.yml" target="_blank">environment.yml</a> from the command-line:</p>
+<pre><code>conda env create -f environment.yml
+</code></pre>
+<p>After creating the bokeh environment, you should activate this environment from the command line:</p>
+<pre><code>conda activate bokeh
+</code></pre>
 <p>In that activated environment you can add hydrodashboards via pip by:</p>
 <pre><code>pip install hydrodashboards
-</code></pre>
-<p>We recommend to build your environment using <a href="https://www.anaconda.com/">Anaconda</a>. You can build an environment ánd install hydrodashboards by conda in one go using this <a href="https://github.com/d2hydro/hydrodashboards/blob/main/envs/environment.yml" target="_blank">environment.yml</a> from the command-line:</p>
-<pre><code>conda env create -f environment.yml
 </code></pre>
 <h2 id="about">About</h2>
 <p>Hydrodashboards is developed and maintained by <a href="https://d2hydro.nl/">D2Hydro</a> and freely available under an Open Source <a href="https://github.com/d2hydro/hydrodashboards/blob/main/LICENSE" target="_blank">MIT license</a>.</p>
@@ -400,13 +411,13 @@
       
       
         
-        <a href="manuals/user_nl/" class="md-footer__link md-footer__link--next" aria-label="Next: Gebruikershandleiding (NL)" rel="next">
+        <a href="build/" class="md-footer__link md-footer__link--next" aria-label="Next: Build your app" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Gebruikershandleiding (NL)
+              Build your app
             </div>
           </div>
           <div class="md-footer__button md-icon">
