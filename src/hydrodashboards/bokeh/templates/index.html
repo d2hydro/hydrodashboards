@@ -26,6 +26,7 @@
 	<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
     <script type="text/javascript">
 	
+
         $(document).ready(function () {
             $('#sidebarCollapse').on('click', function () {
                 $('#sidebar').toggleClass('active');
@@ -37,23 +38,35 @@
         });
 		
 
-        function myFunction() {
+        function scale_graph() {
           var but_leg = document.getElementById("button_leg_bar");
           var maplayer_icon=document.getElementById("maplayer_icon");
           var map_opt = document.getElementById("map_opt");
           var kaart = document.getElementById("kaart");
           var zoekgraf = document.getElementById("zoekgrafiek-en-slider");
           var but = document.getElementById("button_lower");
-          var h = document.getElementById("grafiek_upper");
+          const h = document.getElementById("grafiek_upper");
           var download = document.getElementsByClassName("bk bk-btn bk-btn-success")[0];
-         
           but.classList.toggle("fa-angle-double-up");
           but.classList.toggle("fa-angle-double-down");
           if (zoekgraf.style.display === "none") {
             zoekgraf.style.display = "block";
             h.style.height = "60.5vh";
             download.style.backgroundColor = "#3681C1";
-            download.style.borderColor = "#495568";
+            download.style.borderColor = "#495568";	
+          
+			  var xs = document.querySelectorAll(".bk.time-figure");
+			  // Declare i and qty for "for" loop
+			  console.log(xs.length);	
+			  var i, qty = xs.length;
+			    console.log("hello");		
+				// Use "for" loop to iterate through NodeList
+				for (i = 0; i < qty; i++) {
+				// If this div.image at index [i] is "none"...
+				
+				  xs[i].style.minHeight = "400px";
+				console.log(xs[i]);	
+			  }			
           } else {
             zoekgraf.style.display = "none";
             h.style.height = "78vh";
@@ -63,6 +76,7 @@
           
           AnimationUtils.dispatchResizeEvent();
         }
+	
         function popMapLegend() {
           var but_leg = document.getElementById("button_leg_bar");
           var maplayer_icon=document.getElementById("maplayer_icon");
@@ -71,6 +85,7 @@
         if (map_opt.style.display == "none") {
             map_opt.style.position = "fixed";
             map_opt.style.display = "block";
+			
           } else {
             map_opt.style.display = "none";
             dummy.style.display= "block";
@@ -91,6 +106,8 @@
 		};
 	keyDown();
 	keyUp();
+	
+
     </script>
 	
 
@@ -180,7 +197,7 @@
                         </div>
                         <div class="row" id="zoekgrafiek-bar">    
                             <div class="col-4">
-                                <button    onclick="myFunction()" class="fas fa-angle-double-down" id="button_lower" aria-hidden="true"></button>
+                                <button onclick="scale_graph()" class="fas fa-angle-double-down" id="button_lower" aria-hidden="true"></button>
                                 <h6 style="color:#3681C1;" id="button-text">Zoekgrafiek</h6>
                             </div>    
                             <div class="col-5" style="margin-left:-240px;">
