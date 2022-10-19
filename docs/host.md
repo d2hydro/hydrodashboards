@@ -1,19 +1,20 @@
-# Routing via Windows Internet Information Services (IIS)
+# Host your app
+
+## Local
+
+![](images/localhost.png "Localhost")
+
+## Behind web service (Windows IIS)
 
 Here you can find info on how to route your Bokeh HydroDashboard via Application Request Rerouting (ARR) in Windows IIS.
 
-In this tutorial we use the example of the dashboard backend application running at:
-```
-localhost:5006/my_dashboard
-```
-
-## Installation
+### Installation
 - Install the URL Rewrite package from the downloads section on the IIS website or Microsoft Web Platform Installer.
 - Install the ARR (application request routing) 3.0 module from the downloads section on the IIS website or Microsoft Web Platform Installer. 
     
     <b>Note (!) web-socket routing is only possible from ARR 3.0.</b>
 
-## Configuration of IIS
+### Configuration of IIS
 From the left pane, double-click on the main tree node with your server name on it, and from the modules, double-click on *Application Request Routing Cache*. In the right pane, choose *Enable proxy*, and set HTTP version to *Pass through*:
 
 ![](images/iis_manager_proxy_settings.png "proxy settings")
@@ -38,9 +39,11 @@ You can copy-paste this section:
     </system.webServer>
 </configuration>
 ```
-## Allow web-socket routing
+### Allow web-socket routing
 After restarting your IIS the backend-app should be re-routed to the root-adress of your website. If your app runs with content you're done. 
 
 If not, you will only see an empty html page without content. In this case you have to enable the *WebSocket Protocol* in the *Add Roles and Features Wizard* of your server:
 
 ![](images\iss_websocket_protocol.png "websocket protocol")
+
+## Scale in production (NGiNX load balancer)
