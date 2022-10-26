@@ -1,4 +1,4 @@
-createAnimationUtils =  () => {
+createAnimationUtils = () => {
 
     elementsTagged = false;
     menuAnimation = 600;
@@ -105,4 +105,44 @@ createAnimationUtils =  () => {
     }
 }
 
+createMenuEvents = () => {
+
+    loaderClass = "loader_time_fig";
+    menuGroupsWithLoaders = "#sidebar .sidebar-bokeh .filter_checkboxgroup_3,.filter_checkboxgroup_4";
+    counter = 0;
+
+    getAllMenuGroupsWithLoaders = () => {
+        return $(menuGroupsWithLoaders);
+    };
+
+    addLoaders = () => {
+        const loaderBoxes = this.getAllMenuGroupsWithLoaders();
+        if (loaderBoxes && !loaderBoxes.hasClass(this.loaderClass)) {
+            loaderBoxes.addClass(this.loaderClass);
+        }
+    };
+
+    removeLoaders = () => {
+        const loaderBoxes = this.getAllMenuGroupsWithLoaders();
+        if (loaderBoxes  && loaderBoxes.hasClass(this.loaderClass)) {
+            loaderBoxes.removeClass(this.loaderClass);
+        }
+    };
+
+    return {
+        onFiltersChanged: () => {
+            this.counter++;
+            this.addLoaders();
+        },
+        onLocationsDataChanged: () => {
+            this.counter--;
+            if (this.counter === 0) {
+                this.removeLoaders();
+            }
+        }
+    }
+
+}
+
 window.AnimationUtils = createAnimationUtils();
+window.MenuEvents = createMenuEvents();

@@ -2,6 +2,7 @@
 
 from bokeh.io import curdoc
 from bokeh.layouts import column
+from bokeh.models import CustomJS
 
 try:
     from data import Data
@@ -510,6 +511,11 @@ We define all sources used in this main document
 
 locations_source = sources.locations_source()
 locations_source.selected.on_change("indices", update_on_locations_source_select)
+locations_source.js_on_change('data', CustomJS(args=dict(), code="""
+if (window.MenuEvents && typeof window.MenuEvents.onLocationsDataChanged === 'function') {
+    window.MenuEvents.onLocationsDataChanged();
+}
+""")) 
 time_series_sources = sources.time_series_sources()
 search_source = sources.time_series_template()
 
@@ -524,6 +530,11 @@ filters = filters_widgets.make_filters(
     on_change=filters_on_change(),
     thematic_view=config.thematic_view,
 )
+filters[1].js_on_change("active", CustomJS(code="""
+if (window.MenuEvents && typeof window.MenuEvents.onFiltersChanged === 'function') {
+    window.MenuEvents.onFiltersChanged();
+}
+"""))
 
 # Locations widget
 on_change = [update_on_locations_selector]
