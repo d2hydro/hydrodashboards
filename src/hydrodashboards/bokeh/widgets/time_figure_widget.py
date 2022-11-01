@@ -1,14 +1,14 @@
 from bokeh.plotting import figure 
 from bokeh.layouts import column
 from bokeh.events import PanEnd, MouseWheel
-from bokeh.models.widgets import Div, Button
+from bokeh.models.widgets import Div
 from bokeh.models import (
     HoverTool,
     FuncTickFormatter,
     Range1d,
     NumeralTickFormatter,
     CustomJSHover,
-    CustomJS
+
 )
 from bokeh.palettes import Category10_10 as palette
 import pandas as pd
@@ -43,15 +43,7 @@ LABEL_LEN = 50
 def trucate_label(label, length=LABEL_LEN):
     if len(label) > length:
         label = f"{label[0:length-3]}..."
-        
-    button_label = Button(label='Click me')
-        
-    def change_click():
-        print(label)
-        
-    button_label.on_click(change_click)
-    
-    return button_label
+
     return label
 
  
@@ -356,8 +348,7 @@ def top_fig(
     # make up legend
     time_fig.legend.click_policy = "hide"
     time_fig.legend.visible = True
-    time_fig.legend.name = "time_figure_legend"
-    time_fig.legend.tags = ["time_figure_legend"]
+
 
     if len(time_fig.legend) > 0:
         time_fig.add_layout(time_fig.legend[0], "right")
