@@ -126,15 +126,15 @@
                 {{ embed(roots.locations) }}
                 {{ embed(roots.parameters) }}
                 {{ embed(roots.search_period) }}
-			</div>
-			<div class="row" id="update_download">  			
-				<div class="col-9">
-					{{ embed(roots.update_graph) }}
-				</div>	
-				<div class="col-2">
-					{{ embed(roots.download_time_series)}}
-				</div>	
-			</div>					
+                <div class="update-wrapper" id="update_download">  			
+                    <div class="update">
+                        {{ embed(roots.update_graph) }}
+                    </div>	
+                    <div class="download">
+                        {{ embed(roots.download_time_series)}}
+                    </div>	
+                </div>
+			</div>				
         </nav>
 		
 		
