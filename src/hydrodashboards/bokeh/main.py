@@ -2,7 +2,6 @@
 
 from bokeh.io import curdoc
 from bokeh.layouts import column
-from bokeh.models import CustomJS
 
 try:
     from data import Data
@@ -171,8 +170,6 @@ def update_on_filter_selector(attrname, old, new):
     app_status.text = data.app_status(html_type=HTML_TYPE)
 
     logger.debug(f"{inspect.stack()[0][3]} finished")
-
-
 
 
 def update_on_locations_source_select(attr, old, new):
@@ -511,11 +508,7 @@ We define all sources used in this main document
 
 locations_source = sources.locations_source()
 locations_source.selected.on_change("indices", update_on_locations_source_select)
-locations_source.js_on_change('data', CustomJS(args=dict(), code="""
-if (window.MenuEvents && typeof window.MenuEvents.onLocationsDataChanged === 'function') {
-    window.MenuEvents.onLocationsDataChanged();
-}
-""")) 
+
 time_series_sources = sources.time_series_sources()
 search_source = sources.time_series_template()
 
@@ -530,11 +523,6 @@ filters = filters_widgets.make_filters(
     on_change=filters_on_change(),
     thematic_view=config.thematic_view,
 )
-filters[1].js_on_change("active", CustomJS(code="""
-if (window.MenuEvents && typeof window.MenuEvents.onFiltersChanged === 'function') {
-    window.MenuEvents.onFiltersChanged();
-}
-"""))
 
 # Locations widget
 on_change = [update_on_locations_selector]
@@ -585,7 +573,9 @@ view_x_range.on_change("start", update_on_view_x_range_change)
 time_figure = time_figure_widget.empty_fig()
 
 # Search time series widget
-search_time_series = Select(value=None, options=[], css_classes=["select_search_time_series"])
+search_time_series = Select(
+    value=None, options=[], css_classes=["select_search_time_series"]
+)
 search_time_series.on_change("value", update_on_search_time_series_value)
 
 # Search download search time series widget

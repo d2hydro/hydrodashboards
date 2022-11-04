@@ -184,16 +184,20 @@ if (!button.disabled) {
 def make_button(time_figure_layout):
     button = Button(label="", button_type="success", disabled=True)
 
-    button.js_on_click(CustomJS(
-        args=dict(
-            figure=time_figure_layout, disclaimer=disclaimer_json, button=button
-        ),
-        code=download_js,
-    ))
+    button.js_on_click(
+        CustomJS(
+            args=dict(
+                figure=time_figure_layout, disclaimer=disclaimer_json, button=button
+            ),
+            code=download_js,
+        )
+    )
 
-    button.js_on_change("disabled", CustomJS(args=dict(
-        button=button,
-        figure=time_figure_layout),
-        code=scale_figs_js))
+    button.js_on_change(
+        "disabled",
+        CustomJS(
+            args=dict(button=button, figure=time_figure_layout), code=scale_figs_js
+        ),
+    )
 
     return button

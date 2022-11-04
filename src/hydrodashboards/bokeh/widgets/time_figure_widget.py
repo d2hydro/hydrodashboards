@@ -1,4 +1,4 @@
-from bokeh.plotting import figure 
+from bokeh.plotting import figure
 from bokeh.layouts import column
 from bokeh.events import PanEnd, MouseWheel
 from bokeh.models.widgets import Div
@@ -8,7 +8,6 @@ from bokeh.models import (
     Range1d,
     NumeralTickFormatter,
     CustomJSHover,
-
 )
 from bokeh.palettes import Category10_10 as palette
 import pandas as pd
@@ -45,8 +44,6 @@ def trucate_label(label, length=LABEL_LEN):
         label = f"{label[0:length-3]}..."
 
     return label
-
- 
 
 
 def range_defaults():
@@ -348,7 +345,6 @@ def top_fig(
     # make up legend
     time_fig.legend.click_policy = "hide"
     time_fig.legend.visible = True
-
 
     if len(time_fig.legend) > 0:
         time_fig.add_layout(time_fig.legend[0], "right")

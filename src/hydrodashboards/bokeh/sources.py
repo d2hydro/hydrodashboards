@@ -1,6 +1,12 @@
-from bokeh.models import ColumnDataSource
+from bokeh.models import ColumnDataSource, CustomJS
 import numpy as np
 import pandas as pd
+
+locations_source_js = """
+if (window.MenuEvents && typeof window.MenuEvents.onLocationsDataChanged === 'function') {
+    window.MenuEvents.onLocationsDataChanged();
+}
+"""
 
 
 def thresholds_to_source(thresholds):
@@ -37,7 +43,7 @@ def time_series_to_source(
 
 
 def locations_source():
-    return ColumnDataSource(
+    source = ColumnDataSource(
         data={
             i: []
             for i in [
@@ -51,6 +57,10 @@ def locations_source():
             ]
         },
     )
+
+    source.js_on_change("data", CustomJS(args=dict(), code=locations_source_js))
+
+    return source
 
 
 def time_series_template():

@@ -1,8 +1,16 @@
 from bokeh.models.widgets import CheckboxGroup, Div
+from bokeh.models import CustomJS
 from bokeh.layouts import column
 from typing import List
 
 SIZING_MODE = "stretch_width"
+
+
+thematic_filters_js = """
+if (window.MenuEvents && typeof window.MenuEvents.onFiltersChanged === 'function') {
+    window.MenuEvents.onFiltersChanged();
+}
+"""
 
 
 def make_filter(data, on_change=[], filter_length=5) -> CheckboxGroup:
@@ -36,6 +44,7 @@ def make_filters(data, on_change=[], filter_length=5, thematic_view=False) -> li
             )
             for i in data.thematic_filters
         ]
+        filters[1].js_on_change("active", CustomJS(code=thematic_filters_js))
     else:
         filters = [
             make_filter(
