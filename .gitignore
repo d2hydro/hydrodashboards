@@ -148,3 +148,6 @@ tests/data/*
 
 # issues dir
 issues/*
+
+# cache dir
+cache/*

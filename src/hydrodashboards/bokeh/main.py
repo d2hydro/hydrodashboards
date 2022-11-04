@@ -670,7 +670,7 @@ In this section we parse all url parameters
 
 
 def locations_in_filter(location_ids, filter_id):
-    return data.locations.sets[filter_id].index.isin(location_ids).any()
+    return data.locations.sets.data[filter_id].index.isin(location_ids).any()
 
 
 def convert_to_datetime(date_time):

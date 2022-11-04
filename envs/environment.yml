@@ -13,3 +13,4 @@ dependencies:
   - bokeh
   - pip:
     - fewspy
+    - hydrodashboards
