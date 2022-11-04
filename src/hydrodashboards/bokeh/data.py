@@ -248,6 +248,99 @@ class Data:
 
     """
 
+    Section with functions handling cache
+
+    """
+
+    def delete_cache(self):
+        for i in self.filters.filters:
+            i.cache.delete_cache()
+        self.locations.sets.delete_cache()
+
+    def build_cache(self):
+        filter_ids = self.filters.values
+
+        for filter_id in filter_ids:
+            filter_data = self.filters.get_filter(filter_id)
+            self.cache_filter(filter_data, filter_id)
+
+    def cache_filter(self, filter_data, filter_id):
+        def _get_from_header(i):
+            location_id = self.locations.parent_id_from_ts_header(i)
+            # If the location is parent, it has no parent_id. And if the parent has no
+            # timeseries the location can not be revealed via the FEWS API. In both
+            # cases we use the location_id in the app.
+            if pd.isna(location_id) | (
+                location_id not in self.locations.locations.index
+            ):
+                location_id = i.location_id
+
+            if location_id in self.locations.locations.index:
+
+                child_id = i.location_id
+                location_name = self.locations.locations.at[location_id, "name"]
+                parameter_id = self.parameters.id_from_ts_header(i)
+                parameter_name = self.parameters.name_from_ts_header(i)
+
+                return (
+                    location_id,
+                    location_name,
+                    child_id,
+                    parameter_id,
+                    parameter_name,
+                )
+            else:
+                return [None for i in range(5)]
+
+        def _pi_headers_to_df(pi_headers):
+
+            data = [_get_from_header(i.header) for i in pi_headers.time_series]
+
+            df = pd.DataFrame.from_records(
+                data=data,
+                columns=[
+                    "location_id",
+                    "location_name",
+                    "child_ids",
+                    "parameter_ids",
+                    "parameter_names",
+                ],
+            )
+            df = df.loc[~df["parameter_ids"].isin(self.config.exclude_pars)]
+            return df
+
+        filter_name = self.filters.get_name(filter_id, filter_data)
+        if filter_id in self.config.headers_full_history:
+            start_time = self.periods.search_start
+        else:
+            start_time = self.now
+        pi_headers = self._fews_api.get_time_series(
+            filter_id=filter_id,
+            start_time=start_time,
+            end_time=self.now,
+            only_headers=True,
+        )
+        headers_df = _pi_headers_to_df(pi_headers)
+        locations = self.locations.options_from_headers_df(headers_df)
+        parameters = self.parameters.options_from_headers_df(headers_df)
+        filter_data.cache.set_data(
+            {
+                "locations": locations,
+                "parameters": parameters,
+            },
+            filter_id,
+        )
+
+        # if not yet in sets, add it there too
+        if not self.locations.sets.exists(filter_id):
+            properties = _get_propeties(
+                filter_id, filter_name, self.config.filter_colors
+            )
+            self.locations.add_to_sets(filter_id, headers_df, properties)
+        return locations, parameters
+
+    """
+
     Section with functions called in app callbacks
 
     """
@@ -296,50 +389,6 @@ class Data:
 
         """
 
-        def _get_from_header(i):
-            location_id = self.locations.parent_id_from_ts_header(i)
-            # If the location is parent, it has no parent_id. And if the parent has no
-            # timeseries the location can not be revealed via the FEWS API. In both
-            # cases we use the location_id in the app.
-            if pd.isna(location_id) | (
-                location_id not in self.locations.locations.index
-            ):
-                location_id = i.location_id
-
-            if location_id in self.locations.locations.index:
-
-                child_id = i.location_id
-                location_name = self.locations.locations.at[location_id, "name"]
-                parameter_id = self.parameters.id_from_ts_header(i)
-                parameter_name = self.parameters.name_from_ts_header(i)
-
-                return (
-                    location_id,
-                    location_name,
-                    child_id,
-                    parameter_id,
-                    parameter_name,
-                )
-            else:
-                return [None for i in range(5)]
-
-        def _pi_headers_to_df(pi_headers):
-
-            data = [_get_from_header(i.header) for i in pi_headers.time_series]
-
-            df = pd.DataFrame.from_records(
-                data=data,
-                columns=[
-                    "location_id",
-                    "location_name",
-                    "child_ids",
-                    "parameter_ids",
-                    "parameter_names",
-                ],
-            )
-            df = df.loc[~df["parameter_ids"].isin(self.config.exclude_pars)]
-            return df
-
         all_locations = []
         all_parameters = []
 
@@ -350,36 +399,14 @@ class Data:
 
         for filter_id in values:
             filter_data = self.filters.get_filter(filter_id)
-            filter_name = self.filters.get_name(filter_id, filter_data)
 
             # get locations and parameters from sub-filter
-            if filter_id not in filter_data.cache.keys():  # add to cache if
-                if filter_id in self.config.headers_full_history:
-                    start_time = self.periods.search_start
-                else:
-                    start_time = self.now
-                pi_headers = self._fews_api.get_time_series(
-                    filter_id=filter_id,
-                    start_time=start_time,
-                    end_time=self.now,
-                    only_headers=True,
-                )
-                headers_df = _pi_headers_to_df(pi_headers)
-                locations = self.locations.options_from_headers_df(headers_df)
-                parameters = self.parameters.options_from_headers_df(headers_df)
-                filter_data.cache[filter_id] = {
-                    "locations": locations,
-                    "parameters": parameters,
-                }
-            else:
-                locations, parameters = filter_data.cache[filter_id].values()
+            if not filter_data.cache.exists(filter_id):  # add to cache if
+                locations, parameters = self.cache_filter(filter_data, filter_id)
 
-            # if not yet in sets, add it there too
-            if filter_id not in self.locations.sets.keys():
-                properties = _get_propeties(
-                    filter_id, filter_name, self.config.filter_colors
-                )
-                self.locations.add_to_sets(filter_id, headers_df, properties)
+            else:
+                filter_data = self.filters.get_filter(filter_id)
+                locations, parameters = filter_data.cache.data[filter_id].values()
 
             # add locations and parameters to list
             all_locations = list(set(all_locations + locations))
