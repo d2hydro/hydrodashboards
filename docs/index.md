@@ -22,16 +22,14 @@ We recommend to build your bokeh environment using [Anaconda](https://www.anacon
 conda env create -f environment.yml
 ```
 
-After creating the bokeh environment, you should activate this environment from the command line:
-```
-conda activate bokeh
-```
-
-In that activated environment you can add hydrodashboards via pip by:
-
-```
-pip install hydrodashboards
-```
+As alternative; hydrodashboards works in any environment with the following packages properly installed:
+ * aiohttp
+ * bokeh
+ * fewspy
+ * geopandas
+ * nest-asyncio
+ * pandas
+ * requests
 
 ## About
 
