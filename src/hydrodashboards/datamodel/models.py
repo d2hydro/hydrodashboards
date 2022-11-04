@@ -15,25 +15,6 @@ class Filter:
     def labels(self):
         return [i[1] for i in self.options]
 
-    # @property
-    # def value(self):
-    #     if self._value:
-    #         return self._value
-    #     else:
-    #         try:
-    #          return [self.options[i][0] for i in self._active]
-    #         except Exception as e:
-    #             print(self.options, self._active)
-    #             raise e
-
-    # @property
-    # def active(self):
-    #     if self._active:
-    #         return self._active
-    #     else:
-    #         ids = [i[0] for i in self.options]
-    #         return [ids.index(i) for i in self._value]
-
     def get_values_by_actives(self, actives):
         return [self.options[i][0] for i in actives]
 

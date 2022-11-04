@@ -145,3 +145,6 @@ src/hydrodashboards/bokeh/bootstrap/*
 
 # test_data dir
 tests/data/*
+
+# issues dir
+issues/*

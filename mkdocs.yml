@@ -19,6 +19,7 @@ extra:
       link: https://github.com/d2hydro/hydrodashboards
 nav:
     - Home: index.md
-    - Manuals:
-        - Gebruikershandleiding (NL): manuals/user_nl.md
-        - Deployment with ISS: manuals/routing_iis.md
+    - Build your app: build.md
+    - Host your app: host.md
+    - User Manuals:
+        - Gebruikershandleiding (NL): user_manuals/user_nl.md

@@ -234,16 +234,17 @@ class Data:
                 parameter_id = concat_fews_parameter_ids(
                     fews_ts.header.parameter_id, fews_ts.header.qualifier_id
                 )
-                ts_idx = list(self.time_series_sets.indices).index(
-                    (location_id, parameter_id)
-                )
-                ts_select = self.time_series_sets.time_series[ts_idx]
-                if not erasing_data(fews_ts.events, ts_select.df):
-                    ts_select.df = fews_ts.events
-                    ts_select.complete = complete
-                    ts_select.empty = fews_ts.events.empty
-                    ts_select.start_datetime = fews_ts.header.start_date
-                    ts_select.end_datetime = fews_ts.header.end_date
+                if (location_id, parameter_id) in self.time_series_sets.indices:
+                    ts_idx = self.time_series_sets.indices.index(
+                        (location_id, parameter_id)
+                    )
+                    ts_select = self.time_series_sets.time_series[ts_idx]
+                    if not erasing_data(fews_ts.events, ts_select.df):
+                        ts_select.df = fews_ts.events
+                        ts_select.complete = complete
+                        ts_select.empty = fews_ts.events.empty
+                        ts_select.start_datetime = fews_ts.header.start_date
+                        ts_select.end_datetime = fews_ts.header.end_date
 
     """
 
@@ -297,7 +298,6 @@ class Data:
 
         def _get_from_header(i):
             location_id = self.locations.parent_id_from_ts_header(i)
-
             # If the location is parent, it has no parent_id. And if the parent has no
             # timeseries the location can not be revealed via the FEWS API. In both
             # cases we use the location_id in the app.
@@ -305,24 +305,30 @@ class Data:
                 location_id not in self.locations.locations.index
             ):
                 location_id = i.location_id
+
             if location_id in self.locations.locations.index:
+
                 child_id = i.location_id
-                location_name = self.locations.locations.loc[location_id]["name"]
+                location_name = self.locations.locations.at[location_id, "name"]
                 parameter_id = self.parameters.id_from_ts_header(i)
                 parameter_name = self.parameters.name_from_ts_header(i)
-                return [
+
+                return (
                     location_id,
                     location_name,
                     child_id,
                     parameter_id,
                     parameter_name,
-                ]
+                )
             else:
                 return [None for i in range(5)]
 
         def _pi_headers_to_df(pi_headers):
+
+            data = [_get_from_header(i.header) for i in pi_headers.time_series]
+
             df = pd.DataFrame.from_records(
-                data=[_get_from_header(i.header) for i in pi_headers.time_series],
+                data=data,
                 columns=[
                     "location_id",
                     "location_name",
@@ -359,14 +365,12 @@ class Data:
                     only_headers=True,
                 )
                 headers_df = _pi_headers_to_df(pi_headers)
-
                 locations = self.locations.options_from_headers_df(headers_df)
                 parameters = self.parameters.options_from_headers_df(headers_df)
                 filter_data.cache[filter_id] = {
                     "locations": locations,
                     "parameters": parameters,
                 }
-
             else:
                 locations, parameters = filter_data.cache[filter_id].values()
 

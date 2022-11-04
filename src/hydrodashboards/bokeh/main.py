@@ -152,13 +152,13 @@ def update_on_filter_selector(attrname, old, new):
     logger.debug(inspect.stack()[0][3])
 
     actives = filters_widgets.get_filters_actives(filters, config.thematic_view)
+
     data.update_on_filter_select(actives)
 
     locations.labels = data.locations.labels
     locations.active = data.locations.active
     parameters.labels = data.parameters.labels
     parameters.active = data.parameters.active
-
     # update source
     locations_source.data = data.locations.map_locations
 
@@ -168,6 +168,8 @@ def update_on_filter_selector(attrname, old, new):
 
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
+
+    logger.debug(f"{inspect.stack()[0][3]} finished")
 
 
 def update_on_locations_source_select(attr, old, new):
@@ -506,6 +508,7 @@ We define all sources used in this main document
 
 locations_source = sources.locations_source()
 locations_source.selected.on_change("indices", update_on_locations_source_select)
+
 time_series_sources = sources.time_series_sources()
 search_source = sources.time_series_template()
 
@@ -570,7 +573,9 @@ view_x_range.on_change("start", update_on_view_x_range_change)
 time_figure = time_figure_widget.empty_fig()
 
 # Search time series widget
-search_time_series = Select(value=None, options=[])
+search_time_series = Select(
+    value=None, options=[], css_classes=["select_search_time_series"]
+)
 search_time_series.on_change("value", update_on_search_time_series_value)
 
 # Search download search time series widget

@@ -42,6 +42,7 @@ LABEL_LEN = 50
 def trucate_label(label, length=LABEL_LEN):
     if len(label) > length:
         label = f"{label[0:length-3]}..."
+
     return label
 
 
@@ -290,7 +291,7 @@ def top_fig(
 
     time_fig = figure(
         tools=tools,
-        sizing_mode=SIZING_MODE,
+        sizing_mode="stretch_width",
         x_range=x_range,
         y_range=y_range,
         y_axis_label=y_axis_label,
@@ -344,8 +345,6 @@ def top_fig(
     # make up legend
     time_fig.legend.click_policy = "hide"
     time_fig.legend.visible = True
-    time_fig.legend.name = "time_figure_legend"
-    time_fig.legend.tags = ["time_figure_legend"]
 
     if len(time_fig.legend) > 0:
         time_fig.add_layout(time_fig.legend[0], "right")
@@ -385,7 +384,7 @@ def create_time_figures(
         for i in time_series_groups.items()
     ]
     top_figs[-1].xaxis.visible = True
-    time_figure_layout.children.append(column(*top_figs, sizing_mode="stretch_both"))
+    time_figure_layout.children.append(column(*top_figs, sizing_mode="stretch_width"))
 
     time_series_sources = {}
     for i in top_figs:
