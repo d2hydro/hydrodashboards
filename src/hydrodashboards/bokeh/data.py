@@ -7,8 +7,9 @@ from hydrodashboards.datamodel import (
     Locations,
     Parameters,
     Periods,
-    TimeSeriesSets,
+    TimeSeriesSets
 )
+
 
 # import utilities
 from hydrodashboards.datamodel.utils import (
@@ -258,6 +259,7 @@ class Data:
         self.locations.sets.delete_cache()
 
     def build_cache(self):
+        self.logger.info("building cache")
         filter_ids = self.filters.values
 
         for filter_id in filter_ids:
