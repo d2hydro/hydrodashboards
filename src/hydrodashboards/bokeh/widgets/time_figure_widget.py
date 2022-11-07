@@ -265,7 +265,7 @@ def top_fig(
     parameter_group, time_series = group
     # define tools
     time_hover = HoverTool(
-        tooltips=[("datum-tijd", "@datetime{%F %H:%M}"), ("waarde", "@value{(0.00)}")],
+        tooltips=[("datum-tijd", "@datetime{%F %H:%M}"), ("waarde", "@value{'0.0'}")],
         formatters={
             "@datetime": CustomJSHover(code=DT_JS_FORMAT.format("special_vars.data_x"))
         },
