@@ -171,9 +171,9 @@ if (!button.disabled) {
             figure.children[0].children[0].height = vh;
             }
     else if (fig_len > 1) {
-        figure.children[0].height = Math.round(fig_len * vh / 2);
+        figure.children[0].height = Math.round(fig_len * vh / 3);
         for (let i = 0; i < figure.children[0].children.length; i++) {
-               figure.children[0].children[i].height = Math.round(vh / 2); 
+               figure.children[0].children[i].height = Math.round(vh / 3); 
                }
                }
         }
