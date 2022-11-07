@@ -15,10 +15,6 @@
       "fill": "fuchsia",
       "line": "purple"
     },
-    "WDB_FC_MPN": {
-      "fill": "darkorange",
-      "line": "red"
-    },
     "WDB_GW_GMW": {
       "fill": "greenyellow",
       "line": "green"
