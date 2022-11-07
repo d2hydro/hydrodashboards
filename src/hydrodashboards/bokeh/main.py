@@ -642,7 +642,7 @@ curdoc().add_root(time_figure_layout)
 
 
 download_time_series = download_widget.make_button(
-    time_figure_layout=time_figure_layout
+    time_figure_layout=time_figure_layout, disclaimer_file=config.disclaimer_file
 )
 curdoc().add_root(
     column(

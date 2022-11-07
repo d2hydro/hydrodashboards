@@ -11,6 +11,7 @@ class Config:
     fews_url: str
     root_filter: str
     filter_dimensions: list
+    disclaimer_file: Path = None
     fews_parallel: bool = False
     language: str = "dutch"
     thresholds: list = field(default_factory=list)
@@ -21,6 +22,14 @@ class Config:
     ssl_verify: bool = False
     thematic_view: bool = False
     history_period: int = 3650
+
+    def __post_init__(self):
+        if self.disclaimer_file is not None:
+            self.disclaimer_file = Path(self.disclaimer_file)
+            if not self.disclaimer_file.is_absolute():
+                self.disclaimer_file = Path(__file__).parent.joinpath(self.disclaimer_file).absolute().resolve()
+            if not self.disclaimer_file.exists():
+                raise FileNotFoundError(f"{self.disclaimer_file} does not exist")
 
     @classmethod
     def from_json(cls, config_json: Path = Path("config.json")):

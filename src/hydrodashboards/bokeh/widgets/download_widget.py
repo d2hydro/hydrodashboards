@@ -2,18 +2,15 @@ from bokeh.models.widgets import Button
 from bokeh.models import CustomJS
 import json
 
-disclaimer_json = json.dumps(
-    [
-        ["* Aan de gegevens in dit Excelbestand mogen geen rechten worden ontleend"],
-        [
-            "* Met debietformules worden berekeningen uitgevoerd die de werkelijkheid versimpelen; dit gebeurt nooit helemaal correct; er is dus altijd een zekere foutmarge en onzekerheid die in acht moet worden genomen bij het gebruik van deze data"
-        ],
-        [
-            "* De data is tot stand gekomen uit bewerkingen met grotendeels handmatig gevalideerde data; gaten in de tijdreeksen die hierdoor zijn ontstaan zijn niet opgevuld en beschikbaar"
-        ],
-        ["* De x,y coordinaten zijn geprojecterd in: Amersfoort / RD New (epsg:28992)"],
-    ]
-)
+
+def read_disclaimer(disclaimer_file):
+    if disclaimer_file is not None:
+        disclaimer_json = json.dumps([[i] for i in disclaimer_file.read_text().split("\n")])
+    else:
+        disclaimer_json = json.dumps([["* This is an hydrodashboards export"],
+                                      ["* Data comes as is, without warranty of any kind"]])
+    return disclaimer_json
+
 
 download_js = """
 function resolveAfter1Seconds() {
@@ -181,8 +178,10 @@ if (!button.disabled) {
 """
 
 
-def make_button(time_figure_layout):
+def make_button(time_figure_layout, disclaimer_file=None):
     button = Button(label="", button_type="success", disabled=True)
+
+    disclaimer_json = read_disclaimer(disclaimer_file)
 
     button.js_on_click(
         CustomJS(
