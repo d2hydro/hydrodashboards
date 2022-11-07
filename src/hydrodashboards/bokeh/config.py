@@ -27,7 +27,12 @@ class Config:
         if self.disclaimer_file is not None:
             self.disclaimer_file = Path(self.disclaimer_file)
             if not self.disclaimer_file.is_absolute():
-                self.disclaimer_file = Path(__file__).parent.joinpath(self.disclaimer_file).absolute().resolve()
+                self.disclaimer_file = (
+                    Path(__file__)
+                    .parent.joinpath(self.disclaimer_file)
+                    .absolute()
+                    .resolve()
+                )
             if not self.disclaimer_file.exists():
                 raise FileNotFoundError(f"{self.disclaimer_file} does not exist")
 

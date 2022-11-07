@@ -7,7 +7,7 @@ from hydrodashboards.datamodel import (
     Locations,
     Parameters,
     Periods,
-    TimeSeriesSets
+    TimeSeriesSets,
 )
 
 
@@ -204,7 +204,7 @@ class Data:
             ]
             tags = [
                 header.location_id,
-                location_name,
+                self.locations.get_parent_name(header.location_id),
                 xy,
                 header.parameter_id,
                 qualifiers_tag,

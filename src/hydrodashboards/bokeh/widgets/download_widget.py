@@ -5,10 +5,16 @@ import json
 
 def read_disclaimer(disclaimer_file):
     if disclaimer_file is not None:
-        disclaimer_json = json.dumps([[i] for i in disclaimer_file.read_text().split("\n")])
+        disclaimer_json = json.dumps(
+            [[i] for i in disclaimer_file.read_text().split("\n")]
+        )
     else:
-        disclaimer_json = json.dumps([["* This is an hydrodashboards export"],
-                                      ["* Data comes as is, without warranty of any kind"]])
+        disclaimer_json = json.dumps(
+            [
+                ["* This is an hydrodashboards export"],
+                ["* Data comes as is, without warranty of any kind"],
+            ]
+        )
     return disclaimer_json
 
 
