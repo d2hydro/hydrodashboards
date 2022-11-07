@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from pathlib import Path
 import shutil
 import fewspy
@@ -15,6 +16,12 @@ HYDRODASHBOARDS_DIR = Path(hydrodashboards.__file__).parent
 CONFIG_FILE = Path(hydrodashboards.__file__).parent.joinpath("bokeh", "config.py")
 VERSION = hydrodashboards.__version__
 
+cmd_activate =r"""rem setting environment to python installation
+SET VIRTUAL_ENV={virtual_env}
+SET PATH=%VIRTUAL_ENV%;%VIRTUAL_ENV%\Library\mingw-w64\bin;%VIRTUAL_ENV%\Library\usr\bin;%VIRTUAL_ENV%\Library\bin;%VIRTUAL_ENV%\Scripts;%VIRTUAL_ENV%\bin;%PATH%
+SET PROJ_LIB=%VIRTUAL_ENV%\Library\share\proj
+"""
+        
 
 def main():
     args = get_args()
@@ -176,7 +183,7 @@ def bokeh(
     # copy contents of datamodel folder to correct location
     for src in list(bokeh_src.glob("*.*")):
         dst = None
-        if src.name in ["data.py", "main.py", "theme.yaml", "config.py", "__init__.py"]:
+        if src.name in ["data.py", "main.py", "theme.yaml", "config.py", "build_cache.py", "__init__.py"]:
             dst = app_dir.joinpath(src.name)
         else:
             dst = bokeh_dir.joinpath(src.name)
@@ -191,16 +198,19 @@ def bokeh(
     if virtual_env is None:
         virtual_env = VIRTUAL_ENV
 
-    app_dir.parent.joinpath("serve_bokeh.bat").write_text(
-        rf"""rem setting environment to python installation
-        SET VIRTUAL_ENV={virtual_env}
-        SET PATH=%VIRTUAL_ENV%;%VIRTUAL_ENV%\Library\mingw-w64\bin;%VIRTUAL_ENV%\Library\usr\bin;%VIRTUAL_ENV%\Library\bin;%VIRTUAL_ENV%\Scripts;%VIRTUAL_ENV%\bin;%PATH%
-        SET PROJ_LIB=%VIRTUAL_ENV%\Library\share\proj
-        
-        rem serve {app_dir.name}
-        bokeh serve {app_dir.name} --port {app_port}
-        """
-    )
+    activate_env = cmd_activate.format(virtual_env=virtual_env)
+    app_dir.parent.joinpath("serve_bokeh.bat").write_text(f"""{activate_env}
+
+rem serve {app_dir.name}
+bokeh serve {app_dir.name} --port {app_port}
+""")
+
+    app_dir.parent.joinpath("build_cache.bat").write_text(f"""{activate_env}
+
+rem build cache
+chdir ./{app_dir.name}
+python build_cache.py
+""")
 
 
 def get_args() -> argparse.Namespace:
@@ -212,7 +222,8 @@ def get_args() -> argparse.Namespace:
 
     parser.add_argument(
         "-app_dir",
-        help="Directory in which to store the app",
+        required=True,
+        help="A directory where the app will be build",
     )
     parser.add_argument(
         "-config_file",
