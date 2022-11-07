@@ -1,9 +1,10 @@
 from hydrodashboards.bokeh.language import locations_title
 from hydrodashboards.datamodel.models import Filter
+from hydrodashboards.datamodel.cache import Cache
 from fewspy.time_series import TimeSeries
 import geopandas as gpd
 import pandas as pd
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List
 import itertools
 
@@ -16,7 +17,6 @@ COLUMNS = [
     "geometry",
 ]
 EMPTY_SET = gpd.GeoDataFrame(columns=COLUMNS).set_index("id")
-
 MAP_LOCATIONS = {
     i: []
     for i in [
@@ -40,7 +40,7 @@ class Locations(Filter):
     """Locations-data class for hydrodashboard"""
 
     locations: gpd.GeoDataFrame = EMPTY_SET
-    sets: dict = field(default_factory=dict)
+    sets: Cache = Cache(sub_dir="locations", data_frame=True)
     app_df: pd.DataFrame = pd.DataFrame(MAP_LOCATIONS).set_index("id")
 
     def __post_init__(self):
@@ -189,7 +189,7 @@ class Locations(Filter):
             df[k] = v
 
         # append to set
-        self.sets[filter_id] = df
+        self.sets.set_data(df, filter_id)
 
     def update_map_locations(self, filter_ids: List[str]):
         """
@@ -203,7 +203,7 @@ class Locations(Filter):
 
         """
         if filter_ids:
-            sets = [self.sets[i] for i in filter_ids if i in self.sets.keys()]
+            sets = [self.sets.data[i] for i in filter_ids if self.sets.exists(i)]
             self.app_df = pd.concat(sets)
         else:
             self.app_df = pd.DataFrame(MAP_LOCATIONS).set_index("id")

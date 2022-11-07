@@ -57,6 +57,8 @@ def test_fysisch_chemisch():
     filters[0].active = [2]
     # choose meetlocaties
     filters[1].active = [0]
-    first_loc = data.locations.sets[data.filters.thematic_filters[1].value[0]].iloc[0]
+    first_loc = data.locations.sets.data[
+        data.filters.thematic_filters[1].value[0]
+    ].iloc[0]
     assert first_loc.line_color == "orange"
     assert first_loc.fill_color == "black"

@@ -166,6 +166,15 @@ a, a:hover, a:focus {
    background: #495568;
    }
 
+a[data-toggle="collapse"] {
+    position: relative;
+}
+:root {
+    accent-color: #F16996;
+}
+input[type=checkbox]{
+    cursor: pointer;
+}
 
 /* ---------------------------------------------------
     SIDEBAR STYLE
@@ -185,6 +194,7 @@ a, a:hover, a:focus {
     max-width: 310px;
 	background: #3A4453;
     height:100vh;
+    min-height: 730px;
     color: #fff;
     transition: all 0.6s cubic-bezier(0.945, 0.020, 0.270, 0.665);
     transform-origin: bottom left;
@@ -192,93 +202,169 @@ a, a:hover, a:focus {
 
 #sidebar.active {
     margin-left: -310px;
-
     transform: rotateY(100deg);
 }
 
 #sidebar .sidebar-header {
-     padding-right: 10px;
+    padding-right: 10px;
 	padding-left: 10px;
 	padding-top: 10px;
     background: #282f3a;
 	height:59px;
 	margin-bottom:0px;
-
 }
 
-#sidebar .sidebar-bokeh {
+#sidebar > .sidebar-header .bk.app_title{
+    display:inline-block; min-width: 270px;
+}
+
+#sidebar > .sidebar-bokeh {
     width: 100%;
+    height: calc(100% - 130px);
+    min-height: 660px;
     padding-right: 14px;
     padding-left:14px;
 }
 
-
-
-#sidebar #update_download{
-  padding-right: 14px;
-  padding-left:14px;
-  margin-top:0px;
- 
+#sidebar > .sidebar-bokeh > .bk-root {
+    height: calc(( 100% - 150px ) / 4);
 }
 
-a[data-toggle="collapse"] {
-  position: relative;
-}
-:root {
-  accent-color: #F16996;
-}
-input[type=checkbox]{
-	cursor: pointer;
+#sidebar > .sidebar-bokeh > .bk-root:first-child {
+    height: calc(( 100% - 150px ) / 2);
 }
 
+#sidebar > .sidebar-bokeh > .bk-root:nth-child(4) {
+    height: 77px;
+}
+
+#sidebar > .sidebar-bokeh > .bk-root > .bk {
+    height: 100% !important;
+    width: auto !important;
+}
+
+#sidebar > .sidebar-bokeh > .bk-root > .bk > .bk {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+}
+
+#sidebar > .sidebar-bokeh > .bk-root:nth-child(4) > .bk > .bk {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#sidebar > .sidebar-bokeh > .bk-root .bk.search_period {
+    position: relative !important;
+    width: calc(50% - 10px) !important;
+    height: 100% !important;
+    left: auto !important;
+}
+
+#sidebar > .sidebar-bokeh > .update-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#sidebar > .sidebar-bokeh > .update-wrapper > .update {
+    flex: 0 0 75%;
+    max-width: 75%;
+    margin-top: 6px;
+    height: 40px;
+}
+
+#sidebar > .sidebar-bokeh > .update-wrapper > .update > .bk-root > .bk { 
+    height: 40px !important;
+}
+
+#sidebar > .sidebar-bokeh > .update-wrapper > .update > .bk-root > .bk > .bk { 
+    height: 30px !important;
+}
+
+#sidebar > .sidebar-bokeh > .update-wrapper > .update .bk.stoploading_time_fig {
+    left: auto !important;
+}
+
+#sidebar > .sidebar-bokeh > .update-wrapper > .download {
+    flex: 0 0 16.6666667%;
+    max-width: 16.6666667%;
+}
+
+#sidebar > .sidebar-bokeh > .update-wrapper > .download .bk-btn-group {
+    margin-top: 5px;
+}
+
+#sidebar > .sidebar-bokeh > .update-wrapper > .download > .bk-root > .bk { 
+    height: 40px !important;
+}
+
+#sidebar > .sidebar-bokeh > .update-wrapper > .download > .bk-root > .bk > .bk { 
+    height: 30px !important;
+}
+
+#sidebar > .sidebar-bokeh .bk.filter_title {
+    display: inline-block; min-width: 274px; max-height: 25px;background-color:#282F3A;color:white;
+    margin-top:10px;padding:4px;box-shadow: 5px 10px 20px #495568 inset;
+    border-radius:2px;
+    width: 100% !important;
+}
+
+#sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_1,.bk.filter_checkboxgroup_2,.bk.filter_checkboxgroup_3,.bk.filter_checkboxgroup_4 {
+    color: white; 
+    overflow-y: auto;
+    background:#495568;
+    padding: 6px;
+    width: 100% !important;
+}
+
+#sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_1 {
+    min-height: 80px;
+    height: calc(50% - 31px) !important;
+}
+#sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_2 {
+    min-height: 98px;
+    height: calc(50% - 31px) !important;
+}
+#sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_3 {
+    min-height: 106px;
+    height: calc(100% - 31px) !important;
+}
+#sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_4 {
+    min-height: 88px;
+    height: calc(100% - 31px) !important;
+}
+
+#sidebar > .sidebar-bokeh > .bk-root .bk.bk.bk-input-group {
+    height: calc(100% - 6px);
+}
+  
 .bk.search_period .bk.bk-input-group label[class=bk]{display: inline-block; min-width: 130px; min-height: 25px;background-color:#282F3A;color:white;margin-top:10px;padding:4px;box-shadow: 5px 10px 20px #495568 inset;
-border-radius:2px	
+    border-radius:2px	
 }
-
-
+    
 .map_opt .bk-root .bk .bk .bk .bk.bk-input-group label[class=bk] input[type=checkbox]{
-	accent-color: lightgrey;	  
+    accent-color: lightgrey;	  
 }
-
+  
 .map_opt .bk-root .bk .bk .bk .bk.bk-input-group label[class=bk] input[type=radio]{
-	accent-color: lightgrey;	
+    accent-color: lightgrey;	
 }
-
-.bk.bk-input.flatpickr-input{color: white;background-color:#495568;min-width:130px;
-padding: 6px;min-height:10px;border: 0px;color: white}
-/* --------
-.bk.bk-input{color: white;background-color:#495568;
-padding: 6px;min-height:20px;border: 1px;color: white; accent-color: red;}
------ */
-
-.bk.filter_title{
-display: inline-block; min-width: 274px; max-height: 25px;background-color:#282F3A;color:white;margin-top:10px;padding:4px;box-shadow: 5px 10px 20px #495568 inset;
-border-radius:2px}
-.bk.app_title{display:inline-block; min-width: 270px;}
-
-.bk.filter_checkboxgroup_1{
-color: white; overflow-y: auto;background:#495568;
-padding: 6px;min-height:80px;
+  
+.bk.bk-input.flatpickr-input{
+    color: white;background-color:#495568;min-width:130px;
+    padding: 6px;min-height:10px;border: 0px;color: white
 }
-.bk.filter_checkboxgroup_2{
-color: white; overflow-y: auto;background:#495568;
-padding: 6px;min-height:98px;
-}
-.bk.filter_checkboxgroup_3{
-color: white; overflow-y: auto;background:#495568;
-padding: 6px;min-height:106px;
-}
-.bk.filter_checkboxgroup_4{
-color: white; overflow-y: auto;background:#495568;
-padding: 6px;min-height:88px;
-}
-
-option.bk{
- 
-}
-
-
-
+  /* --------
+  .bk.bk-input{color: white;background-color:#495568;
+  padding: 6px;min-height:20px;border: 1px;color: white; accent-color: red;}
+  ----- */
 
 /* ---------------------------------------------------
     CONTENT STYLE

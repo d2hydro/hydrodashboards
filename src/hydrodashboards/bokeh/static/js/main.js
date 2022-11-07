@@ -132,11 +132,13 @@ createMenuEvents = () => {
     return {
         onFiltersChanged: () => {
             this.counter++;
-            this.addLoaders();
+            if (this.counter > 0) {
+                this.addLoaders();
+            }
         },
         onLocationsDataChanged: () => {
             this.counter--;
-            if (this.counter === 0) {
+            if (this.counter < 1) {
                 this.removeLoaders();
             }
         }
