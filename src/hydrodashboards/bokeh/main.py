@@ -315,6 +315,9 @@ def update_time_series_view():
 
     # update time_series_layout (top figures)
     parameter_groups = data.parameters.get_groups()
+    group_y_labels = data.parameters.get_y_labels(
+        list(set(parameter_groups.values())),
+        config.vertical_datum)
     time_series_groups = data.time_series_sets.by_parameter_groups(
         parameter_groups, active_only=True
     )
@@ -328,6 +331,7 @@ def update_time_series_view():
     time_series_sources = time_figure_widget.create_time_figures(
         time_figure_layout=time_figure_layout,
         time_series_groups=time_series_groups,
+        group_y_labels=group_y_labels,
         threshold_groups=threshold_groups,
         threshold_visible=thresholds_active,
         x_range=view_x_range,

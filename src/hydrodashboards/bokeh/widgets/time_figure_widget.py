@@ -254,6 +254,7 @@ def search_fig(
 def top_fig(
     group: tuple,
     x_range: Range1d,
+    y_axis_label: str,
     threshold_groups={},
     threshold_visible=False,
     press_up_event=None,
@@ -287,7 +288,7 @@ def top_fig(
 
     y_range = make_y_range(time_series)
     parameters = list(set([i.parameter_name for i in time_series]))
-    y_axis_label = f"{parameter_group} [{time_series[0].units}]"
+    #y_axis_label = f"{parameter_group} [{time_series[0].units}]"
 
     time_fig = figure(
         tools=tools,
@@ -365,6 +366,7 @@ def top_fig(
 def create_time_figures(
     time_figure_layout: column,
     time_series_groups: dict,
+    group_y_labels: dict,
     threshold_groups: dict,
     threshold_visible: bool,
     x_range,
@@ -376,6 +378,7 @@ def create_time_figures(
         top_fig(
             i,
             x_range,
+            y_axis_label = group_y_labels[i[0]],
             threshold_groups=threshold_groups,
             threshold_visible=threshold_visible,
             renderers_on_change=renderers_on_change,
