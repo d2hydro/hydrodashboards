@@ -63,15 +63,22 @@ class Parameters(Filter):
             }
         return groups
 
-    def get_y_labels(self, parameter_groups, vertical_datum, parameters_source="fews"):
-        def _label(name, unit, uses_datum):
-            label = f"{name} [{unit}]"
-            if uses_datum:
-                label = f"{label} [{vertical_datum}]"
-                return label
+    def get_y_labels(self, vertical_datum):
+        parameter_groups = list(set(self.get_groups().values()))
+        if "parameter_group_name" in self._fews_parameters.columns:
+            label_column = "parameter_group_name"
+        else:
+            label_column = "parameter_group"
 
-        label_props = {i: (i, df["unit"].iat[0], df["uses_datum"].iat[0]) for i, df in self._fews_parameters.groupby("parameter_group") if i in parameter_groups}
-        return {k: _label(*v) for k, v in label_props.items()}
+        def _label(parameter_group):
+            row = self._fews_parameters[self._fews_parameters["parameter_group"] == parameter_group].iloc[0]
+
+            label = f"{row[label_column]} [{row.display_unit}]"
+            if row.uses_datum:
+                label = f"{label} [{vertical_datum}]"
+            return label
+
+        return {i: _label(i) for i in parameter_groups}
 
     def update_from_options(self, options: List[tuple], reinit=True):
         self._options = options

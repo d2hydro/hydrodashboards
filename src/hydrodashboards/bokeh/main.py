@@ -315,9 +315,7 @@ def update_time_series_view():
 
     # update time_series_layout (top figures)
     parameter_groups = data.parameters.get_groups()
-    group_y_labels = data.parameters.get_y_labels(
-        list(set(parameter_groups.values())),
-        config.vertical_datum)
+    group_y_labels = data.parameters.get_y_labels(config.vertical_datum)
     time_series_groups = data.time_series_sets.by_parameter_groups(
         parameter_groups, active_only=True
     )
