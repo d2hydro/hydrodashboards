@@ -5,22 +5,37 @@ import json
 
 @dataclass
 class Config:
-    log_dir: Path
-    title: str
     bounds: list
-    fews_url: str
-    root_filter: str
     filter_dimensions: list
-    fews_parallel: bool = False
-    language: str = "dutch"
-    thresholds: list = field(default_factory=list)
-    filter_colors: dict = field(default_factory=dict)
-    map_overlays: dict = field(default_factory=dict)
+    fews_url: str
+    log_dir: Path
+    root_filter: str
+    title: str
+    disclaimer_file: Path = None
     exclude_pars: list = field(default_factory=list)
+    fews_parallel: bool = False
+    filter_colors: dict = field(default_factory=dict)
     headers_full_history: list = field(default_factory=list)
+    history_period: int = 3650
+    language: str = "dutch"
+    map_overlays: dict = field(default_factory=dict)
     ssl_verify: bool = False
     thematic_view: bool = False
-    history_period: int = 3650
+    thresholds: list = field(default_factory=list)
+    vertical_datum: str = "NAP"
+
+    def __post_init__(self):
+        if self.disclaimer_file is not None:
+            self.disclaimer_file = Path(self.disclaimer_file)
+            if not self.disclaimer_file.is_absolute():
+                self.disclaimer_file = (
+                    Path(__file__)
+                    .parent.joinpath(self.disclaimer_file)
+                    .absolute()
+                    .resolve()
+                )
+            if not self.disclaimer_file.exists():
+                raise FileNotFoundError(f"{self.disclaimer_file} does not exist")
 
     @classmethod
     def from_json(cls, config_json: Path = Path("config.json")):

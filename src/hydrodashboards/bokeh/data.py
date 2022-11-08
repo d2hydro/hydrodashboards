@@ -7,9 +7,8 @@ from hydrodashboards.datamodel import (
     Locations,
     Parameters,
     Periods,
-    TimeSeriesSets
+    TimeSeriesSets,
 )
-
 
 # import utilities
 from hydrodashboards.datamodel.utils import (
@@ -20,19 +19,22 @@ from hydrodashboards.datamodel.utils import (
 from hydrodashboards import __version__
 
 # import functions from python modules
+from bokeh.palettes import Category20_20
 from datetime import datetime
+import itertools
 import pandas as pd
 
 FEWS_BUGS = dict(qualifier_ids=True)
-
+COLOR_CYCLE = itertools.cycle(Category20_20)
 
 def _get_propeties(filter_id, filter_name, filter_colors):
     if filter_id in filter_colors.keys():
         line = filter_colors[filter_id]["line"]
         fill = filter_colors[filter_id]["fill"]
     else:
-        line = "orange"
-        fill = "black"
+        print("select_default")
+        line = next(COLOR_CYCLE)
+        fill = next(COLOR_CYCLE)
 
     return {
         "line_color": line,
@@ -204,7 +206,7 @@ class Data:
             ]
             tags = [
                 header.location_id,
-                location_name,
+                self.locations.get_parent_name(header.location_id),
                 xy,
                 header.parameter_id,
                 qualifiers_tag,

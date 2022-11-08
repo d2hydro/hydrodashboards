@@ -106,6 +106,11 @@ class Locations(Filter):
     def name_from_ts_header(self, header):
         return self.locations.loc[header.location_id]["name"]
 
+    def get_parent_name(self, location_id):
+        if not pd.isna(self.locations.at[location_id, "parent_id"]):
+            location_id = self.locations.at[location_id, "parent_id"]
+        return self.locations.at[location_id, "name"]
+
     def from_pi_headers(self, pi_headers: TimeSeries) -> List[tuple]:
         """
         Get all location options from FEWS pi headers
