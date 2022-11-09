@@ -203,7 +203,6 @@ input[type=checkbox]{
 
 #sidebar.active {
     margin-left: -310px;
-
     transform: rotateY(100deg);
 }
 
@@ -279,24 +278,6 @@ input[type=checkbox]{
     flex: 0 0 75%;
     max-width: 75%;
     margin-top: 6px;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     height: 40px;
 }
 
