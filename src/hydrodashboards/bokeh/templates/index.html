@@ -45,7 +45,7 @@
           var kaart = document.getElementById("kaart");
           var zoekgraf = document.getElementById("zoekgrafiek-en-slider");
           var but = document.getElementById("button_lower");
-          const h = document.getElementById("grafiek_upper");
+          var h = document.getElementById("grafiek_upper");
           var download = document.getElementsByClassName("bk bk-btn bk-btn-success")[0];
           but.classList.toggle("fa-angle-double-up");
           but.classList.toggle("fa-angle-double-down");
@@ -53,20 +53,7 @@
             zoekgraf.style.display = "block";
             h.style.height = "60.5vh";
             download.style.backgroundColor = "#3681C1";
-            download.style.borderColor = "#495568";	
-          
-			  var xs = document.querySelectorAll(".bk.time-figure");
-			  // Declare i and qty for "for" loop
-			  console.log(xs.length);	
-			  var i, qty = xs.length;
-			    console.log("hello");		
-				// Use "for" loop to iterate through NodeList
-				for (i = 0; i < qty; i++) {
-				// If this div.image at index [i] is "none"...
-				
-				  xs[i].style.minHeight = "400px";
-				console.log(xs[i]);	
-			  }			
+            download.style.borderColor = "#495568";				
           } else {
             zoekgraf.style.display = "none";
             h.style.height = "78vh";

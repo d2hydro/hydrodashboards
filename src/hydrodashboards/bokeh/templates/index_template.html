@@ -1,4 +1,5 @@
 
+
 {% extends base %}
 
 {% block preamble %}
@@ -26,6 +27,8 @@
 	<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 
     <script type="text/javascript">
+	
+
         $(document).ready(function () {
             $('#sidebarCollapse').on('click', function () {
                 $('#sidebar').toggleClass('active');
@@ -35,8 +38,9 @@
                 AnimationUtils.onResizePage();
             });
         });
+		
 
-        function myFunction() {
+        function scale_graph() {
           var but_leg = document.getElementById("button_leg_bar");
           var maplayer_icon=document.getElementById("maplayer_icon");
           var map_opt = document.getElementById("map_opt");
@@ -45,14 +49,14 @@
           var but = document.getElementById("button_lower");
           var h = document.getElementById("grafiek_upper");
           var download = document.getElementsByClassName("bk bk-btn bk-btn-success")[0];
-         
+
           but.classList.toggle("fa-angle-double-up");
           but.classList.toggle("fa-angle-double-down");
           if (zoekgraf.style.display === "none") {
             zoekgraf.style.display = "block";
             h.style.height = "60.5vh";
             download.style.backgroundColor = "#3681C1";
-            download.style.borderColor = "#495568";
+            download.style.borderColor = "#495568";				
           } else {
             zoekgraf.style.display = "none";
             h.style.height = "78vh";
@@ -62,6 +66,7 @@
           
           AnimationUtils.dispatchResizeEvent();
         }
+	
         function popMapLegend() {
           var but_leg = document.getElementById("button_leg_bar");
           var maplayer_icon=document.getElementById("maplayer_icon");
@@ -70,27 +75,31 @@
         if (map_opt.style.display == "none") {
             map_opt.style.position = "fixed";
             map_opt.style.display = "block";
+			
           } else {
             map_opt.style.display = "none";
             dummy.style.display= "block";
           }
           }
-		  let ctrlKey = false;
+		let ctrlKey = false;
 		   const keyDown = () => {
-  document.addEventListener('keydown', function (e) {
+        document.addEventListener('keydown', function (e) {
 		if (e.key == "Control") {
 		ctrlKey = true
-  }});
-};
+		}});
+		};
 		   const keyUp = () => {
         document.addEventListener('keyup', function (e) {
 		if (e.key == "Control") {
 		ctrlKey = false
-  }});
-};
-keyDown();
-keyUp();
+		}});
+		};
+	keyDown();
+	keyUp();
+	
+
     </script>
+	
 
 {% endblock %}
 
@@ -113,16 +122,20 @@ keyUp();
 
 
                 {{ embed(roots.search_period) }}
-			</div>
-			<div class="row" id="update_download">  			
-				<div class="col-9">
-					{{ embed(roots.update_graph) }}
-				</div>	
-				<div class="col-2">
-					{{ embed(roots.download_time_series)}}
-				</div>	
-			</div>					
+                <div class="update-wrapper" id="update_download">  			
+                    <div class="update">
+
+                        {{ embed(roots.update_graph) }}
+                    </div>	
+                    <div class="download">
+                        {{ embed(roots.download_time_series)}}
+                    </div>	
+                </div>
+			</div>				
         </nav>
+		
+		
+
         <!-- Page Content Holder -->
         <div id="content">
         
@@ -176,13 +189,13 @@ keyUp();
                         <div class="row"style="margin-left:0px;margin-right:0px" > 
                             <div class="col-12" id="grafiek_upper">
                                 {{ embed(roots.time_figure) }}
-                            </div>  
+                            </div> 
 							
 /thresholds/
-                        </div>
+                         </div>
                         <div class="row" id="zoekgrafiek-bar">    
                             <div class="col-4">
-                                <button    onclick="myFunction()" class="fas fa-angle-double-down" id="button_lower" aria-hidden="true"></button>
+                                <button onclick="scale_graph()" class="fas fa-angle-double-down" id="button_lower" aria-hidden="true"></button>
                                 <h6 style="color:#3681C1;" id="button-text">Zoekgrafiek</h6>
                             </div>    
                             <div class="col-5" style="margin-left:-240px;">
