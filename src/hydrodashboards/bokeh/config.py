@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 import json
 
+MAX_GRAPH_COUNT = 4
 
 @dataclass
 class Config:
@@ -15,6 +16,7 @@ class Config:
     exclude_pars: list = field(default_factory=list)
     fews_parallel: bool = False
     filter_colors: dict = field(default_factory=dict)
+    graph_count: int = 3
     headers_full_history: list = field(default_factory=list)
     history_period: int = 3650
     language: str = "dutch"
@@ -36,6 +38,7 @@ class Config:
                 )
             if not self.disclaimer_file.exists():
                 raise FileNotFoundError(f"{self.disclaimer_file} does not exist")
+        self.graph_count = min(self.graph_count, MAX_GRAPH_COUNT)
 
     @classmethod
     def from_json(cls, config_json: Path = Path("config.json")):

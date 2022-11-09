@@ -191,7 +191,7 @@ if (!button.disabled) {
 """
 
 
-def make_button(time_figure_layout, disclaimer_file=None):
+def make_button(time_figure_layout, disclaimer_file=None, graph_count=3):
     button = Button(label="", button_type="success", disabled=True)
 
     disclaimer_json = read_disclaimer(disclaimer_file)
@@ -208,7 +208,7 @@ def make_button(time_figure_layout, disclaimer_file=None):
     button.js_on_change(
         "disabled",
         CustomJS(
-            args=dict(button=button, figure=time_figure_layout, graph_count=7), code=scale_figs_js
+            args=dict(button=button, figure=time_figure_layout, graph_count=graph_count), code=scale_figs_js
         ),
     )
 

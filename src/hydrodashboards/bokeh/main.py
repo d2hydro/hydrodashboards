@@ -580,9 +580,6 @@ search_time_series = Select(
 )
 search_time_series.on_change("value", update_on_search_time_series_value)
 
-# Search download search time series widget
-# download_search_time_series = download_widget.make_button(source=search_source)
-
 # View period widget
 view_period = view_period_widget.make_view_period(data.periods)
 view_period.on_change("value", update_on_view_period_value)
@@ -644,7 +641,7 @@ curdoc().add_root(time_figure_layout)
 
 
 download_time_series = download_widget.make_button(
-    time_figure_layout=time_figure_layout, disclaimer_file=config.disclaimer_file
+    time_figure_layout=time_figure_layout, disclaimer_file=config.disclaimer_file, graph_count=config.graph_count
 )
 curdoc().add_root(
     column(

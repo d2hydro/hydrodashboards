@@ -282,7 +282,7 @@ def top_fig(
         "undo",
         "redo",
         "reset",
-        "save",
+#        "save",
         time_hover,
     ]
 

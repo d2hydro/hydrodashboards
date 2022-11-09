@@ -13,7 +13,7 @@ from typing import Union
 
 VIRTUAL_ENV = Path(sys.executable).parent.as_posix()
 HYDRODASHBOARDS_DIR = Path(hydrodashboards.__file__).parent
-CONFIG_FILE = Path(hydrodashboards.__file__).parent.joinpath("bokeh", "config.py")
+CONFIG_FILE = Path(hydrodashboards.__file__).parent.joinpath("bokeh", "config.json")
 VERSION = hydrodashboards.__version__
 
 cmd_activate =r"""rem setting environment to python installation
@@ -21,7 +21,6 @@ SET VIRTUAL_ENV={virtual_env}
 SET PATH=%VIRTUAL_ENV%;%VIRTUAL_ENV%\Library\mingw-w64\bin;%VIRTUAL_ENV%\Library\usr\bin;%VIRTUAL_ENV%\Library\bin;%VIRTUAL_ENV%\Scripts;%VIRTUAL_ENV%\bin;%PATH%
 SET PROJ_LIB=%VIRTUAL_ENV%\Library\share\proj
 """
-        
 
 def main():
     args = get_args()
@@ -142,16 +141,16 @@ def bokeh(
         template_css.read_text()
         .replace("/bokeh/", f"/{app_dir.name}/")
         .replace(
-            ".map_opt",
+            "/*.map_opt*/",
             map_opt.format(
                 map_options_height=map_options_height,
                 map_options_left=map_options_left,
                 map_options_width=map_options_width,
             ),
         )
-        .replace(
-            ".bk.filter_checkboxgroup", checkbox_filters(config.filter_css_heights)
-        )
+#        .replace(
+#            ".bk.filter_checkboxgroup", checkbox_filters(config.filter_css_heights)
+#        )
     )
 
     icons_dir = static_dir / "icons"
