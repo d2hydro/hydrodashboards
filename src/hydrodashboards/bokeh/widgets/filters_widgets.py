@@ -1,6 +1,6 @@
-from bokeh.models.widgets import CheckboxGroup, Div
+from bokeh.models.widgets import CheckboxGroup, Div, TextInput, Button
 from bokeh.models import CustomJS
-from bokeh.layouts import column
+from bokeh.layouts import column, row
 from typing import List
 
 SIZING_MODE = "stretch_width"
@@ -96,16 +96,20 @@ def set_filter_values(filters, filter_ids, thematic_view, data_filters):
             i.active = [idx for idx, j in enumerate(i.options) if j[0] in filter_ids]
 
 
-def finish_filter(filter, css_class_num=1):
-    div = Div(
-        text=filter.name, sizing_mode="stretch_width", css_classes=["filter_title"]
-    )
-    filter = [div, filter]
+def finish_filter(filter, reset_button=False, search_input=False):
+    header = [Div(
+        text=filter.name, sizing_mode="stretch_width"
+    )]
+    if search_input:
+        header += [TextInput(sizing_mode="stretch_width", css_classes=["filter_search"])]
+    if reset_button:
+        header += [Button(sizing_mode="stretch_width", css_classes=["filter_reset_button"])]
+    filter = [row(header, css_classes=["filter_title"]), filter]
     return filter
 
 
-def finish_filters(filters, thematic_view=False):
-    filters = [finish_filter(i) for i in filters]
+def finish_filters(filters, thematic_view=False, reset_button=False, search_input=False):
+    filters = [finish_filter(i, reset_button, search_input) for i in filters]
     filters = [i for j in filters for i in j]
     filters_layout = column(filters, name="filters", sizing_mode="stretch_width")
 

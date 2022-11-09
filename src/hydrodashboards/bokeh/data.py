@@ -22,6 +22,7 @@ from hydrodashboards import __version__
 from bokeh.palettes import Category20_20
 from datetime import datetime
 import itertools
+from operator import itemgetter
 import pandas as pd
 
 FEWS_BUGS = dict(qualifier_ids=True)
@@ -414,7 +415,7 @@ class Data:
 
             # add locations and parameters to list
             all_locations = list(set(all_locations + locations))
-            all_parameters = list(set(all_parameters + parameters))
+            all_parameters = sorted(list(set(all_parameters + parameters)), key=itemgetter(1))
 
         # update locations and parameter filter data
         self.locations.update_from_options(all_locations)

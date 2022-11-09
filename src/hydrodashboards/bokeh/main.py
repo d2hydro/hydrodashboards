@@ -605,16 +605,16 @@ curdoc().add_root(
 
 filters_widgets.add_css_classes(filters, locations, parameters)
 filters_layout = filters_widgets.finish_filters(
-    filters, thematic_view=config.thematic_view
+    filters, thematic_view=config.thematic_view, reset_button=True
 )
 curdoc().add_root(filters_layout)
 
-locations_layout = filters_widgets.finish_filter(locations)
+locations_layout = filters_widgets.finish_filter(locations, search_input=True ,reset_button=True)
 curdoc().add_root(
     column(locations_layout, name="locations", sizing_mode="stretch_width")
 )
 
-parameters_layout = filters_widgets.finish_filter(parameters)
+parameters_layout = filters_widgets.finish_filter(parameters, search_input=True ,reset_button=True)
 curdoc().add_root(
     column(parameters_layout, name="parameters", sizing_mode="stretch_width")
 )

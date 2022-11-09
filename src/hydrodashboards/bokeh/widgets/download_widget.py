@@ -3,10 +3,10 @@ from bokeh.models import CustomJS
 import json
 
 
-def read_disclaimer(disclaimer_file):
+def read_disclaimer(disclaimer_file, encoding="utf-8"):
     if disclaimer_file is not None:
         disclaimer_json = json.dumps(
-            [[i] for i in disclaimer_file.read_text().split("\n")]
+            [[i] for i in disclaimer_file.read_text(encoding=encoding).split("\n")]
         )
     else:
         disclaimer_json = json.dumps(
