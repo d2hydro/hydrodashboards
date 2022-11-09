@@ -118,6 +118,6 @@ def finish_filters(filters, thematic_view=False, reset_button=False, search_inpu
 
 def add_css_classes(filters, locations, parameters):
     class_num = 1
-    for i in filters + [locations] + [parameters]:
+    for i in filters + [locations, parameters]:
         i.css_classes = [f"filter_checkboxgroup_{class_num}"]
         class_num += 1
