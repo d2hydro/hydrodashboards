@@ -8,7 +8,7 @@ body {
     background: #fafafa;
    height:100%;
 }
-
+/*.map_opt*/
 .bk-root {
     font-family: 'Poppins', sans-serif;
     font-size: 0.80em;
@@ -16,9 +16,6 @@ body {
     line-height: 1.7em;
 }
 
-.bk.filter_checkboxgroup
-option.bk{
-}
 @keyframes spinner {
   to {transform: rotate(360deg);}
 }
@@ -371,10 +368,7 @@ input[type=checkbox]{
 .bk.search_period .bk.bk-input-group label[class=bk]{display: inline-block; min-width: 130px; min-height: 25px;background-color:#282F3A;color:white;margin-top:10px;padding:4px;box-shadow: 5px 10px 20px #495568 inset;
     border-radius:2px	
 }
-    
-.map_opt .bk-root .bk .bk .bk .bk.bk-input-group label[class=bk] input[type=checkbox]{
-    accent-color: lightgrey;	  
-}
+   
   
 .map_opt .bk-root .bk .bk .bk .bk.bk-input-group label[class=bk] input[type=radio]{
     accent-color: lightgrey;	
@@ -503,23 +497,6 @@ width: 100%;
 }
 
 
-.map_opt
-
-
-{
-  display:block;
-  position: fixed;
-  background: white;
-  width: 165px;
-  top: calc(100% - 434px);
-  left: calc(100% - 185px);
-  background-color: white;
-  padding: 2px;
-  border: 1px solid #F1F2F3;
-  border-radius:6px;
-  box-shadow: rgba(0, 0, 0, 0.2) 0px 20px 30px;
-}
-
 
 .app_status
 {
@@ -533,11 +510,6 @@ width: 100%;
     top:96%;
 
 }
-
-
-
-
-
 
 
 #threshold{
