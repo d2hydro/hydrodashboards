@@ -349,8 +349,9 @@ input[type=checkbox]{
 .bk.search_period .bk.bk-input-group label[class=bk]{display: inline-block; min-width: 130px; min-height: 25px;background-color:#282F3A;color:white;margin-top:10px;padding:4px;box-shadow: 5px 10px 20px #495568 inset;
     border-radius:2px	
 }
-   
-  
+ .map_opt .bk-root .bk .bk .bk .bk.bk-input-group label[class=bk] input[type=checkbox]{
+ accent-color: lightgrey; } 
+
 .map_opt .bk-root .bk .bk .bk .bk.bk-input-group label[class=bk] input[type=radio]{
     accent-color: lightgrey;	
 }
