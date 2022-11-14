@@ -36,15 +36,18 @@ body {
     font-weight: 320;
     line-height: 1.7em;
 }
+
+.bk-root .bk-btn{
+	padding: 0px 0px !important
+}
 @keyframes spinner {
   to {transform: rotate(360deg);}
 }
 
 .bk.download_spinner{    
- display:flex;  
+  display:flex;  
   opacity: 1;
   transition: opacity linear 0.1s;  
-
   visibility: hidden;  
 }
 .bk.download_spinner:after {
@@ -68,20 +71,18 @@ color: blue;
 }
 
 .bk.bk-btn.bk-btn-success{
- background-color:#282F3A;
+ background-color:#F16996;
  background-image: url(/bokeh/static/icons/download.png);
  background-repeat: no-repeat;
  background-position: center;
  color: white;
  display:inline-block;
-  float: left;
+ float: left;
  display:flex;
- align-items: left;
  border-width:0px;
  height: 30px;
- min-width:40px;
- 
- 
+ min-width:32px;
+ width:32px;
 }
 
 @keyframes spinner {
@@ -119,31 +120,30 @@ color: blue;
 }
 .bk.bk-btn.bk-btn-primary{
 	background: #F16996;
-	border:1px solid black;
-	display:flex;
-	border-color:#495568;
+	border:0px solid black;
 	height: 30px;
-	width:180px;
-	margin-left:0px;
-    margin-right:1px;
+	width: 180px;	
+	min-height:30px;
 	position: inline-block;
 	bottom:auto;
+	left:40px!important;
+	align-items:center !important;
 }
 #save_grafiek{
-background-color:#282F3A;
-background-image: url(/bokeh/static/icons/save.png);
-background-repeat: no-repeat;
- background-position: center;
- display:flex;
- align-items: left;
- border-width:0px;
- border-radius:6px;
- height: 30px;
- min-width:40px;
- position: inline-block;
- bottom:auto;
- margin-left:1px;
- margin-top: 10px;
+	background-color:#F16996;
+	background-image: url(/bokeh/static/icons/save.png);
+	background-repeat: no-repeat;
+	background-position: center;
+	display:flex;
+	align-items: left;
+	border-width:0px;
+	border-radius:6px;
+	height: 30px;
+	min-width:32px;
+	width:32px;
+	position: inline-block;
+	bottom:auto;
+	margin-top: 10px;
 }
 .bk.bk-input{
 	padding: 2px;
@@ -228,7 +228,7 @@ input[type=checkbox]{
 }
 
 #sidebar {
-   min-width: 310px;
+    min-width: 310px;
     max-width: 310px;
 	background: #3A4453;
     height:100vh;
@@ -271,20 +271,20 @@ input[type=checkbox]{
 }
 
 #sidebar > .sidebar-bokeh > .bk-root:first-child {
-    min-height: 250px;
+    min-height: 150px;
     flex-grow: 2;
-    max-height: 400px;
+    max-height: 300px;
     flex-basis: 0;
 }
 
 #sidebar > .sidebar-bokeh > .bk-root:nth-child(2) {
-    min-height: 180px;
+    min-height: 150px;
     flex-grow: 1;
     flex-basis: 0;
 }
 
 #sidebar > .sidebar-bokeh > .bk-root:nth-child(3) {
-    min-height: 180px;
+    min-height: 150px;
     flex-grow: 1;
     flex-basis: 0;
 }
@@ -330,10 +330,11 @@ input[type=checkbox]{
 }
 
 #sidebar > .sidebar-bokeh > .update-wrapper > .update {
-    flex: 0 0 68%;
-    max-width: 68%;
+    flex: 0 0 65%;
+    max-width: 65%;
     margin-top: 6px;
     height: 40px;
+	margin-right:2px;
 }
 
 #sidebar > .sidebar-bokeh > .update-wrapper > .update > .bk-root > .bk { 
@@ -349,12 +350,12 @@ input[type=checkbox]{
 }
 
 #sidebar > .sidebar-bokeh > .update-wrapper > .download {
-    flex: 0 0 16.6666667%;
-    max-width: 16.6666667%;
+    flex: 0 0 14%;
+    max-width: 14%;
 }
 #sidebar > .sidebar-bokeh > .update-wrapper > .save {
-    flex: 0 0 16.6666667%;
-    max-width: 16.6666667%;
+    flex: 0 0 14%;
+    max-width: 14%;
 }
 
 
@@ -376,7 +377,7 @@ input[type=checkbox]{
     flex-direction: row;
     justify-content: flex-start;	
     min-width: 274px; 
-    max-height: 25px;
+    max-height: 30px;
     background-color:#282F3A;
     color:white;
     margin-top:10px;
@@ -388,45 +389,55 @@ input[type=checkbox]{
 #sidebar > .sidebar-bokeh > .bk-root >.bk > .bk.filter_title > .bk {
 	display: flex !important;
 	position: relative !important;
-    top:5px !important;	
+    top:5px ;	
 	flex: 0 0 30%!important;
     max-width: 30% !important;
-	left: 10px!important;
+	left: 12px!important;
 	padding-bottom:5px;
-
 }
 #sidebar > .sidebar-bokeh > .bk-root > .bk > .bk.filter_title > .bk.filter_reset_button{
 	display: flex !important;
-	position: relative !important;
-	flex: 0 0 8% !important;
-    max-width: 8% !important;	
+	position: relative !important;	
+	flex: 0 0 6% !important;
+    max-width: 6% !important;	
 	left: 0px !important;
-	top:0px !important;
 	margin-left: 0px!important;
+	top:2px !important;
 	
-
 }
 #sidebar > .sidebar-bokeh > .bk-root > .bk > .bk.filter_title > .bk.filter_search{
 	display: flex !important;
 	position: relative !important;
 	flex: 0 0 56% !important;
-    max-width: 56% !important;	
-	top: 0px !important;
+    max-width: 56% !important;		
 	color:#495568;
 	left: 18px!important;
+	top:3px!important;
 }	
 #sidebar > .sidebar-bokeh > .bk-root > .bk > .bk.filter_title > .bk.filter_search > .bk.bk-input-group > .bk.bk-input{
-	background-color:#282F3A;
-	box-shadow: 5px 10px 10px #495568 inset;
+	background-color:#495568;
 	max-height: 24px!important;
 	min-height: 24px!important;
-	border-color:black;
-	color: white;
+	border-color:#282F3A;
 	background-image: url(/bokeh/static/icons/search.png);
 	background-repeat: no-repeat;
 	background-position:left center;
-	padding-left: 16px;
+	padding-left: 24px;
+	color:white;
+	align-items: center;
 }
+
+#sidebar > .sidebar-bokeh > .bk-root > .bk > .bk.filter_title > .bk.filter_search > .bk.bk-input-group > .bk.bk-input:hover{
+	color:white;
+	box-shadow: 1px 1px 7px #6394C6 ;
+ 
+}
+
+#sidebar > .sidebar-bokeh > .bk-root > .bk > .bk.filter_title > .bk.filter_search > .bk.bk-input-group > .bk.bk-input:active{
+	color:white;
+  box-shadow: 1px 1px 7px #6394C6 ;
+}
+
 #sidebar > .sidebar-bokeh > .bk-root > .bk > .bk.filter_title > .bk.filter_search > .bk.bk-input-group {
 	position:absolute;
 	
@@ -437,21 +448,28 @@ input[type=checkbox]{
 }
 
 #sidebar > .sidebar-bokeh >  .bk-root >.bk > .bk.filter_title > .bk.filter_reset_button > .bk.bk-btn-group > .bk.bk-btn.bk-btn-default{
-
-	background-color:#282F3A;
-	
-	 position:absolute;
-     box-shadow: 2px 2px 2px #495568 inset;
+	 background-color:#282F3A;	 
 	 background-image: url(/bokeh/static/icons/refresh_filters.png);
 	 background-repeat: no-repeat; 
-	 height:22px;
-	 max-width:22px!important;
-	 color:blue;
-     border-radius:50px;
-	 border: 0 ;
+	 height:21px;
+	 max-width:21px!important;
+	 width:21px!important;
 	 background-position: center;
-	
+	 box-shadow: 1px 1px 4px #495568 inset;
+	 border:0;
+	 margin-left:4px;	
 }
+
+#sidebar > .sidebar-bokeh >  .bk-root >.bk > .bk.filter_title > .bk.filter_reset_button > .bk.bk-btn-group > .bk.bk-btn.bk-btn-default:hover {
+  box-shadow: -1px 1px 7px #6394C6 ;  
+}
+
+#sidebar > .sidebar-bokeh >  .bk-root >.bk > .bk.filter_title > .bk.filter_reset_button > .bk.bk-btn-group > .bk.bk-btn.bk-btn-default:active {
+  box-shadow: -1px 1px 7px #6394C6 ;
+
+}
+
+
 #sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_1,.bk.filter_checkboxgroup_2,.bk.filter_checkboxgroup_3,.bk.filter_checkboxgroup_4 {
     color: white; 
     overflow-y: auto;
@@ -462,19 +480,19 @@ input[type=checkbox]{
 
 #sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_1 {
     min-height: 80px;
-    height: calc(50% - 31px) !important;
+    height: calc(50% - 42px) !important;
 }
 #sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_2 {
-    min-height: 98px;
-    height: calc(50% - 31px) !important;
+    min-height: 80px;
+    height: calc(50% - 42px) !important;
 }
 #sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_3 {
-    min-height: 106px;
-    height: calc(100% - 31px) !important;
+    min-height: 80px;
+    height: calc(100% - 42px) !important;
 }
 #sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_4 {
-    min-height: 88px;
-    height: calc(100% - 31px) !important;
+    min-height: 80px;
+    height: calc(100% - 42px) !important;
 }
 
 #sidebar > .sidebar-bokeh > .bk-root .bk.bk.bk-input-group {
@@ -558,7 +576,8 @@ input[type=checkbox]{
  background-repeat: no-repeat;
  background-position: center;
  height: 30px;
- min-width:40px;
+ border: 0;
+ min-width:20px;
  margin-left:1px;		
 }
 
@@ -785,7 +804,7 @@ width: 100%;
 }
 
 .sidebar-bokeh ::-webkit-scrollbar-track{
-	background-color:#495568
+	background-color:#495568;
 	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
 	border-radius:4px;
 	
