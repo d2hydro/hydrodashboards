@@ -24,9 +24,9 @@
     <!-- Our Custom JS -->
     <script src="/bokeh/static/js/main.js"></script>
 	<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+	<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
     <script type="text/javascript">
-	
-
         $(document).ready(function () {
             $('#sidebarCollapse').on('click', function () {
                 $('#sidebar').toggleClass('active');
@@ -36,8 +36,6 @@
                 AnimationUtils.onResizePage();
             });
         });
-		
-
         function scale_graph() {
           var but_leg = document.getElementById("button_leg_bar");
           var maplayer_icon=document.getElementById("maplayer_icon");
@@ -71,8 +69,7 @@
           var kaart = document.getElementById("kaart");
         if (map_opt.style.display == "none") {
             map_opt.style.position = "fixed";
-            map_opt.style.display = "block";
-			
+            map_opt.style.display = "block";		
           } else {
             map_opt.style.display = "none";
             dummy.style.display= "block";
@@ -91,13 +88,17 @@
 		ctrlKey = false
 		}});
 		};
-	keyDown();
-	keyUp();
-	
-
+		keyDown();
+		keyUp();
+	 
+	function DownloadCanvasAsImage(){
+		html2canvas(document.getElementById("grafiek_upper")).then(canvas => {
+        canvas.toBlob(function(blob) {
+          window.saveAs(blob,'grafiek.jpg');
+        });
+		});
+		}	
     </script>
-	
-
 {% endblock %}
 
 {% block contents%} 
@@ -113,13 +114,16 @@
                 {{ embed(roots.locations) }}
                 {{ embed(roots.parameters) }}
                 {{ embed(roots.search_period) }}
-                <div class="update-wrapper" id="update_download">  			
-                    <div class="update">
+                <div class="update-wrapper" id="update_download"> 
+					<div class="update">
                         {{ embed(roots.update_graph) }}
-                    </div>	
-                    <div class="download">
+					</div>	
+					<div class="download">
                         {{ embed(roots.download_time_series)}}
-                    </div>	
+					</div>	
+					<div class="save">
+						<button onclick="DownloadCanvasAsImage()" id="save_grafiek" ></button>
+					</div>
                 </div>
 			</div>				
         </nav>
@@ -139,9 +143,7 @@
                     <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                         <i class="fas fa-align-justify"></i>
                      </button>
-                    <button onClick="window.location.reload();"style="border:none; height:22px;cursor:pointer;color:white; background: rgba(0,0,0,0);">
-                        <i style="font-size:19px;" ; class="fas fa-align-justify">&#xf01e;</i>
-                    </button>
+                    <button onClick="window.location.reload()"id="refresh_app"></button>
                     <button class="btn btn-dark"style="border:none;cursor:pointer; height:35px;background: rgba(0,0,0,0);color:white" type="button" onclick="window.open('https://d2hydro.github.io/hydrodashboards/manuals/user_nl/','_blank')">
                         <i class='fas fa-info-circle ' style="font-size: 24px;"></i>
                     </button>
@@ -161,12 +163,12 @@
             </nav>
             <div class="tab-content">
                 <div class="tab-pane fade show active row" id="kaart" role="tabpanel" aria- labelledby="kaart-tab" aria-expanded="false">
-                            <div class="col-12" id="kaart">
+                    <div class="col-12" id="kaart">
                                 {{ embed(roots.map_figure)}}
-                            </div>
-                            <div class="test" id ="button_leg_bar" >
+                    </div>
+                    <div class="test" id ="button_leg_bar" >
                                 <button onclick="popMapLegend()" class="maplayer_icon" id="maplayer_icon" aria-hidden="true"></button>
-                            </div>
+                     </div>
                             <div class="map_opt" id="map_opt">
                                  {{ embed(roots.map_options) }}
                             </div>    

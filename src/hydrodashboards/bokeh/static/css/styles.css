@@ -10,6 +10,9 @@ body {
 }
 
 /*.map_opt*/
+.bk.threshold{
+
+}
 
 .map_opt
 
@@ -115,15 +118,32 @@ color: blue;
 .bk.bk-btn.bk-btn-primary:hover:after{
 }
 .bk.bk-btn.bk-btn-primary{
-		background: #F16996;
+	background: #F16996;
 	border:1px solid black;
 	display:flex;
 	border-color:#495568;
 	height: 30px;
-	width:230px;
+	width:180px;
 	margin-left:0px;
+    margin-right:1px;
 	position: inline-block;
 	bottom:auto;
+}
+#save_grafiek{
+background-color:#282F3A;
+background-image: url(/bokeh/static/icons/save.png);
+background-repeat: no-repeat;
+ background-position: center;
+ display:flex;
+ align-items: left;
+ border-width:0px;
+ border-radius:6px;
+ height: 30px;
+ min-width:40px;
+ position: inline-block;
+ bottom:auto;
+ margin-left:1px;
+ margin-top: 10px;
 }
 .bk.bk-input{
 	padding: 2px;
@@ -310,8 +330,8 @@ input[type=checkbox]{
 }
 
 #sidebar > .sidebar-bokeh > .update-wrapper > .update {
-    flex: 0 0 75%;
-    max-width: 75%;
+    flex: 0 0 68%;
+    max-width: 68%;
     margin-top: 6px;
     height: 40px;
 }
@@ -332,6 +352,11 @@ input[type=checkbox]{
     flex: 0 0 16.6666667%;
     max-width: 16.6666667%;
 }
+#sidebar > .sidebar-bokeh > .update-wrapper > .save {
+    flex: 0 0 16.6666667%;
+    max-width: 16.6666667%;
+}
+
 
 #sidebar > .sidebar-bokeh > .update-wrapper > .download .bk-btn-group {
     margin-top: 5px;
@@ -346,12 +371,87 @@ input[type=checkbox]{
 }
 
 #sidebar > .sidebar-bokeh .bk.filter_title {
-    display: inline-block; min-width: 274px; max-height: 25px;background-color:#282F3A;color:white;
-    margin-top:10px;padding:4px;box-shadow: 5px 10px 20px #495568 inset;
+    display: flex !important;
+    position: relative !important;
+    flex-direction: row;
+    justify-content: flex-start;	
+    min-width: 274px; 
+    max-height: 25px;
+    background-color:#282F3A;
+    color:white;
+    margin-top:10px;
+    box-shadow: 5px 10px 20px #495568 inset;
     border-radius:2px;
     width: 100% !important;
 }
 
+#sidebar > .sidebar-bokeh > .bk-root >.bk > .bk.filter_title > .bk {
+	display: flex !important;
+	position: relative !important;
+    top:5px !important;	
+	flex: 0 0 30%!important;
+    max-width: 30% !important;
+	left: 10px!important;
+	padding-bottom:5px;
+
+}
+#sidebar > .sidebar-bokeh > .bk-root > .bk > .bk.filter_title > .bk.filter_reset_button{
+	display: flex !important;
+	position: relative !important;
+	flex: 0 0 8% !important;
+    max-width: 8% !important;	
+	left: 0px !important;
+	top:0px !important;
+	margin-left: 0px!important;
+	
+
+}
+#sidebar > .sidebar-bokeh > .bk-root > .bk > .bk.filter_title > .bk.filter_search{
+	display: flex !important;
+	position: relative !important;
+	flex: 0 0 56% !important;
+    max-width: 56% !important;	
+	top: 0px !important;
+	color:#495568;
+	left: 18px!important;
+}	
+#sidebar > .sidebar-bokeh > .bk-root > .bk > .bk.filter_title > .bk.filter_search > .bk.bk-input-group > .bk.bk-input{
+	background-color:#282F3A;
+	box-shadow: 5px 10px 10px #495568 inset;
+	max-height: 24px!important;
+	min-height: 24px!important;
+	border-color:black;
+	color: white;
+	background-image: url(/bokeh/static/icons/search.png);
+	background-repeat: no-repeat;
+	background-position:left center;
+	padding-left: 16px;
+}
+#sidebar > .sidebar-bokeh > .bk-root > .bk > .bk.filter_title > .bk.filter_search > .bk.bk-input-group {
+	position:absolute;
+	
+}
+
+#sidebar > .sidebar-bokeh >  .bk-root >.bk > .bk.filter_title > .bk.filter_reset_button > .bk.bk-btn-group{
+	position:absolute;
+}
+
+#sidebar > .sidebar-bokeh >  .bk-root >.bk > .bk.filter_title > .bk.filter_reset_button > .bk.bk-btn-group > .bk.bk-btn.bk-btn-default{
+
+	background-color:#282F3A;
+	
+	 position:absolute;
+     box-shadow: 2px 2px 2px #495568 inset;
+	 background-image: url(/bokeh/static/icons/refresh_filters.png);
+	 background-repeat: no-repeat; 
+	 height:22px;
+	 max-width:22px!important;
+	 color:blue;
+     border-radius:50px;
+	 border: 0 ;
+	 background-position: center;
+	
+}
 #sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_1,.bk.filter_checkboxgroup_2,.bk.filter_checkboxgroup_3,.bk.filter_checkboxgroup_4 {
     color: white; 
     overflow-y: auto;
@@ -452,6 +552,17 @@ input[type=checkbox]{
     margin: 5px auto;
 }
 
+#refresh_app{
+ background-color:#495568;
+ background-image: url(/bokeh/static/icons/refresh.png);
+ background-repeat: no-repeat;
+ background-position: center;
+ height: 30px;
+ min-width:40px;
+ margin-left:1px;		
+}
+
+
 #kaart-tab{
 	color:#0C0F2E;
 }
@@ -536,7 +647,7 @@ width: 100%;
 .bk.threshold{
 
 }
-.bk.bk-btn.bk-btn-default:hover:after{
+.bk.threshold > .bk.bk-btn-group >.bk.bk-btn.bk-btn-default:hover:after{
 	content:"Drempelhoogte";
 	margin-top:18px;
 	background-color: black;
@@ -544,7 +655,7 @@ width: 100%;
 	border-radius: 6px;
 	padding: 2px 5px;
 }
-.bk.bk-btn.bk-btn-default{
+.bk.threshold > .bk.bk-btn-group > .bk.bk-btn.bk-btn-default{
 	 display:flex;
 	 height:26px;
 	 width: 26px;
@@ -557,7 +668,7 @@ width: 100%;
 	 border-color: white;
 }
 
-.bk.bk-btn.bk-btn-default.bk-active{
+.bk.threshold > .bk.bk-btn-group > .bk.bk-btn.bk-btn-default.bk-active{
 	  background-image: url(/bokeh/static/icons/threshold.png);
 	  background-repeat: no-repeat;
 	  background-position:center 2px center;

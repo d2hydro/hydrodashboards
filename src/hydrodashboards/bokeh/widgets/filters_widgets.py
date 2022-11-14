@@ -101,7 +101,7 @@ def finish_filter(filter, reset_button=False, search_input=False):
         text=filter.name, sizing_mode="stretch_width"
     )]
     if reset_button:
-        header = [Button(sizing_mode="stretch_width", css_classes=["filter_reset_button"])] + header
+        header = [Button(label="",sizing_mode="stretch_width", css_classes=["filter_reset_button"])] + header
     if search_input:
         header += [TextInput(sizing_mode="stretch_width", css_classes=["filter_search"])]
     filter = [row(header, css_classes=["filter_title"]), filter]
