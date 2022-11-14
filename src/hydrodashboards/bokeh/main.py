@@ -123,6 +123,22 @@ def get_visible_sources(figs):
     return [i.data_source for i in renderers]
 
 
+def order_filter(bokeh_filter, filter_cls, active=None):
+    if active is None:
+        active = list(bokeh_filter.active)
+    ordered = False
+
+    if len(active) == 0:
+        filter_cls.order_options([])
+        bokeh_filter.labels = filter_cls.labels
+    elif not (max(active) == len(active) - 1):
+        ordered = True
+        filter_cls.order_options(active)
+        bokeh_filter.labels = filter_cls.labels
+        bokeh_filter.active = filter_cls.active
+    return ordered
+
+
 """
 All callbacks used in the app
 """
@@ -186,10 +202,24 @@ def update_on_locations_source_select(attr, old, new):
             locations_source.data["id"].index(i) for i in ids
         ]
     else:
-        data.locations.set_value(ids)
-        # update locations and data.locations value
+        options_ids = [i[0] for i in data.locations.options]
+        active = [options_ids.index(i) for i in ids]
 
-        locations.active = data.locations.active
+        if active:
+            order_filter(locations, data.locations, active=active)
+        else:
+            locations.active = []
+
+
+def update_location_options_on_search_input(attr, old, new):
+    if (len(old) >= 3) or (len(new) >= 3):
+        data.locations.limit_options_on_search_input(new)
+        locations.labels = data.locations.labels
+        locations_source.data.update(
+            data.locations.app_df.loc[[i[0] for i in data.locations.options]].reset_index().to_dict(
+                orient="list"
+                )
+            )
 
 
 def update_on_locations_selector(attr, old, new):
@@ -198,14 +228,17 @@ def update_on_locations_selector(attr, old, new):
 
     if len(new) > 10:
         setattr(locations, config.filter_selector, old)
-    else:
+
+    # order filter so selected come on top (will introduce a new callback)
+    filter_ordered = order_filter(locations, data.locations)
+
+    if not filter_ordered:
         # update datamodel
-        data.locations.set_active(new)
+        data.locations.set_active(locations.active)
         data.update_on_locations_select(data.locations.value)
 
         # update parameters options for (de)selected locations
-        parameters.labels = data.parameters.labels
-        parameters.active = data.parameters.active
+        order_filter(parameters, data.parameters, active=data.parameters.active)
 
         # update location source selected
         indices = [
@@ -219,18 +252,26 @@ def update_on_locations_selector(attr, old, new):
         # enable update_graph button
         enable_update_graph()
 
+def update_parameter_options_on_search_input(attr, old, new):
+    if (len(old) >= 3) or (len(new) >= 3):
+        data.parameters.limit_options_on_search_input(new)
+        parameters.labels = data.parameters.labels
 
 def update_on_parameters_selector(attrname, old, new):
     """Update when values in locations filter are selected"""
     logger.debug(inspect.stack()[0][3])
 
-    data.parameters.set_active(parameters.active)
+    # order filter so selected come on top (will introduce a new callback)
+    filter_ordered = order_filter(parameters, data.parameters)
 
-    # update app status
-    app_status.text = data.app_status(html_type=HTML_TYPE)
+    if not filter_ordered:
+        data.parameters.set_active(parameters.active)
 
-    # enable update_graph button
-    enable_update_graph()
+        # update app status
+        app_status.text = data.app_status(html_type=HTML_TYPE)
+
+        # enable update_graph button
+        enable_update_graph()
 
 
 def update_on_search_period_value(attrname, old, new):
@@ -609,12 +650,12 @@ filters_layout = filters_widgets.finish_filters(
 )
 curdoc().add_root(filters_layout)
 
-locations_layout = filters_widgets.finish_filter(locations, search_input=True ,reset_button=True)
+locations_layout = filters_widgets.finish_filter(locations, search_input=("value_input", update_location_options_on_search_input) ,reset_button=True)
 curdoc().add_root(
     column(locations_layout, name="locations", sizing_mode="stretch_width")
 )
 
-parameters_layout = filters_widgets.finish_filter(parameters, search_input=True ,reset_button=True)
+parameters_layout = filters_widgets.finish_filter(parameters, search_input=("value_input", update_parameter_options_on_search_input) ,reset_button=True)
 curdoc().add_root(
     column(parameters_layout, name="parameters", sizing_mode="stretch_width")
 )

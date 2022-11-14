@@ -6,6 +6,15 @@ filters[0].active = [0]
 # choose filter gemaal
 filters[1].active = [0]
 
+# choose 3rd location
+#locations.active = [3]
+
+# deselect location
+#locations.active = []
+
+# select on map
+locations_source.selected.indices = [43]
+
 
 def test_in_locations():
     locations.active = [i for i in range(10)]

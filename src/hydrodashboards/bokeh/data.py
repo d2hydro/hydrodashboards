@@ -450,6 +450,7 @@ class Data:
             self.parameters.options = self.parameters._options
 
         # clean parameter value to options
+        self.parameters.limit_options_on_search_input()
         self.parameters.clean_value()
 
     def update_time_series_search(self):

@@ -12,6 +12,8 @@ if (window.MenuEvents && typeof window.MenuEvents.onFiltersChanged === 'function
 }
 """
 
+reset_filter_active = "filter.active = []"
+
 
 def make_filter(data, on_change=[], filter_length=5) -> CheckboxGroup:
     """Return a Bokeh CheckboxGroup filter from data filter."""
@@ -96,19 +98,23 @@ def set_filter_values(filters, filter_ids, thematic_view, data_filters):
             i.active = [idx for idx, j in enumerate(i.options) if j[0] in filter_ids]
 
 
-def finish_filter(filter, reset_button=False, search_input=False):
+def finish_filter(filter, reset_button=False, search_input=None):
     header = [Div(
         text=filter.name, sizing_mode="stretch_width"
     )]
     if reset_button:
-        header = [Button(label="",sizing_mode="stretch_width", css_classes=["filter_reset_button"])] + header
-    if search_input:
-        header += [TextInput(sizing_mode="stretch_width", css_classes=["filter_search"])]
+        button = Button(label="", sizing_mode="stretch_width", css_classes=["filter_reset_button"])
+        button.js_on_click(CustomJS(code=reset_filter_active, args={"filter": filter}))
+        header = [button] + header
+    if search_input is not None:
+        text_input = TextInput(sizing_mode="stretch_width", css_classes=["filter_search"])
+        text_input.on_change(*search_input)
+        header += [text_input]
     filter = [row(header, css_classes=["filter_title"]), filter]
     return filter
 
 
-def finish_filters(filters, thematic_view=False, reset_button=False, search_input=False):
+def finish_filters(filters, thematic_view=False, reset_button=False, search_input=None):
     filters = [finish_filter(i, reset_button, search_input) for i in filters]
     filters = [i for j in filters for i in j]
     filters_layout = column(filters, name="filters", sizing_mode="stretch_width")
