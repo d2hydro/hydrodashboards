@@ -282,13 +282,13 @@ def top_fig(
         "undo",
         "redo",
         "reset",
-#        "save",
+        #        "save",
         time_hover,
     ]
 
     y_range = make_y_range(time_series)
     parameters = list(set([i.parameter_name for i in time_series]))
-    #y_axis_label = f"{parameter_group} [{time_series[0].units}]"
+    # y_axis_label = f"{parameter_group} [{time_series[0].units}]"
 
     time_fig = figure(
         tools=tools,
@@ -308,7 +308,7 @@ def top_fig(
     time_fig.title.align = "center"
 
     time_fig.xaxis.formatter = FuncTickFormatter(code=DT_JS_FORMAT.format("tick"))
-    time_fig.xaxis.visible = False
+    time_fig.xaxis.visible = True
     time_fig.yaxis[0].formatter = NumeralTickFormatter(format="0.00")
 
     # add lines to figure
@@ -378,7 +378,7 @@ def create_time_figures(
         top_fig(
             i,
             x_range,
-            y_axis_label = group_y_labels[i[0]],
+            y_axis_label=group_y_labels[i[0]],
             threshold_groups=threshold_groups,
             threshold_visible=threshold_visible,
             renderers_on_change=renderers_on_change,

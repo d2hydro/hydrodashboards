@@ -212,14 +212,23 @@ def update_on_locations_source_select(attr, old, new):
 
 
 def update_location_options_on_search_input(attr, old, new):
-    if (len(old) >= 3) or (len(new) >= 3):
+    if len(new) >= 3:
         data.locations.limit_options_on_search_input(new)
         locations.labels = data.locations.labels
         locations_source.data.update(
-            data.locations.app_df.loc[[i[0] for i in data.locations.options]].reset_index().to_dict(
-                orient="list"
-                )
-            )
+            data.locations.app_df.loc[[i[0] for i in data.locations.options]]
+            .reset_index()
+            .to_dict(orient="list")
+        )
+    elif len(old) >= 3:
+        options = data.locations._options
+        unselected_options = [
+            i
+            for i in data.locations._options
+            if i not in data.locations.selected_options
+        ]
+        data.locations.options = data.locations.selected_options + unselected_options
+        locations.labels = data.locations.labels
 
 
 def update_on_locations_selector(attr, old, new):
@@ -252,10 +261,12 @@ def update_on_locations_selector(attr, old, new):
         # enable update_graph button
         enable_update_graph()
 
+
 def update_parameter_options_on_search_input(attr, old, new):
     if (len(old) >= 3) or (len(new) >= 3):
         data.parameters.limit_options_on_search_input(new)
         parameters.labels = data.parameters.labels
+
 
 def update_on_parameters_selector(attrname, old, new):
     """Update when values in locations filter are selected"""
@@ -650,12 +661,20 @@ filters_layout = filters_widgets.finish_filters(
 )
 curdoc().add_root(filters_layout)
 
-locations_layout = filters_widgets.finish_filter(locations, search_input=("value_input", update_location_options_on_search_input) ,reset_button=True)
+search_input = ("value_input", update_location_options_on_search_input)
+
+locations_layout = filters_widgets.finish_filter(
+    locations, search_input=None, reset_button=True
+)
 curdoc().add_root(
     column(locations_layout, name="locations", sizing_mode="stretch_width")
 )
 
-parameters_layout = filters_widgets.finish_filter(parameters, search_input=("value_input", update_parameter_options_on_search_input) ,reset_button=True)
+
+search_input = ("value_input", update_parameter_options_on_search_input)
+parameters_layout = filters_widgets.finish_filter(
+    parameters, search_input=None, reset_button=True
+)
 curdoc().add_root(
     column(parameters_layout, name="parameters", sizing_mode="stretch_width")
 )
@@ -682,7 +701,9 @@ curdoc().add_root(time_figure_layout)
 
 
 download_time_series = download_widget.make_button(
-    time_figure_layout=time_figure_layout, disclaimer_file=config.disclaimer_file, graph_count=config.graph_count
+    time_figure_layout=time_figure_layout,
+    disclaimer_file=config.disclaimer_file,
+    graph_count=config.graph_count,
 )
 curdoc().add_root(
     column(

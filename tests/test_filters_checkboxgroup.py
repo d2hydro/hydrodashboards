@@ -57,8 +57,13 @@ def test_fysisch_chemisch():
     filters[0].active = [2]
     # choose meetlocaties
     filters[1].active = [0]
-    first_loc = data.locations.sets.data[
-        data.filters.thematic_filters[1].value[0]
-    ].iloc[0]
-    assert first_loc.line_color == "orange"
-    assert first_loc.fill_color == "black"
+    assert not data.locations.sets.data[data.filters.thematic_filters[1].value[0]].empty
+    filters[0].active = []
+
+
+def test_meteo_empty_set():
+    filters[0].active = [3]
+    filters[1].active = [0]
+    filter_value = data.filters.thematic_filters[1].value[0]
+    assert data.locations.sets.data[filter_value].empty
+    filters[0].active = []

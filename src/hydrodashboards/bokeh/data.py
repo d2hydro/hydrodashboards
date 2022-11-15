@@ -28,6 +28,7 @@ import pandas as pd
 FEWS_BUGS = dict(qualifier_ids=True)
 COLOR_CYCLE = itertools.cycle(Category20_20)
 
+
 def _get_propeties(filter_id, filter_name, filter_colors):
     if filter_id in filter_colors.keys():
         line = filter_colors[filter_id]["line"]
@@ -415,7 +416,9 @@ class Data:
 
             # add locations and parameters to list
             all_locations = list(set(all_locations + locations))
-            all_parameters = sorted(list(set(all_parameters + parameters)), key=itemgetter(1))
+            all_parameters = sorted(
+                list(set(all_parameters + parameters)), key=itemgetter(1)
+            )
 
         # update locations and parameter filter data
         self.locations.update_from_options(all_locations)

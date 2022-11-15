@@ -60,7 +60,7 @@ def test_selected_parameters():
         ],
     }
     args_parser(args)
-    assert parameters.active == [1, 5]
+    assert parameters.active == [0, 1]
     filters[0].active = []
     assert parameters.active == []
 

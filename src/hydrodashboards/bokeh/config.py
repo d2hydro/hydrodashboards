@@ -4,6 +4,7 @@ import json
 
 MAX_GRAPH_COUNT = 4
 
+
 @dataclass
 class Config:
     bounds: list
