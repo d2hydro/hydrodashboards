@@ -365,8 +365,8 @@ input[type=checkbox]{
 
 #sidebar > .sidebar-bokeh > .bk-root .bk.search_period .bk.bk-input-group label[class=bk]{
 	display: inline-block; 
-	min-width: 130px; 
-	min-height: 25px!important;
+	min-width: 131px; 
+	min-height: 30px!important;
 	background-color:#363F4D;
 	color:white;
 	margin-top:10px;
@@ -381,6 +381,18 @@ input[type=checkbox]{
 } 
 #sidebar > .sidebar-bokeh > .bk-root .bk.bk.bk-input-group {
     height: calc(100% - 6px);
+}
+.bk.bk-input.flatpickr-input{
+    color: white;
+	background-color:#495568;
+	min-width:129px;
+    padding: 6px;
+	max-height:30px;
+	min-height:30px;
+	border: 0px;
+	color: white;
+	border-bottom-left-radius:4px!important;	
+	border-bottom-right-radius:4px!important;
 }
 
 /*---------------------------------------------------------
@@ -657,10 +669,7 @@ width: 100%;
   box-shadow: rgba(0, 0, 0, 0.2) 0px 20px 30px;
 }
   
-.bk.bk-input.flatpickr-input{
-    color: white;background-color:#495568;min-width:130px;
-    padding: 6px;min-height:10px;border: 0px;color: white
-}
+
 
 #button_leg_bar {
   background-color: transparent;
