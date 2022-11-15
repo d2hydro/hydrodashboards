@@ -55,13 +55,13 @@
           if (zoekgraf.style.display === "none") {
             zoekgraf.style.display = "block";
             h.style.height = "60.5vh";
-            download.style.backgroundColor = "#3681C1";
-            download.style.borderColor = "#495568";				
+ <!--            download.style.backgroundColor = "#3681C1"; -->
+<!--            download.style.borderColor = "#495568";		-->		
           } else {
             zoekgraf.style.display = "none";
             h.style.height = "78vh";
-            download.style.backgroundColor = "white";
-            download.style.borderColor = "white";
+<!--            download.style.backgroundColor = "white";-->
+<!--            download.style.borderColor = "white";-->
           }
           
           AnimationUtils.dispatchResizeEvent();
@@ -130,6 +130,9 @@
                     <div class="download">
                         {{ embed(roots.download_time_series)}}
                     </div>	
+<div class="save">
+						<button onclick="DownloadCanvasAsImage()" id="save_grafiek" ></button>
+					</div>
                 </div>
 			</div>				
         </nav>
@@ -149,9 +152,7 @@
                     <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                         <i class="fas fa-align-justify"></i>
                      </button>
-                    <button onClick="window.location.reload();"style="border:none; height:22px;cursor:pointer;color:white; background: rgba(0,0,0,0);">
-                        <i style="font-size:19px;" ; class="fas fa-align-justify">&#xf01e;</i>
-                    </button>
+                      <button onClick="window.location.reload()"id="refresh_app"></button>
                     <button class="btn btn-dark"style="border:none;cursor:pointer; height:35px;background: rgba(0,0,0,0);color:white" type="button" onclick="window.open('https://d2hydro.github.io/hydrodashboards/manuals/user_nl/','_blank')">
                         <i class='fas fa-info-circle ' style="font-size: 24px;"></i>
                     </button>
@@ -194,11 +195,11 @@
 /thresholds/
                          </div>
                         <div class="row" id="zoekgrafiek-bar">    
-                            <div class="col-4">
-                                <button onclick="scale_graph()" class="fas fa-angle-double-down" id="button_lower" aria-hidden="true"></button>
+                          <div class="col-1">
+                       <!--         <button onclick="scale_graph()" class="fas fa-angle-double-down" id="button_lower" aria-hidden="true"></button> -->
                                 <h6 style="color:#3681C1;" id="button-text">Zoekgrafiek</h6>
                             </div>    
-                            <div class="col-5" style="margin-left:-240px;">
+                            <div class="col-8" >
                                 {{ embed(roots.select_search_time_series) }}
                             </div> 
                           

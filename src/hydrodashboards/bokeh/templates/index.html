@@ -91,13 +91,7 @@
 		keyDown();
 		keyUp();
 	 
-	function DownloadCanvasAsImage(){
-		html2canvas(document.getElementById("grafiek_upper")).then(canvas => {
-        canvas.toBlob(function(blob) {
-          window.saveAs(blob,'grafiek.jpg');
-        });
-		});
-		}	
+
     </script>
 {% endblock %}
 
