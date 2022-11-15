@@ -67,7 +67,9 @@ class Parameters(Filter):
             label_column = "parameter_group"
 
         def _label(parameter_group):
-            row = self._fews_parameters[self._fews_parameters["parameter_group"] == parameter_group].iloc[0]
+            row = self._fews_parameters[
+                self._fews_parameters["parameter_group"] == parameter_group
+            ].iloc[0]
 
             label = f"{row[label_column]} [{row.display_unit}]"
             if row.uses_datum:
@@ -75,7 +77,6 @@ class Parameters(Filter):
             return label
 
         return {i: _label(i) for i in parameter_groups}
-
 
     def options_from_headers_df(self, headers_df: pd.DataFrame):
         """

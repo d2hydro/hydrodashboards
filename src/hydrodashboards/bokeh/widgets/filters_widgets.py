@@ -99,15 +99,17 @@ def set_filter_values(filters, filter_ids, thematic_view, data_filters):
 
 
 def finish_filter(filter, reset_button=False, search_input=None):
-    header = [Div(
-        text=filter.name, sizing_mode="stretch_width"
-    )]
+    header = [Div(text=filter.name, sizing_mode="stretch_width")]
     if reset_button:
-        button = Button(label="", sizing_mode="stretch_width", css_classes=["filter_reset_button"])
+        button = Button(
+            label="", sizing_mode="stretch_width", css_classes=["filter_reset_button"]
+        )
         button.js_on_click(CustomJS(code=reset_filter_active, args={"filter": filter}))
         header = [button] + header
     if search_input is not None:
-        text_input = TextInput(sizing_mode="stretch_width", css_classes=["filter_search"])
+        text_input = TextInput(
+            sizing_mode="stretch_width", css_classes=["filter_search"]
+        )
         text_input.on_change(*search_input)
         header += [text_input]
     filter = [row(header, css_classes=["filter_title"]), filter]

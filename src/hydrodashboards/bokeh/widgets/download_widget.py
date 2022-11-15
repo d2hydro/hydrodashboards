@@ -208,7 +208,10 @@ def make_button(time_figure_layout, disclaimer_file=None, graph_count=3):
     button.js_on_change(
         "disabled",
         CustomJS(
-            args=dict(button=button, figure=time_figure_layout, graph_count=graph_count), code=scale_figs_js
+            args=dict(
+                button=button, figure=time_figure_layout, graph_count=graph_count
+            ),
+            code=scale_figs_js,
         ),
     )
 

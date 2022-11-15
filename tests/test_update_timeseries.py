@@ -36,13 +36,14 @@ def toggle_renderers_visibility(figs, visible=False):
             renderer.visible = visible
 
 
-def test_load_abelstok():
+def test_load_beeklandstuw():
     # choose theme oppervlaktewater
+    filters[0].active = []
     filters[0].active = [0]
-    # choose filter gemaal
+    # choose filter stuw
     filters[1].active = [1]
 
-    # choose location abelstok
+    # choose location beeklandstuw
     locations.active = [0]
 
     # choose debiet and waterhoogte
