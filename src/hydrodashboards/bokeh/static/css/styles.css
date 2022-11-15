@@ -46,7 +46,7 @@ a, a:hover, a:focus {
     transition: all 0.3s;
 }
 
- select.bk.bk-input {
+ .select.bk.bk-input {
     padding-right: 20px;
 }
 
@@ -75,7 +75,7 @@ a, a:hover, a:focus {
 	
 }
 .navbar-expand-lg {
-   background: #495568;
+   background: #363F4D;
    }
    
 a[data-toggle="collapse"] {
@@ -142,7 +142,7 @@ a[data-toggle="collapse"] {
     padding-right: 10px;
 	padding-left: 10px;
 	padding-top: 10px;
-    background: #495568;
+    background: #363F4D;
 	height:59px;
 	margin-bottom:0px;
 }
@@ -612,7 +612,7 @@ input[type=checkbox]{
     Refresh app and chart-graph tab
 ----------------------------------------------------- */
 #refresh_app{
- background-color:#495568;
+ background-color:#363F4D;
  background-image: url(/bokeh/static/icons/refresh.png);
  background-repeat: no-repeat;
  background-position: center;
