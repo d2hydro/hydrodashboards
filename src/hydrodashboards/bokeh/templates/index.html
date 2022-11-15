@@ -50,13 +50,13 @@
           if (zoekgraf.style.display === "none") {
             zoekgraf.style.display = "block";
             h.style.height = "60.5vh";
-            download.style.backgroundColor = "#3681C1";
-            download.style.borderColor = "#495568";				
+<!--            download.style.backgroundColor = "#3681C1"; -->
+<!--            download.style.borderColor = "#495568";		-->		
           } else {
             zoekgraf.style.display = "none";
             h.style.height = "78vh";
-            download.style.backgroundColor = "white";
-            download.style.borderColor = "white";
+<!--            download.style.backgroundColor = "white";-->
+<!--            download.style.borderColor = "white";-->
           }
           
           AnimationUtils.dispatchResizeEvent();
@@ -185,11 +185,11 @@
 							
                         </div>
                         <div class="row" id="zoekgrafiek-bar">    
-                            <div class="col-4">
-                                <button onclick="scale_graph()" class="fas fa-angle-double-down" id="button_lower" aria-hidden="true"></button>
+                            <div class="col-1">
+                       <!--         <button onclick="scale_graph()" class="fas fa-angle-double-down" id="button_lower" aria-hidden="true"></button> -->
                                 <h6 style="color:#3681C1;" id="button-text">Zoekgrafiek</h6>
                             </div>    
-                            <div class="col-5" style="margin-left:-240px;">
+                            <div class="col-8" >
                                 {{ embed(roots.select_search_time_series) }}
                             </div> 
                           
