@@ -28,7 +28,10 @@ def make_search_period(data, on_change):
     return row(start_date_picker, end_date_picker)
 
 
-def make_button(disclaimer_file=None, graph_count=3):
+def make_button(on_click=None):
     button = Button(label="", button_type="success", disabled=True)
+
+    if not on_click is None:
+        button.on_click(on_click)
 
     return button

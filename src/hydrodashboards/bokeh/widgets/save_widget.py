@@ -11,7 +11,7 @@ html2canvas(document.getElementById("grafiek_upper")).then(canvas => {
 """
 
 
-def make_button(disclaimer_file=None, graph_count=3):
+def make_button():
     button = Button(label="", button_type="success", disabled=True)
 
     button.js_on_click(

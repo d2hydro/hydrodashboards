@@ -326,6 +326,11 @@ def update_on_search_period_value(attrname, old, new):
     app_status.text = data.app_status(html_type=HTML_TYPE)
 
 
+def update_on_history_search_time_series():
+    """Get full history for search time series"""
+    logger.debug(inspect.stack()[0][3])
+
+
 def update_map_figure_background_control(attrname, old, new):
     """Update map_figure when background is selected"""
     logger.debug(inspect.stack()[0][3])
@@ -662,7 +667,9 @@ download_time_series = download_widget.make_button(
 save_time_series = save_widget.make_button()
 
 # set full history for search time_series
-history_search_time_series = search_period_widget.make_button()
+history_search_time_series = search_period_widget.make_button(
+    on_click=update_on_history_search_time_series
+    )
 
 """
 In this section we add all widgets to the curdoc
