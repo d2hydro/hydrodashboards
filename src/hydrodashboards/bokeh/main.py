@@ -14,14 +14,16 @@ except:
 import hydrodashboards.bokeh.sources as sources
 from hydrodashboards.bokeh.widgets import (
     download_widget,
-    time_figure_widget,
-    map_figure_widget,
     filters_widgets,
+    map_figure_widget,
     search_period_widget,
+    save_widget,
+    thresholds_widget,
+    time_figure_widget,
     update_graph_widget,
     view_period_widget,
-    thresholds_widget,
 )
+
 from bokeh.models.widgets import Div, Select
 from hydrodashboards.bokeh.log_utils import import_logger
 import inspect
@@ -625,6 +627,7 @@ view_x_range.on_change("end", update_on_view_x_range_change)
 view_x_range.on_change("start", update_on_view_x_range_change)
 
 time_figure = time_figure_widget.empty_fig()
+time_figure_layout = column(time_figure, name="time_figure", sizing_mode="stretch_both")
 
 # Search time series widget
 search_time_series = Select(
@@ -640,6 +643,22 @@ view_period.on_change("value_throttled", update_on_view_period_value_throttled)
 # Search time figure widget
 search_x_range = time_figure_widget.make_x_range(data.periods, graph="search_fig")
 search_time_figure = time_figure_widget.empty_fig()
+
+
+# all buttons
+
+#  download data
+download_time_series = download_widget.make_button(
+    time_figure_layout=time_figure_layout,
+    disclaimer_file=config.disclaimer_file,
+    graph_count=config.graph_count,
+)
+
+#  save picture
+save_time_series = save_widget.make_button()
+
+# set full history for search time_series
+history_search_time_series = search_period_widget.make_button()
 
 """
 In this section we add all widgets to the curdoc
@@ -685,6 +704,18 @@ curdoc().add_root(
     column(update_graph, name="update_graph", sizing_mode="stretch_width")
 )
 
+curdoc().add_root(
+    column(
+        download_time_series, name="download_time_series", sizing_mode="stretch_width"
+    )
+)
+
+curdoc().add_root(
+    column(
+        save_time_series, name="save_time_series", sizing_mode="stretch_width"
+    )
+)
+
 # map-figure layout
 curdoc().add_root(column(map_figure, name="map_figure", sizing_mode="stretch_both"))
 curdoc().add_root(column(map_options, name="map_options", sizing_mode="stretch_both"))
@@ -696,39 +727,22 @@ if config.thresholds:
         column(thresholds_button, name="thresholds_button", sizing_mode="stretch_both")
     )
 
-time_figure_layout = column(time_figure, name="time_figure", sizing_mode="stretch_both")
 curdoc().add_root(time_figure_layout)
 
 
-download_time_series = download_widget.make_button(
-    time_figure_layout=time_figure_layout,
-    disclaimer_file=config.disclaimer_file,
-    graph_count=config.graph_count,
-)
+# search time-figure layout
 curdoc().add_root(
     column(
-        download_time_series, name="download_time_series", sizing_mode="stretch_width"
+        history_search_time_series, name="history_search_time_series", sizing_mode="stretch_width"
     )
 )
 
-curdoc().add_root(
-    column(
-        download_time_series, name="save_time_series", sizing_mode="stretch_width"
-    )
-)
-
-curdoc().add_root(
-    column(
-        download_time_series, name="history_search_time_series", sizing_mode="stretch_width"
-    )
-)
-
-# search tim-figure layout
 curdoc().add_root(
     column(
         search_time_series, name="select_search_time_series", sizing_mode="stretch_both"
     )
 )
+
 curdoc().add_root(column(view_period, name="view_period", sizing_mode="stretch_both"))
 search_time_figure_layout = column(
     search_time_figure, name="search_time_figure", sizing_mode="stretch_both"

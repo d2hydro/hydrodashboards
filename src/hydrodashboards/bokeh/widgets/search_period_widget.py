@@ -1,4 +1,4 @@
-from bokeh.models.widgets import DatePicker
+from bokeh.models.widgets import DatePicker, Button
 from bokeh.layouts import row
 
 
@@ -26,3 +26,9 @@ def make_search_period(data, on_change):
         end_date_picker.on_change(*i)
 
     return row(start_date_picker, end_date_picker)
+
+
+def make_button(disclaimer_file=None, graph_count=3):
+    button = Button(label="", button_type="success", disabled=True)
+
+    return button
