@@ -717,6 +717,12 @@ curdoc().add_root(
     )
 )
 
+curdoc().add_root(
+    column(
+        download_time_series, name="history_search_time_series", sizing_mode="stretch_width"
+    )
+)
+
 # search tim-figure layout
 curdoc().add_root(
     column(
