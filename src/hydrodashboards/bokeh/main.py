@@ -673,7 +673,7 @@ curdoc().add_root(
 
 search_input = ("value_input", update_parameter_options_on_search_input)
 parameters_layout = filters_widgets.finish_filter(
-    parameters, search_input=None, reset_button=True
+    parameters, search_input=search_input, reset_button=True
 )
 curdoc().add_root(
     column(parameters_layout, name="parameters", sizing_mode="stretch_width")
@@ -708,6 +708,12 @@ download_time_series = download_widget.make_button(
 curdoc().add_root(
     column(
         download_time_series, name="download_time_series", sizing_mode="stretch_width"
+    )
+)
+
+curdoc().add_root(
+    column(
+        download_time_series, name="save_time_series", sizing_mode="stretch_width"
     )
 )
 
