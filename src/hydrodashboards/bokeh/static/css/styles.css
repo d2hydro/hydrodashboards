@@ -417,18 +417,19 @@ input[type=checkbox]{
     flex-direction: row;
     justify-content: space-between;
     height: 40px;
+	margin-top:10px;
 }
 
 #sidebar > .sidebar-bokeh > .update-wrapper > .update {
     flex: 0 0 65%;
     max-width: 65%;
-    margin-top: 6px;
+
     height: 30px;
 	margin-right:2px;
 }
 
 #sidebar > .sidebar-bokeh > .update-wrapper > .update > .bk-root > .bk { 
-    height: 40px !important;
+    height: 30px !important;
 }
 
 #sidebar > .sidebar-bokeh > .update-wrapper > .update > .bk-root > .bk > .bk { 
@@ -444,12 +445,9 @@ input[type=checkbox]{
     flex: 0 0 14%;
     max-width: 14%;
 }
-#sidebar > .sidebar-bokeh > .update-wrapper > .download .bk-btn-group {
-    margin-top: 5px;
-}
 
 #sidebar > .sidebar-bokeh > .update-wrapper > .download > .bk-root > .bk { 
-    height: 40px !important;
+    height: 30px !important;
 }
 
 #sidebar > .sidebar-bokeh > .update-wrapper > .download > .bk-root > .bk > .bk { 
@@ -499,14 +497,14 @@ input[type=checkbox]{
 	background-image: url(/bokeh/static/icons/save.png);
 	background-repeat: no-repeat;
 	background-position: center;
+	color: white;
+	position:inline-block;
+	float: left;
 	display:flex;
-	position: inline-block;
-	align-items: left;
 	border-width:0px;
-	border-radius:6px;
 	height: 30px;
-	min-width:32px;
-	width:32px;
+    min-width:32px;
+	width:32px;	
 }
 
 /*-----------------------------------------------------------
@@ -622,14 +620,14 @@ input[type=checkbox]{
     Refresh app and chart-graph tab
 ----------------------------------------------------- */
 #refresh_app{
- background-color:#363F4D;
- background-image: url(/bokeh/static/icons/refresh.png);
- background-repeat: no-repeat;
- background-position: center;
- height: 30px;
- border: 0;
- min-width:20px;
- margin-left:1px;		
+	background-color:#363F4D;
+	background-image: url(/bokeh/static/icons/refresh.png);
+	background-repeat: no-repeat;
+	background-position: center;
+	height: 30px;
+	border: 0;
+	min-width:20px;
+	margin-left:1px;		
 }
 
 #kaart-tab{
@@ -643,10 +641,10 @@ input[type=checkbox]{
   Map
 ----------------------------------------------------- */
 .tab-content{
-width: 100%;
- height: calc(100% - 60px);
- display:block;
- position: absolute;
+	width: 100%;
+	height: calc(100% - 60px);
+	display:block;
+	position: absolute;
 }
 #kaart{
 	position:absolute; 
@@ -678,8 +676,6 @@ width: 100%;
   border-radius:6px;
   box-shadow: rgba(0, 0, 0, 0.2) 0px 20px 30px;
 }
-  
-
 
 #button_leg_bar {
   background-color: transparent;
@@ -757,7 +753,7 @@ width: 100%;
 	padding: 2px 5px;
 }
 .bk.threshold > .bk.bk-btn-group > .bk.bk-btn.bk-btn-default{
-	 display:flex;
+	display:flex;
 	 height:26px;
 	 width: 26px;
 	 margin-left: 60px;
@@ -797,34 +793,45 @@ width: 100%;
 	overflow-x:hidden;
 }
 #zoekgrafiek-bar{
-  background: #F8F9FA;
-  border: 2px solid white;
-  margin-left:0px;
-  margin-right:0px;
-  margin-top:3vh;
+	background: #F8F9FA;
+	border: 2px solid white;
+	margin-left:0px;
+	margin-right:0px;
+	margin-top:3vh;
+	display:flex!important;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+ /*flex: 0 0 14%;
+    max-width: 14%;*/
+#history > .bk-root > .bk > .bk{
+	left:40px!important
 }
 
 #history > .bk-root > .bk > .bk > .bk.bk-btn-group > .bk.bk-btn.bk-btn-success{
-   background-color:#F16996;
-	background-image: url(/bokeh/static/icons/download.png);
+	background-color:#F16996;
+	background-image: url(/bokeh/static/icons/history.png);
 	background-repeat: no-repeat;
 	background-position: center;
 	color: white;
 	position:inline-block;
 	float: left;
 	display:flex;
+	box-shadow: 0!important;
 	border-width:0px;
 	height: 30px!important;
     min-width:32px;
+	max-width:32px;
 	width:32px;	
 }
 
 #zoekgrafiek-en-slider {
-  position: relative;
-  margin-left:0px;
-  margin-right:0px;
-  display:block;
-  background-color: white;
+	position: relative;
+	margin-left:0px;
+	margin-right:0px;
+	display:block;
+	background-color: white;
 }
 
 #grafiek-lower{
