@@ -429,7 +429,7 @@ input[type=checkbox]{
 }
 
 #sidebar > .sidebar-bokeh > .update-wrapper > .update > .bk-root > .bk { 
-    height: 40px !important;
+    height: 30px !important;
 }
 
 #sidebar > .sidebar-bokeh > .update-wrapper > .update > .bk-root > .bk > .bk { 
