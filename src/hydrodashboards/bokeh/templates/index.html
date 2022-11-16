@@ -187,15 +187,12 @@
 							
                         </div>
                         <div class="row" id="zoekgrafiek-bar">    
-                            <div class="col-1">
-                       <!--         <button onclick="scale_graph()" class="fas fa-angle-double-down" id="button_lower" aria-hidden="true"></button> -->
-                                <h6 style="color:#3681C1;" id="button-text">Zoekgrafiek</h6>
-								
-                            </div>    
-                            <div class="col-5">
+                            <div class="col-6">
                                 {{ embed(roots.select_search_time_series) }}							 
                             </div> 
-							<div class="col-2" id="history">
+							<div class="col-5">
+							</div> 
+							<div class="col-1" id="history">
 								{{ embed(roots.history_search_time_series) }}
 						   </div>
                         </div>
