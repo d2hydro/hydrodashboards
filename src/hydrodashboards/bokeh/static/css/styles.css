@@ -423,7 +423,7 @@ input[type=checkbox]{
     flex: 0 0 65%;
     max-width: 65%;
     margin-top: 6px;
-    height: 40px;
+    height: 30px;
 	margin-right:2px;
 }
 
@@ -438,6 +438,7 @@ input[type=checkbox]{
 #sidebar > .sidebar-bokeh > .update-wrapper > .download {
     flex: 0 0 14%;
     max-width: 14%;
+	
 }
 #sidebar > .sidebar-bokeh > .update-wrapper > .save {
     flex: 0 0 14%;
@@ -481,7 +482,7 @@ input[type=checkbox]{
 	background-repeat: no-repeat;
 	background-position: center;
 	color: white;
-	display:inline-block;
+	position:inline-block;
 	float: left;
 	display:flex;
 	border-width:0px;
@@ -493,21 +494,19 @@ input[type=checkbox]{
 /*---------------------------------------------------------
 	Save button styling
 -----------------------------------------------------------  */
-#save_grafiek{
+#sidebar > .sidebar-bokeh > .update-wrapper > .save > .bk-root > .bk > .bk >.bk.bk-btn-group > .bk.bk-btn.bk-btn-success{
 	background-color:#F16996;
 	background-image: url(/bokeh/static/icons/save.png);
 	background-repeat: no-repeat;
 	background-position: center;
 	display:flex;
+	position: inline-block;
 	align-items: left;
 	border-width:0px;
 	border-radius:6px;
 	height: 30px;
 	min-width:32px;
 	width:32px;
-	position: inline-block;
-	bottom:auto;
-	margin-top: 10px;
 }
 
 /*-----------------------------------------------------------
