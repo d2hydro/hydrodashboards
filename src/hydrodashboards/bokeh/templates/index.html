@@ -187,14 +187,12 @@
 							
                         </div>
                         <div class="row" id="zoekgrafiek-bar">    
-                            <div class="col-6">
+							<div class="col-1" id="history">
+									{{ embed(roots.history_search_time_series) }}
+							</div>
+							<div class="col-6">
                                 {{ embed(roots.select_search_time_series) }}							 
                             </div> 
-							<div class="col-5">
-							</div> 
-							<div class="col-1" id="history">
-								{{ embed(roots.history_search_time_series) }}
-						   </div>
                         </div>
                         <div class="row" id="zoekgrafiek-en-slider" >
                             <div class="col-12"id="grafiek-slider">

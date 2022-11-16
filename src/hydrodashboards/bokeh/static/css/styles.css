@@ -499,7 +499,7 @@ input[type=checkbox]{
 	background-position: center;
 	color: white;
 	position:inline-block;
-	float: left;
+	float:left;
 	display:flex;
 	border-width:0px;
 	height: 30px;
@@ -799,14 +799,6 @@ input[type=checkbox]{
 	margin-right:0px;
 	margin-top:3vh;
 	display:flex!important;
-    flex-direction: row;
-    justify-content: space-between;
-}
-
- /*flex: 0 0 14%;
-    max-width: 14%;*/
-#history > .bk-root > .bk > .bk{
-	left:40px!important
 }
 
 #history > .bk-root > .bk > .bk > .bk.bk-btn-group > .bk.bk-btn.bk-btn-success{
