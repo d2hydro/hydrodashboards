@@ -9,6 +9,7 @@ from bokeh.models import (
     NumeralTickFormatter,
     CustomJSHover,
 )
+from bokeh.models.glyphs import Line, Patch
 from bokeh.palettes import Category10_10 as palette
 import pandas as pd
 from itertools import cycle
@@ -137,24 +138,27 @@ def make_y_range(time_series, bounds=None):
     return y_range
 
 
-def update_time_series_y_ranges(time_figure_layout, fit_y_axis=False):
-    def _get_sources(renderers):
-        return [
-            i.data_source
-            for i in renderers
-            if (len(i.data_source.data["value"]) > 0) & (i.name != THRESHOLD_NAME)
-        ]
+def _get_sources(renderers):
+    return [
+        i.data_source
+        for i in renderers
+        if (len(i.data_source.data["value"]) > 0) & (i.name != THRESHOLD_NAME)
+    ]
 
-    def _ends(renderers):
-        sources = _get_sources(renderers)
-        if len(sources) > 0:
-            start = min((i.data["value"].min() for i in sources))
-            end = max((i.data["value"].max() for i in sources))
-            if start > end - DELTA:
-                start, end = move_delta_ends(start, end)
-        else:
-            start, end = range_defaults()
-        return start, end
+
+def _ends(renderers):
+    sources = _get_sources(renderers)
+    if len(sources) > 0:
+        start = min((i.data["value"].min() for i in sources))
+        end = max((i.data["value"].max() for i in sources))
+        if start > end - DELTA:
+            start, end = move_delta_ends(start, end)
+    else:
+        start, end = range_defaults()
+    return start, end
+
+
+def update_time_series_y_ranges(time_figure_layout, fit_y_axis=False):
 
     def update_range(fig, fit_y_axis=False):
         ends = _ends(fig.renderers)
@@ -167,6 +171,15 @@ def update_time_series_y_ranges(time_figure_layout, fit_y_axis=False):
         for fig in top_figs:
             update_range(fig, fit_y_axis=fit_y_axis)
 
+
+def update_search_time_series_y_ranges(search_time_figure_layout):
+    if valid_layout(search_time_figure_layout):
+        fig = search_time_figure_layout.children[0]
+
+        # update y-axis
+        renderers = [i for i in fig.renderers if type(i.glyph) == Line]
+        ends = _ends(renderers)
+        fig.y_range.start, fig.y_range.end = ends
 
 def toggle_threshold_graphs(time_figure_layout, active):
     if valid_layout(time_figure_layout):

@@ -67,7 +67,7 @@
     "WDB_ML_KNMI",
     "WDB_GW_GMW"
   ],
-  "history_period": 100000,
+  "history_period": 10000,
   "language": "dutch",
   "log_dir": "./logs",
   "map_overlays": {

@@ -69,7 +69,7 @@ class Data:
 
         # time properties
         self.now = now
-        self.periods = Periods(self.now, history_period=self.config.history_period)
+        self.periods = Periods(self.now, history_period_days=self.config.history_period)
 
         # data-classes linked to dashboard
         self.filters = Filters.from_fews(
@@ -114,6 +114,8 @@ class Data:
             period = self.periods.view_period
         elif selection == "search":
             period = self.periods.search_period
+        elif selection == "full_history":
+            period = self.periods.history_period
         return int(period.total_seconds() * 1000 / width)
 
     def _get_fews_ts(self, indices=None, request_type="headers"):
@@ -167,6 +169,16 @@ class Data:
                 time_series
             )
             start_time = self.periods.search_start
+            end_time = self.periods.search_end
+        elif request_type == "full_history":
+            parallel = self.config.fews_parallel
+            thinning = self._get_thinning(selection="full_history")
+            (
+                location_ids,
+                parameter_ids,
+                qualifier_ids,
+            ) = self._fews_locators_from_indices(indices)
+            start_time = self.periods.history_start
             end_time = self.periods.search_end
 
         result = self._fews_api.get_time_series(
@@ -455,6 +467,29 @@ class Data:
         # clean parameter value to options
         self.parameters.limit_options_on_search_input()
         self.parameters.clean_value()
+
+    def update_history_time_series_search(self, search_time_series_label):
+
+        search_time_series = self.time_series_sets.get_by_label(
+            search_time_series_label
+            )
+        time_series_index = (search_time_series.location, search_time_series.parameter)
+
+        fews_ts_set = self._get_fews_ts(
+            indices=[time_series_index],
+            request_type="full_history"
+            )
+
+        self._update_ts_from_fews_ts_set(fews_ts_set)
+
+    def get_history_period(self, search_time_series_label):
+        search_time_series = self.time_series_sets.get_by_label(
+            search_time_series_label
+            ) 
+        if search_time_series.df.empty:
+            return (self.periods.search_start, self.periods.search_end) 
+        else:
+            return (search_time_series.data_start, search_time_series.data_end)
 
     def update_time_series_search(self):
         if self.time_series_sets.select_incomplete():

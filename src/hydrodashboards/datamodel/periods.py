@@ -12,7 +12,7 @@ class Periods:
     now: datetime
     default_search_period: int = 365
     default_view_period: int = 21
-    history_period: int = 3652
+    history_period_days: int = 3652
     view_start: datetime = None
     view_end: datetime = None
     history_start: datetime = None
@@ -27,7 +27,7 @@ class Periods:
         self.view_end = self.now
         self.view_start = self.now - timedelta(self.default_view_period)
         self.search_end = next_day
-        self.history_start = next_day - timedelta(self.history_period)
+        self.history_start = next_day - timedelta(self.history_period_days)
         self.search_start = next_day - timedelta(self.default_search_period)
         self.search_start_title = search_period_start_title[self.language]
         self.search_end_title = search_period_end_title[self.language]
@@ -39,6 +39,10 @@ class Periods:
     @property
     def search_period(self):
         return self.search_end - self.search_start
+
+    @property
+    def history_period(self):
+        return self.search_end - self.history_start
 
     @property
     def search_dates(self):
