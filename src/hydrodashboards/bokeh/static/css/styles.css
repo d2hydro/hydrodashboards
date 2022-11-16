@@ -662,7 +662,7 @@ input[type=checkbox]{
 .map_opt .bk-root .bk .bk .bk .bk.bk-input-group label[class=bk] input[type=radio]{
     accent-color: lightgrey;	
 }
-.map_opt
+/*.map_opt
 {
   display:block;
   position: fixed;
@@ -675,7 +675,7 @@ input[type=checkbox]{
   border: 1px solid #F1F2F3;
   border-radius:6px;
   box-shadow: rgba(0, 0, 0, 0.2) 0px 20px 30px;
-}
+}*/
 
 #button_leg_bar {
   background-color: transparent;
