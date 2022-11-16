@@ -1,16 +1,16 @@
 map_opt = """
 .map_opt
 {{
-  display:block;
-  position: fixed;
-  background: white;
-  width: {map_options_width}px;
-  top: calc(100% - {map_options_height}px);
-  left: calc(100% - {map_options_left}px);
-  background-color: white;
-  padding: 2px;
-  border: 1px solid #F1F2F3;
-  border-radius:4px;
+  display:block!important;
+  position: fixed!important;
+  background: white!important;
+  width: {map_options_width}px!important;
+  top: calc(100% - {map_options_height}px)!important;
+  left: calc(100% - {map_options_left}px)!important;
+  background-color: white!important;
+  padding: 2px!important;
+  border: 1px solid #F1F2F3!important;
+  border-radius:4px!important;
 }}
 """
 

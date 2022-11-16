@@ -25,7 +25,7 @@ colors = cycle(palette)
 SIZING_MODE = "stretch_both"
 DELTA = 0.1
 THRESHOLD_NAME = "threshold"
-SEARCH_PATCH_COLOR = "grey"
+SEARCH_PATCH_COLOR = "lightgrey"
 
 DT_JS_FORMAT = r"""
     var date = new Date({});
