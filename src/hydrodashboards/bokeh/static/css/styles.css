@@ -850,6 +850,14 @@ input[type=checkbox]{
 	background-color: white;	
 }
 
+.bk-root .noUi-connect {
+    background: lightgrey;
+}
+
+.bk-root .noUi-handle {
+    border: 1px solid #F16996;
+	background:#F16996;
+}
 #grafiek-lower > .bk-root > .bk {
     width: 100% !important;
 }
