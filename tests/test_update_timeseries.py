@@ -3,6 +3,9 @@ from hydrodashboards.bokeh.main import (
     parameters,
     locations,
     data,
+    search_time_series,
+    search_period,
+    search_source,
     start_time_series_loader,
     update_time_series_view,
     update_time_series_search,
@@ -14,8 +17,12 @@ from hydrodashboards.bokeh.main import (
     view_period,
     view_x_range,
     search_period,
+    search_time_figure_layout,
     convert_to_datetime,
+    update_on_history_search_time_series
 )
+
+from hydrodashboards.bokeh.widgets import search_period_widget, time_figure_widget
 import copy
 
 from datetime import timedelta
@@ -101,3 +108,10 @@ def test_update_view_period():
     search_start -= timedelta(days=5)
     search_period.children[0].value = search_start.strftime("%Y-%m-%d")
     assert data.periods.search_start == search_start
+
+# %%
+test_load_beeklandstuw()
+data.periods.search_start
+# %%
+update_on_history_search_time_series()
+

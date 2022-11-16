@@ -104,6 +104,13 @@ def update_time_series_sources():
         v["source"].data.update(_source.data)
 
 
+def update_search_time_series_source():
+    """Update search source assigned to search_fig"""
+    time_series = data.time_series_sets.get_by_label(search_time_series.value)
+    _source = sources.time_series_to_source(time_series)
+    search_source.data.update(_source.data)
+
+
 def view_x_range_as_datetime():
     """Get the view_x_range start and end as datetime."""
 
@@ -329,6 +336,19 @@ def update_on_search_period_value(attrname, old, new):
 def update_on_history_search_time_series():
     """Get full history for search time series"""
     logger.debug(inspect.stack()[0][3])
+
+    # get data for the full period
+    data.update_history_time_series_search(search_time_series.value)
+
+    # update search_source
+    update_search_time_series_source()
+
+    # update search_period
+    search_start, search_end = data.get_history_period(search_time_series.value)
+    search_period_widget.update_period(search_period, search_start, search_end)
+
+    # update search_time_figure y-range
+    time_figure_widget.update_search_time_series_y_ranges(search_time_figure_layout)
 
 
 def update_map_figure_background_control(attrname, old, new):

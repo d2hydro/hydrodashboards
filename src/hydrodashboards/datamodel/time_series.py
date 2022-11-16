@@ -34,6 +34,16 @@ class TimeSeries:
     def index(self):
         return (self.location, self.parameter)
 
+    @property
+    def data_start(self):
+        if not self.df.empty:
+            return pd.to_datetime(self.df.index.min())
+
+    @property
+    def data_end(self):
+        if not self.df.empty:
+            return pd.to_datetime(self.df.index.max())
+
     def within_period(self, period, selection="view"):
         within_period = False
         if selection == "view":
