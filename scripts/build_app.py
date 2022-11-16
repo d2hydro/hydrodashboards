@@ -111,7 +111,7 @@ def bokeh(
     templates_dir.mkdir()
 
     template_html = HYDRODASHBOARDS_DIR.joinpath(
-        "bokeh", "templates", "index_template.html"
+        "bokeh", "templates", "index.html"
     )
 
     html = template_html.read_text()
@@ -130,7 +130,7 @@ def bokeh(
     css_dir = static_dir / "css"
     css_dir.mkdir(parents=True)
     template_css = HYDRODASHBOARDS_DIR.joinpath(
-        "bokeh", "static", "css", "styles_template.css"
+        "bokeh", "static", "css", "styles.css"
     )
     styles_css = css_dir / "styles.css"
 
