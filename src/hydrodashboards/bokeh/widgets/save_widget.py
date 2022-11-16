@@ -2,7 +2,13 @@ from bokeh.models.widgets import Button
 from bokeh.models import CustomJS
 
 
-save_js = """console.log("save"")"""
+save_js = """
+html2canvas(document.getElementById("grafiek_upper")).then(canvas => {
+    canvas.toBlob(function(blob) {
+        window.saveAs(blob, 'grafiek.jpg');
+    });
+});
+"""
 
 
 def make_button(disclaimer_file=None, graph_count=3):
