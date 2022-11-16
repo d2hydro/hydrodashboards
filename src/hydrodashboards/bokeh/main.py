@@ -689,7 +689,7 @@ save_time_series = save_widget.make_button()
 # set full history for search time_series
 history_search_time_series = search_period_widget.make_button(
     on_click=update_on_history_search_time_series
-    )
+)
 
 """
 In this section we add all widgets to the curdoc
@@ -742,9 +742,7 @@ curdoc().add_root(
 )
 
 curdoc().add_root(
-    column(
-        save_time_series, name="save_time_series", sizing_mode="stretch_width"
-    )
+    column(save_time_series, name="save_time_series", sizing_mode="stretch_width")
 )
 
 # map-figure layout
@@ -764,7 +762,9 @@ curdoc().add_root(time_figure_layout)
 # search time-figure layout
 curdoc().add_root(
     column(
-        history_search_time_series, name="history_search_time_series", sizing_mode="stretch_width"
+        history_search_time_series,
+        name="history_search_time_series",
+        sizing_mode="stretch_width",
     )
 )
 

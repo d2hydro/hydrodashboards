@@ -1,28 +1,25 @@
 from hydrodashboards.bokeh.main import (
-    filters,
-    parameters,
-    locations,
+    convert_to_datetime,
     data,
-    search_time_series,
+    download_time_series,
+    filters,
+    get_visible_sources,
+    locations,
+    parameters,
     search_period,
-    search_source,
+    search_time_series,
     start_time_series_loader,
+    time_figure_layout,
+    toggle_download_button_on_sources,
+    update_on_history_search_time_series,
+    update_on_view_period_value_throttled,
     update_time_series_view,
     update_time_series_search,
-    time_figure_layout,
-    get_visible_sources,
-    toggle_download_button_on_sources,
-    download_time_series,
-    update_on_view_period_value_throttled,
     view_period,
     view_x_range,
-    search_period,
-    search_time_figure_layout,
-    convert_to_datetime,
-    update_on_history_search_time_series
 )
 
-from hydrodashboards.bokeh.widgets import search_period_widget, time_figure_widget
+# from hydrodashboards.bokeh.widgets import search_period_widget, time_figure_widget
 import copy
 
 from datetime import timedelta
@@ -109,9 +106,15 @@ def test_update_view_period():
     search_period.children[0].value = search_start.strftime("%Y-%m-%d")
     assert data.periods.search_start == search_start
 
-# %%
-test_load_beeklandstuw()
-data.periods.search_start
-# %%
-update_on_history_search_time_series()
 
+def test_update_history_search_time_series():
+    test_load_beeklandstuw()
+    ts_len = len(data.time_series_sets.get_by_label(search_time_series.value).df)
+    ts_start = data.get_history_period(search_time_series.value)[0]
+
+    update_on_history_search_time_series()
+
+    assert (
+        len(data.time_series_sets.get_by_label(search_time_series.value).df) != ts_len
+    )
+    assert data.get_history_period(search_time_series.value)[0] < ts_start

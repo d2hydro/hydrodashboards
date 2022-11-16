@@ -25,6 +25,7 @@ colors = cycle(palette)
 SIZING_MODE = "stretch_both"
 DELTA = 0.1
 THRESHOLD_NAME = "threshold"
+SEARCH_PATCH_COLOR = "grey"
 
 DT_JS_FORMAT = r"""
     var date = new Date({});
@@ -159,7 +160,6 @@ def _ends(renderers):
 
 
 def update_time_series_y_ranges(time_figure_layout, fit_y_axis=False):
-
     def update_range(fig, fit_y_axis=False):
         ends = _ends(fig.renderers)
         if fit_y_axis:
@@ -180,6 +180,7 @@ def update_search_time_series_y_ranges(search_time_figure_layout):
         renderers = [i for i in fig.renderers if type(i.glyph) == Line]
         ends = _ends(renderers)
         fig.y_range.start, fig.y_range.end = ends
+
 
 def toggle_threshold_graphs(time_figure_layout, active):
     if valid_layout(time_figure_layout):
@@ -238,6 +239,8 @@ def search_fig(
             source=view_period_patch_source(periods),
             alpha=0.5,
             line_width=2,
+            fill_color=SEARCH_PATCH_COLOR,
+            line_color=SEARCH_PATCH_COLOR
         )
         _add_line()
         search_time_figure_layout.children.append(time_fig)

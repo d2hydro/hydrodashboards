@@ -472,22 +472,21 @@ class Data:
 
         search_time_series = self.time_series_sets.get_by_label(
             search_time_series_label
-            )
+        )
         time_series_index = (search_time_series.location, search_time_series.parameter)
 
         fews_ts_set = self._get_fews_ts(
-            indices=[time_series_index],
-            request_type="full_history"
-            )
+            indices=[time_series_index], request_type="full_history"
+        )
 
         self._update_ts_from_fews_ts_set(fews_ts_set)
 
     def get_history_period(self, search_time_series_label):
         search_time_series = self.time_series_sets.get_by_label(
             search_time_series_label
-            ) 
+        )
         if search_time_series.df.empty:
-            return (self.periods.search_start, self.periods.search_end) 
+            return (self.periods.search_start, self.periods.search_end)
         else:
             return (search_time_series.data_start, search_time_series.data_end)
 
