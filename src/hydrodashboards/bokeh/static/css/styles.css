@@ -66,6 +66,9 @@ a, a:hover, a:focus {
     padding-right: 20px;
 }
 
+
+
+
 :root {
     accent-color: #F16996;
 }
@@ -821,6 +824,10 @@ input[type=checkbox]{
     min-width:32px;
 	max-width:32px;
 	width:32px;	
+}
+
+.bk-root select:not([multiple]).bk-input, .bk-root select:not([size]).bk-input {
+	padding-right: 20px!important;
 }
 
 #zoekgrafiek-en-slider {
