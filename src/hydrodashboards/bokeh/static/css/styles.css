@@ -2,8 +2,24 @@
 /* ---------------------------------------------------
    Overwrite map_opt by configuring app
 ----------------------------------------------------- */
+.map_opt{
+  display:block;
+  position: fixed;
+  background: white;
+  width: 165px;
+  top: calc(100% - 434px);
+  left: calc(100% - 185px);
+  background-color: white;
+  padding: 2px;
+  border: 1px solid #F1F2F3;
+  border-radius:6px;
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 20px 30px;
+}
 
 /*.map_opt*/
+
+
+
 .bk.threshold{
 }
 
@@ -184,7 +200,7 @@ a[data-toggle="collapse"] {
 }
 
 #sidebar > .sidebar-bokeh > .bk-root:nth-child(4) {
-    height: 77px;
+    height: 74px;
 }
 
 #sidebar > .sidebar-bokeh > .bk-root:nth-child(4) > .bk > .bk {
@@ -205,31 +221,31 @@ a[data-toggle="collapse"] {
 }
 
 #sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_1 {
-    min-height: 80px;
+    min-height: 78px;
     height: calc(50% - 42px) !important;
-	border-bottom-left-radius: 4px!important;
-    border-bottom-right-radius: 4px!important;
+	border-bottom-left-radius: 2px!important;
+    border-bottom-right-radius: 2px!important;
 	box-shadow: 0px 4px 8px #495568;
 }
 #sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_2 {
-    min-height: 80px;
+    min-height: 78px;
     height: calc(50% - 42px) !important;
-	border-bottom-left-radius: 4px!important;
-    border-bottom-right-radius: 4px!important;
+	border-bottom-left-radius: 2px!important;
+    border-bottom-right-radius: 2px!important;
     box-shadow: 0px 4px 8px #495568;
 }
 #sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_3 {
     min-height: 80px;
     height: calc(100% - 42px) !important;
-	border-bottom-left-radius: 4px!important;
-    border-bottom-right-radius: 4px!important;
+	border-bottom-left-radius: 2px!important;
+    border-bottom-right-radius: 2px!important;
 	box-shadow: 0px 4px 8px #495568;
 }
 #sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_4 {
     min-height: 80px;
     height: calc(100% - 42px) !important;
-	border-bottom-left-radius: 4px!important;
-    border-bottom-right-radius: 4px!important;
+	border-bottom-left-radius: 2px!important;
+    border-bottom-right-radius: 2px!important;
     box-shadow: 0px 4px 8px #495568;
   }
 /*---------------------------------------------------------
@@ -273,8 +289,8 @@ input[type=checkbox]{
     margin-top:10px;
 /*    box-shadow: 5px 10px 20px #495568 inset;*/
     box-shadow: 0px -4px 8px #495568;
-    border-top-left-radius: 4px!important;
-    border-top-right-radius: 4px!important;
+    border-top-left-radius: 2px!important;
+    border-top-right-radius: 2px!important;
     width: 100% !important;
 }
 #sidebar > .sidebar-bokeh > .bk-root >.bk > .bk.filter_title > .bk {
@@ -382,8 +398,8 @@ input[type=checkbox]{
 	color:white;
 	margin-top:10px;
 	padding:4px;
-	border-top-left-radius:4px;	
-	border-top-right-radius:4px;	
+	border-top-left-radius:2px;	
+	border-top-right-radius:2px;	
 /*	box-shadow: 5px 10px 20px #495568 inset;*/
 }
 .bk-root .bk-input {
@@ -402,8 +418,8 @@ input[type=checkbox]{
 	min-height:30px;
 	border: 0px;
 	color: white;
-	border-bottom-left-radius:4px!important;	
-	border-bottom-right-radius:4px!important;
+	border-bottom-left-radius:2px!important;	
+	border-bottom-right-radius:2px!important;
 }
 
 /*---------------------------------------------------------
@@ -642,16 +658,19 @@ input[type=checkbox]{
 ----------------------------------------------------- */
 .tab-content{
 	width: 100%;
-	height: calc(100% - 60px);
+	height: calc(100% - 70px);
 	display:block;
 	position: absolute;
 }
 #kaart{
 	position:absolute; 
-	width:101%;
+	width:100%;
 	height:100%;
-	display:block;
-	border: none;	
+	border-color:grey;
+	border-width: 1px;
+	display: block;
+    margin-left: auto;
+    margin-right: auto ;	
 }
 /* ---------------------------------------------------
   Map legend
@@ -662,20 +681,6 @@ input[type=checkbox]{
 .map_opt .bk-root .bk .bk .bk .bk.bk-input-group label[class=bk] input[type=radio]{
     accent-color: lightgrey;	
 }
-/*.map_opt
-{
-  display:block;
-  position: fixed;
-  background: white;
-  width: 165px;
-  top: calc(100% - 434px);
-  left: calc(100% - 185px);
-  background-color: white;
-  padding: 2px;
-  border: 1px solid #F1F2F3;
-  border-radius:6px;
-  box-shadow: rgba(0, 0, 0, 0.2) 0px 20px 30px;
-}*/
 
 #button_leg_bar {
   background-color: transparent;
@@ -728,7 +733,7 @@ input[type=checkbox]{
 	color: #3A4453;
 	white-space: nowrap ;
 	position:absolute;
-    top:96%;
+    top:97%;
 }
 
 /* ---------------------------------------------------
@@ -774,7 +779,7 @@ input[type=checkbox]{
 	  margin-left: 60px;
 	  height: 26px;
 	  text-align: center;
-	  border-radius:4px;
+	  border-radius:2px;
 	  background-color: #FE6F9E;
 	  -webkit-transition: 0.5s;
 	  -moz-transition: 0.5s;
@@ -788,7 +793,7 @@ input[type=checkbox]{
 #grafiek_upper {
     height: 60.5vh;	
 	background-color: white;
-	margin-top:1vh;
+	margin-top:2vh;
 	overflow-y:auto;
 	overflow-x:hidden;
 }
@@ -797,7 +802,7 @@ input[type=checkbox]{
 	border: 2px solid white;
 	margin-left:0px;
 	margin-right:0px;
-	margin-top:3vh;
+	margin-top:2vh;
 	display:flex!important;
 }
 
@@ -851,13 +856,19 @@ input[type=checkbox]{
 }
 
 .bk-root .noUi-connect {
-    background: lightgrey;
+    background: rgb(241,105,150);
 }
 
 .bk-root .noUi-handle {
     border: 1px solid #F16996;
 	background:#F16996;
 }
+
+.noUi-connect.noUi-draggable{
+	background:#F16996!important;
+}
+
+
 #grafiek-lower > .bk-root > .bk {
     width: 100% !important;
 }
@@ -913,15 +924,15 @@ input[type=checkbox]{
 .sidebar-bokeh ::-webkit-scrollbar {
 	width: 14px;
 	height:14px;
-	background-color: #424D5E;
+	background-color: #495568;
 }
 
 .sidebar-bokeh ::-webkit-scrollbar-thumb {
-	background-color: #3A4453;
+	background-color: #495568;
 	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
 }
 .sidebar-bokeh ::-webkit-scrollbar-thumb:hover {
-    background: black;
+    background: #F16996;
 }
 .sidebar-bokeh ::-webkit-scrollbar-corner{
 	background-color: #495568;	
@@ -935,7 +946,6 @@ input[type=checkbox]{
 }
 
 /* Buttons */
-
 ::-webkit-scrollbar-button:single-button {
   background-color: #68778B;
   display: block;
@@ -944,77 +954,80 @@ input[type=checkbox]{
 }
 
 /* Up */
-
 ::-webkit-scrollbar-button:single-button:vertical:decrement {
   height: 14px;
   width: 10px;
   -webkit-box-shadow: inset 0 0 4px rgba(0,0,0,0.5);
-  background-position: center 4px;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='black'><polygon points='50,00 0,50 100,50'/></svg>");
+  background-position: center;
+  background-image: url(/bokeh/static/icons/arrow_up.png);
 }
 
 
 ::-webkit-scrollbar-button:single-button:vertical:decrement:hover {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill=''lightblue''><polygon points='50,00 0,50 100,50'/></svg>");
+	background-image: url(/bokeh/static/icons/arrow_up.png);
+    background-color:rgb(241,105,150);
 }
 
 ::-webkit-scrollbar-button:single-button:vertical:decrement:active {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill=''lightblue''><polygon points='50,00 0,50 100,50'/></svg>");
+    background-image: url(/bokeh/static/icons/arrow_up.png);  
+	background-color:rgb(241,105,150);
 }
 
 /* Down */
-
 ::-webkit-scrollbar-button:single-button:vertical:increment {
   height: 14px;
   width: 10px;
   -webkit-box-shadow: inset 0 0 4px rgba(0,0,0,0.5);
-  background-position: center 2px;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='black'><polygon points='0,0 100,0 50,50'/></svg>");
+  background-position: center;
+  background-image: url(/bokeh/static/icons/arrow_down.png);
 }
 
 ::-webkit-scrollbar-button:single-button:vertical:increment:hover {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill=''lightblue''><polygon points='0,0 100,0 50,50'/></svg>");
+  background-image: url(/bokeh/static/icons/arrow_down.png);
+  background-color:rgb(241,105,150);
 }
 
 ::-webkit-scrollbar-button:single-button:vertical:increment:active {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill=''lightblue''><polygon points='0,0 100,0 50,50'/></svg>");
+  background-image: url(/bokeh/static/icons/arrow_down.png);
+  background-color:rgb(241,105,150);
 }
 
 /* Left */
-
 ::-webkit-scrollbar-button:single-button:horizontal:decrement {
-   height: 10px;
+  height: 10px;
   width: 14px;
   -webkit-box-shadow: inset 0 0 4px rgba(0,0,0,0.5);
-  background-position: 3px 3px;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='black'><polygon points='0,50 50,100 50,0'/></svg>");
+  background-position: center center;
+  background-image: url(/bokeh/static/icons/arrow_left.png);
 }
 
 ::-webkit-scrollbar-button:single-button:horizontal:decrement:hover {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill=''lightblue''><polygon points='0,50 50,100 50,0'/></svg>");
+  background-image: url(/bokeh/static/icons/arrow_left.png);
+  background-color:rgb(241,105,150);
 }
 
 ::-webkit-scrollbar-button:single-button:horizontal:decrement:active {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill=''lightblue''><polygon points='0,50 50,100 50,0'/></svg>");
+  background-image: url(/bokeh/static/icons/arrow_left.png);
+  background-color:rgb(241,105,150);
 }
 
-
 /* Right */
-
 ::-webkit-scrollbar-button:single-button:horizontal:increment {
   height: 10px;
   width: 14px;
   -webkit-box-shadow: inset 0 0 4px rgba(0,0,0,0.5);
-  background-position: 3px 2px;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='black'><polygon points='0,0 0,100 50,50'/></svg>");
+  background-position: center center;
+  background-image: url(/bokeh/static/icons/arrow_right.png);
 }
 
 ::-webkit-scrollbar-button:single-button:horizontal:increment:hover {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='lightblue'><polygon points='0,0 0,100 50,50'/></svg>");
+  background-image: url(/bokeh/static/icons/arrow_right.png);
+  background-color:rgb(241,105,150);
 }
 
 ::-webkit-scrollbar-button:single-button:horizontal:increment:active {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='lightblue'><polygon points='0,0 0,100 50,50'/></svg>");
+  background-image:: url(/bokeh/static/icons/arrow_right.png);
+  background-color:rgb(241,105,150);
 }
 
 /* ---------------------------------------------------
