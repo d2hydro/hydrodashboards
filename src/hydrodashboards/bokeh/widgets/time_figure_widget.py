@@ -240,7 +240,7 @@ def search_fig(
             alpha=0.5,
             line_width=2,
             fill_color=SEARCH_PATCH_COLOR,
-            line_color=SEARCH_PATCH_COLOR
+            line_color=SEARCH_PATCH_COLOR,
         )
         _add_line()
         search_time_figure_layout.children.append(time_fig)

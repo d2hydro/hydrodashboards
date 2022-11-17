@@ -181,11 +181,9 @@ def update_on_filter_selector(attrname, old, new):
     logger.debug(inspect.stack()[0][3])
 
     actives = filters_widgets.get_filters_actives(filters, config.thematic_view)
-
     data.update_on_filter_select(actives)
-
     locations.labels = data.locations.labels
-    locations.active = data.locations.active
+    # locations.active = data.locations.active
     parameters.labels = data.parameters.labels
     parameters.active = data.parameters.active
     # update source
@@ -199,6 +197,15 @@ def update_on_filter_selector(attrname, old, new):
     app_status.text = data.app_status(html_type=HTML_TYPE)
 
     logger.debug(f"{inspect.stack()[0][3]} finished")
+
+    if locations.active != data.locations.active:
+        curdoc().add_next_tick_callback(sync_locations_active_with_data)
+
+
+def sync_locations_active_with_data():
+    """Next tick callback to sync locations.active with data.locations.active."""
+    logger.debug(inspect.stack()[0][3])
+    locations.active = data.locations.active
 
 
 def update_on_locations_source_select(attr, old, new):

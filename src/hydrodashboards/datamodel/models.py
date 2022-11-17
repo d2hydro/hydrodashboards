@@ -63,6 +63,17 @@ class Filter:
         self.active = active
         self.value = [self.options[i][0] for i in active]
 
+    def set_options(self, options):
+        values = [i[0] for i in options]
+        value = [i for i in self.value if i in values]
+        selected_options = sorted(
+            [options[values.index(i)] for i in value], key=lambda x: x[1]
+        )
+        unselected_options = sorted(
+            [i for i in options if i not in selected_options], key=lambda x: x[1]
+        )
+        self.options = selected_options + unselected_options
+
     def clean_value(self):
         values = [i[0] for i in self.options]
         self.set_value([i for i in self.value if i in values])
@@ -70,6 +81,6 @@ class Filter:
     def update_from_options(self, options: List[tuple], limit_string=""):
         options.sort(key=lambda a: a[1])
         self._options = options
-        self.options = options
+        self.set_options(options)
         self.limit_options_on_search_input()
         self.clean_value()
