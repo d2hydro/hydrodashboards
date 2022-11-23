@@ -145,9 +145,6 @@ src/hydrodashboards/bokeh/bootstrap/*
 # test_data dir
 tests/data/*
 
-# issues dir
-issues/*
-
 # cache dir
 cache/*
 src/hydrodashboards/bokeh/static/css/styles.css
