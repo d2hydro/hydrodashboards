@@ -22,7 +22,8 @@ def find_indices(filter_cls, value):
     return [values.index(i) for i in value]
 
 # choose a theme by index
-filters[0].active = [0]
+theme_ids = ['WDB_OW']
+filters[0].active = find_indices(data.filters.thematic_filters[0], theme_ids)
 # choose filter by filter_ids
 filter_ids = ['WDB_OW_KGM']
 filters[1].active = find_indices(data.filters.thematic_filters[1], filter_ids)
