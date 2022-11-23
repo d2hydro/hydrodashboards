@@ -538,7 +538,6 @@ input[type=checkbox]{
 }
 .bk.loader_time_fig:after {
   content: '';
-  box-sizing: border-box;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -564,7 +563,6 @@ input[type=checkbox]{
 }
 .bk.download_spinner:after {
   content: '';
-  box-sizing: border-box;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -645,8 +643,11 @@ input[type=checkbox]{
 	background-position: center;
 	height: 30px;
 	border: 0;
-	min-width:20px;
-	margin-left:1px;		
+	outline: none;
+	border-color:#363F4D;
+	min-width:26px;
+	margin-left:1px;	
+    cursor: pointer;	
 }
 
 #kaart-tab{
