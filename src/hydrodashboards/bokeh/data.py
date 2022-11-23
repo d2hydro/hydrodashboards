@@ -34,7 +34,6 @@ def _get_propeties(filter_id, filter_name, filter_colors):
         line = filter_colors[filter_id]["line"]
         fill = filter_colors[filter_id]["fill"]
     else:
-        print("select_default")
         line = next(COLOR_CYCLE)
         fill = next(COLOR_CYCLE)
 

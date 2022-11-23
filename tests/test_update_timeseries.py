@@ -142,3 +142,23 @@ def test_empty_timeseries():
     assert not data.time_series_sets.any_active
     assert EMPTY_WARNING in search_time_figure_layout.children[0].text
     assert EMPTY_WARNING in time_figure_layout.children[0].text
+
+    filters[0].active = []
+
+
+def test_duplicate_locations():
+    # choose FC
+    filters[0].active = [2]
+    # choose two filters with duplicate locations
+    filters[1].active = [1, 2]
+
+    # choose location
+    locations.active = [7]
+
+    # choose first parameter
+    parameters.active = [0]
+
+    # load data
+    load_time_series()
+
+    assert not data.locations.app_df.index.has_duplicates

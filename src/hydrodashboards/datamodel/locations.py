@@ -200,8 +200,37 @@ class Locations(Filter):
             None.
 
         """
+
+        def _defaults():
+            return dict(
+                line_color="black",
+                fill_color="grey",
+                nonselection_line_color="black",
+                non_slection_fill_color="grey",
+                label="meerdere filters",
+            )
+
+        def _flatten_series(series):
+            result = series.iloc[0].to_dict()
+            result["parameter_ids"] = list(
+                set(itertools.chain(*series["parameter_ids"]))
+            )
+            for k, v in _defaults().items():
+                result[k] = v
+            return result
+
         if filter_ids:
             sets = [self.sets.data[i] for i in filter_ids if self.sets.exists(i)]
-            self.app_df = pd.concat(sets)
+            df = pd.concat(sets)
+            if df.index.has_duplicates:
+                duplicates = [i for i in df.index if list(df.index).count(i) > 1]
+                new_df = pd.DataFrame.from_dict(
+                    {i: _flatten_series(df.loc[i]) for i in duplicates}, orient="index"
+                )
+                new_df.index.name = "id"
+                df = df.loc[[i for i in df.index if i not in duplicates]]
+                df = pd.concat([df, new_df])
+            self.app_df = df
+
         else:
             self.app_df = pd.DataFrame(MAP_LOCATIONS).set_index("id")
