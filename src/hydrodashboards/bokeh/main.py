@@ -472,6 +472,7 @@ def update_time_series_search():
 
     # updating the figure_layout y_ranges
     time_figure_widget.update_time_series_y_ranges(time_figure_layout)
+    time_figure_widget.update_search_time_series_y_ranges(search_time_figure_layout)
 
     # enable view_timeseries_controls
     toggle_view_time_series_controls(value=False)
