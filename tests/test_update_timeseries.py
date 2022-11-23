@@ -7,6 +7,7 @@ from hydrodashboards.bokeh.main import (
     locations,
     parameters,
     search_period,
+    search_time_figure_layout,
     search_time_series,
     start_time_series_loader,
     time_figure_layout,
@@ -26,6 +27,7 @@ from datetime import timedelta
 
 NBR_SERIES = 4
 LIM_EVENTS = 1000000
+EMPTY_WARNING = "no time series for selected locations and parameters"
 
 
 def load_time_series():
@@ -118,3 +120,25 @@ def test_update_history_search_time_series():
         len(data.time_series_sets.get_by_label(search_time_series.value).df) != ts_len
     )
     assert data.get_history_period(search_time_series.value)[0] < ts_start
+
+
+def test_empty_timeseries():
+    # choose theme oppervlaktewater
+    filters[0].active = [0]
+    # choose filter gemaal
+    filters[1].active = [4]
+
+    # choose location abelstok
+
+    id = locations.labels.index("Triplum (KGM071)")
+    locations.active = [id]
+
+    # choose debiet
+    parameters.active = [0]
+
+    start_time_series_loader()
+    update_time_series_view()
+
+    assert not data.time_series_sets.any_active
+    assert EMPTY_WARNING in search_time_figure_layout.children[0].text
+    assert EMPTY_WARNING in time_figure_layout.children[0].text

@@ -513,13 +513,14 @@ class Data:
         self.time_series_sets.set_visible(indices=indices)
 
         # set data for search time_series
-        first_active = self.time_series_sets.first_active
-        if not first_active.within_period(period=self.periods, selection="search"):
-            fews_ts_set = self._get_fews_ts(
-                indices=[first_active.index], request_type="search"
-            )
+        if self.time_series_sets.any_active:
+            first_active = self.time_series_sets.first_active
+            if not first_active.within_period(period=self.periods, selection="search"):
+                fews_ts_set = self._get_fews_ts(
+                    indices=[first_active.index], request_type="search"
+                )
 
-            self._update_ts_from_fews_ts_set(fews_ts_set)
+                self._update_ts_from_fews_ts_set(fews_ts_set)
 
         # set data for view time_series
         if self.time_series_sets.select_view(self.periods):

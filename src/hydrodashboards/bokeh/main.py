@@ -62,6 +62,7 @@ def toggle_view_time_series_controls(value=True):
     download_time_series.disabled = value
     save_time_series.disabled = value
     history_search_time_series.disabled = value
+    search_time_series.disabled = value
 
 
 def toggle_download_button_on_sources(sources):
@@ -78,6 +79,7 @@ def toggle_download_button_on_sources(sources):
     download_time_series.disabled = disabled
     save_time_series.disabled = disabled
     history_search_time_series.disabled = disabled
+    search_time_series.disabled = disabled
 
 
 def enable_update_graph():
@@ -153,10 +155,13 @@ def order_filter(bokeh_filter, filter_cls, active=None):
 
 
 def report_state():
-    logger.debug((
-        f"filters: {data.filters.value}",
-        f"locations: {data.locations.value}",
-        f"parameters: {data.parameters.value}"))
+    logger.debug(
+        (
+            f"filters: {data.filters.value}",
+            f"locations: {data.locations.value}",
+            f"parameters: {data.parameters.value}",
+        )
+    )
 
 
 """
@@ -413,51 +418,60 @@ def update_time_series_view():
     logger.debug(inspect.stack()[0][3])
     data.update_time_series()
 
-    # update time_series_layout (top figures)
-    parameter_groups = data.parameters.get_groups()
-    group_y_labels = data.parameters.get_y_labels(config.vertical_datum)
-    time_series_groups = data.time_series_sets.by_parameter_groups(
-        parameter_groups, active_only=True
-    )
+    if data.time_series_sets.any_active:
+        # update time_series_layout (top figures)
+        parameter_groups = data.parameters.get_groups()
+        group_y_labels = data.parameters.get_y_labels(config.vertical_datum)
+        time_series_groups = data.time_series_sets.by_parameter_groups(
+            parameter_groups, active_only=True
+        )
 
-    threshold_groups = data.threshold_groups(time_series_groups)
+        threshold_groups = data.threshold_groups(time_series_groups)
 
-    if config.thresholds:
-        thresholds_active = thresholds_button.active
+        if config.thresholds:
+            thresholds_active = thresholds_button.active
+        else:
+            thresholds_active = False
+        time_series_sources = time_figure_widget.create_time_figures(
+            time_figure_layout=time_figure_layout,
+            time_series_groups=time_series_groups,
+            group_y_labels=group_y_labels,
+            threshold_groups=threshold_groups,
+            threshold_visible=thresholds_active,
+            x_range=view_x_range,
+            press_up_event=press_up_event,
+            renderers_on_change=[("visible", set_visible_labels)],
+        )
+
+        # update search_time_series
+        search_time_series.options = data.time_series_sets.active_labels
+        if search_time_series.value not in search_time_series.options:
+            search_time_series.value = search_time_series.options[0]
+
+        # add_search time_series
+        _time_series = data.time_series_sets.get_by_label(search_time_series.value)
+        time_figure_widget.search_fig(
+            search_time_figure_layout,
+            time_series=_time_series,
+            x_range=search_x_range,
+            periods=data.periods,
+            color=time_series_sources[search_time_series.value]["color"],
+            search_source=search_source,
+        )
+
+        # go to the next callback
+        curdoc().add_next_tick_callback(update_time_series_search)
     else:
-        thresholds_active = False
-    time_series_sources = time_figure_widget.create_time_figures(
-        time_figure_layout=time_figure_layout,
-        time_series_groups=time_series_groups,
-        group_y_labels=group_y_labels,
-        threshold_groups=threshold_groups,
-        threshold_visible=thresholds_active,
-        x_range=view_x_range,
-        press_up_event=press_up_event,
-        renderers_on_change=[("visible", set_visible_labels)],
-    )
+        warning = "no time series for selected locations and parameters"
+        time_figure_widget.warning_figure(time_figure_layout, warning)
+        time_figure_widget.warning_figure(search_time_figure_layout, warning)
 
-    # update search_time_series
-    search_time_series.options = data.time_series_sets.active_labels
-    if search_time_series.value not in search_time_series.options:
-        search_time_series.value = search_time_series.options[0]
-
-    # add_search time_series
-    _time_series = data.time_series_sets.get_by_label(search_time_series.value)
-    time_figure_widget.search_fig(
-        search_time_figure_layout,
-        time_series=_time_series,
-        x_range=search_x_range,
-        periods=data.periods,
-        color=time_series_sources[search_time_series.value]["color"],
-        search_source=search_source,
-    )
+        # stop loader and disable update_graph
+        update_graph.css_classes = ["stoploading_time_fig"]
+        update_graph.disabled = True
 
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
-
-    # go to the next callback
-    curdoc().add_next_tick_callback(update_time_series_search)
 
 
 def update_time_series_search():
@@ -674,14 +688,16 @@ view_x_range = time_figure_widget.make_x_range(data.periods, graph="top_figs")
 view_x_range.on_change("end", update_on_view_x_range_change)
 view_x_range.on_change("start", update_on_view_x_range_change)
 
-time_figure = time_figure_widget.empty_fig()
-time_figure_layout = column(time_figure, name="time_figure", sizing_mode="stretch_both")
+# time_figure = time_figure_widget.empty_fig()
+# time_figure_layout = column(time_figure, name="time_figure", sizing_mode="stretch_both")
+time_figure_layout = time_figure_widget.empty_layout(name="time_figure")
 
 # Search time series widget
 search_time_series = Select(
     value=None, options=[], css_classes=["select_search_time_series"]
 )
 search_time_series.on_change("value", update_on_search_time_series_value)
+
 
 # View period widget
 view_period = view_period_widget.make_view_period(data.periods)
@@ -690,8 +706,12 @@ view_period.on_change("value_throttled", update_on_view_period_value_throttled)
 
 # Search time figure widget
 search_x_range = time_figure_widget.make_x_range(data.periods, graph="search_fig")
-search_time_figure = time_figure_widget.empty_fig()
+# search_time_figure = time_figure_widget.empty_fig()
 
+# search_time_figure_layout = column(
+#     search_time_figure, name="search_time_figure", sizing_mode="stretch_both"
+# )
+search_time_figure_layout = time_figure_widget.empty_layout(name="search_time_figure")
 
 # all buttons
 
@@ -794,9 +814,6 @@ curdoc().add_root(
 )
 
 curdoc().add_root(column(view_period, name="view_period", sizing_mode="stretch_both"))
-search_time_figure_layout = column(
-    search_time_figure, name="search_time_figure", sizing_mode="stretch_both"
-)
 curdoc().add_root(search_time_figure_layout)
 
 curdoc().title = config.title

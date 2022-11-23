@@ -85,6 +85,10 @@ class TimeSeriesSets:
         return next((i for i in self.time_series if i.active), None)
 
     @property
+    def any_active(self):
+        return any([i.active for i in self.time_series])
+
+    @property
     def max_events_loaded(self):
         visible_ts = [i for i in self.time_series if i.visible]
         if len(visible_ts) > 0:

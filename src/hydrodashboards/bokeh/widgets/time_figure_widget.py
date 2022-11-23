@@ -88,14 +88,24 @@ def date_time_range_as_datetime(date_time_range):
     return start, end
 
 
-def empty_fig():
+def empty_fig(text="No graph has been generated", color="black"):
     return Div(
-        text='<p style="margin-left:400px;">No graph has been generated</p>',
+        text=f'<p style="margin-left:400px;color:{color};">{text}</p>',
         align="end",
         sizing_mode="stretch_width",
         width_policy="max",
         css_classes=["time_figure"],
     )
+
+
+def empty_layout(name):
+    time_figure = empty_fig()
+    return column(time_figure, name=name, sizing_mode="stretch_both")
+
+
+def warning_figure(figure_layout, text, color="#f16996"):
+    figure_layout.children.pop()
+    figure_layout.children.append(empty_fig(text=text, color=color))
 
 
 def valid_layout(time_figure_layout):

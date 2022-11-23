@@ -86,7 +86,7 @@ class Filters:
         return [j for i in values for j in i]
 
     @property
-    def value(self, thematic_view = True):
+    def value(self, thematic_view=True):
         if thematic_view:
             value = self.thematic_filters[1].value
         else:

@@ -5,20 +5,11 @@ from hydrodashboards.bokeh.main import (
     data,
     start_time_series_loader,
     update_time_series_view,
-    update_time_series_search,
     time_figure_layout,
-    get_visible_sources,
-    toggle_download_button_on_sources,
-    download_time_series,
-    update_on_view_period_value_throttled,
-    view_period,
-    view_x_range,
-    search_period,
-    convert_to_datetime,
+    search_time_figure_layout,
 )
-import copy
 
-from datetime import timedelta
+WARNING = "no time series for selected locations and parameters"
 
 # choose theme oppervlaktewater
 filters[0].active = [0]
@@ -35,3 +26,7 @@ parameters.active = [0]
 
 start_time_series_loader()
 update_time_series_view()
+
+assert not data.time_series_sets.any_active
+assert WARNING in search_time_figure_layout.children[0].text
+assert WARNING in time_figure_layout.children[0].text
