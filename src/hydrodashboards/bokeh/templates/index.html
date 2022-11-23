@@ -90,7 +90,15 @@
 		};
 		keyDown();
 		keyUp();
-	 
+	    
+		
+		
+		
+		function refresh_app() {
+			window.location.reload();
+			
+			}
+			
 
     </script>
 {% endblock %}
@@ -137,7 +145,8 @@
                     <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                         <i class="fas fa-align-justify"></i>
                      </button>
-                    <button onClick="window.location.reload()"id="refresh_app"></button>
+                    <button onclick="refresh_app()" id="refresh_app">
+					</button>
                     <button class="btn btn-dark"style="border:none;cursor:pointer; height:35px;background: rgba(0,0,0,0);color:white" type="button" onclick="window.open('https://d2hydro.github.io/hydrodashboards/manuals/user_nl/','_blank')">
                         <i class='fas fa-info-circle ' style="font-size: 24px;"></i>
                     </button>

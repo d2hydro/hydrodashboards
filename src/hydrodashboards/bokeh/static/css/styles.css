@@ -650,6 +650,10 @@ input[type=checkbox]{
     cursor: pointer;	
 }
 
+#refresh_app:active {
+  background-color:#f16996;
+}
+
 #kaart-tab{
 	color:#0C0F2E;
 }
