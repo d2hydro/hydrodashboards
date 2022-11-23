@@ -152,6 +152,13 @@ def order_filter(bokeh_filter, filter_cls, active=None):
     return ordered
 
 
+def report_state():
+    logger.debug((
+        f"filters: {data.filters.value}",
+        f"locations: {data.locations.value}",
+        f"parameters: {data.parameters.value}"))
+
+
 """
 All callbacks used in the app
 """
@@ -389,6 +396,9 @@ def start_time_series_loader():
     logger.debug(inspect.stack()[0][3])
     update_graph.css_classes = ["loader_time_fig"]
 
+    # report app-state
+    report_state()
+
     # disable view_period
     toggle_view_time_series_controls(value=True)
 
@@ -458,6 +468,7 @@ def update_time_series_search():
 
     # updating the sources in the used as glyph data_sources
     update_time_series_sources()
+    update_search_time_series_source()
 
     # updating the figure_layout y_ranges
     time_figure_widget.update_time_series_y_ranges(time_figure_layout)
