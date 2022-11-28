@@ -279,7 +279,16 @@ def update_on_locations_selector(attr, old, new):
         data.update_on_locations_select(data.locations.value)
 
         # update parameters options for (de)selected locations
-        order_filter(parameters, data.parameters, active=data.parameters.active)
+        if len(new) == 0:
+            actives = filters_widgets.get_filters_actives(filters, config.thematic_view)
+            data.update_on_filter_select(actives)
+            data.parameters.limit_options_on_search_input()
+            parameters.active = data.parameters.active
+            parameters.labels = data.parameters.labels
+            parameters.disabled = True
+        else:
+            order_filter(parameters, data.parameters, active=data.parameters.active)
+            parameters.disabled = False
 
         # update location source selected
         indices = [
@@ -295,9 +304,14 @@ def update_on_locations_selector(attr, old, new):
 
 
 def update_parameter_options_on_search_input(attr, old, new):
-    if (len(old) >= 3) or (len(new) >= 3):
+    if len(new) >= 3:
         data.parameters.limit_options_on_search_input(new)
         parameters.labels = data.parameters.labels
+    else:
+        data.parameters.search_input = None
+        if len(old) >= 3:
+            data.parameters.set_options()
+            parameters.labels = data.parameters.labels
 
 
 def update_on_parameters_selector(attrname, old, new):
@@ -357,13 +371,13 @@ def update_on_history_search_time_series():
     logger.debug(inspect.stack()[0][3])
 
     # get data for the full period
-    data.update_history_time_series_search(search_time_series.value)
+    df = data.update_history_time_series_search(search_time_series.value)
 
     # update search_source
-    update_search_time_series_source()
+    search_source.data.update(sources.df_to_source(df).data)
 
     # update search_period
-    search_start, search_end = data.get_history_period(search_time_series.value)
+    search_start, search_end = data.get_history_period(df)
     search_period_widget.update_period(search_period, search_start, search_end)
 
     # update search_time_figure y-range
@@ -648,7 +662,9 @@ locations = filters_widgets.make_filter(data=data.locations, on_change=on_change
 
 # Parameters widget
 on_change = [update_on_parameters_selector]
-parameters = filters_widgets.make_filter(data=data.parameters, on_change=on_change)
+parameters = filters_widgets.make_filter(
+    data=data.parameters, on_change=on_change, disabled=True
+)
 
 # Search period widget
 on_change = [("value", update_on_search_period_value)]
@@ -688,8 +704,6 @@ view_x_range = time_figure_widget.make_x_range(data.periods, graph="top_figs")
 view_x_range.on_change("end", update_on_view_x_range_change)
 view_x_range.on_change("start", update_on_view_x_range_change)
 
-# time_figure = time_figure_widget.empty_fig()
-# time_figure_layout = column(time_figure, name="time_figure", sizing_mode="stretch_both")
 time_figure_layout = time_figure_widget.empty_layout(name="time_figure")
 
 # Search time series widget
@@ -706,11 +720,6 @@ view_period.on_change("value_throttled", update_on_view_period_value_throttled)
 
 # Search time figure widget
 search_x_range = time_figure_widget.make_x_range(data.periods, graph="search_fig")
-# search_time_figure = time_figure_widget.empty_fig()
-
-# search_time_figure_layout = column(
-#     search_time_figure, name="search_time_figure", sizing_mode="stretch_both"
-# )
 search_time_figure_layout = time_figure_widget.empty_layout(name="search_time_figure")
 
 # all buttons
@@ -750,7 +759,7 @@ filters_layout = filters_widgets.finish_filters(
 )
 curdoc().add_root(filters_layout)
 
-search_input = ("value_input", update_location_options_on_search_input)
+search_input = update_location_options_on_search_input
 
 locations_layout = filters_widgets.finish_filter(
     locations, search_input=None, reset_button=True
@@ -760,7 +769,7 @@ curdoc().add_root(
 )
 
 
-search_input = ("value_input", update_parameter_options_on_search_input)
+search_input = update_parameter_options_on_search_input
 parameters_layout = filters_widgets.finish_filter(
     parameters, search_input=search_input, reset_button=True
 )

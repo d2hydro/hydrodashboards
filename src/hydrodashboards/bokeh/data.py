@@ -20,7 +20,7 @@ from hydrodashboards import __version__
 
 # import functions from python modules
 from bokeh.palettes import Category20_20
-from datetime import datetime
+from datetime import datetime, timedelta
 import itertools
 from operator import itemgetter
 import pandas as pd
@@ -262,6 +262,17 @@ class Data:
                         ts_select.start_datetime = fews_ts.header.start_date
                         ts_select.end_datetime = fews_ts.header.end_date
 
+    def _get_df_from_fews_ts_set(self, fews_ts_set, location_id, parameter_id):
+        for fews_ts in fews_ts_set.time_series:
+            header = fews_ts.header
+            if (header.location_id == location_id) and (
+                concat_fews_parameter_ids(
+                    fews_ts.header.parameter_id, fews_ts.header.qualifier_id
+                )
+                == parameter_id
+            ):
+                return fews_ts.events
+
     """
 
     Section with functions handling cache
@@ -478,16 +489,14 @@ class Data:
             indices=[time_series_index], request_type="full_history"
         )
 
-        self._update_ts_from_fews_ts_set(fews_ts_set)
+        return self._get_df_from_fews_ts_set(fews_ts_set, *time_series_index)
+        # self._update_ts_from_fews_ts_set(fews_ts_set)
 
-    def get_history_period(self, search_time_series_label):
-        search_time_series = self.time_series_sets.get_by_label(
-            search_time_series_label
-        )
-        if search_time_series.df.empty:
+    def get_history_period(self, df):
+        if df.empty:
             return (self.periods.search_start, self.periods.search_end)
         else:
-            return (search_time_series.data_start, search_time_series.data_end)
+            return (df.index.min(), df.index.max() + timedelta(days=12))
 
     def update_time_series_search(self):
         if self.time_series_sets.select_incomplete():

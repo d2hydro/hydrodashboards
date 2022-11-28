@@ -12,10 +12,16 @@ if (window.MenuEvents && typeof window.MenuEvents.onFiltersChanged === 'function
 }
 """
 
-reset_filter_active = "filter.active = []"
+reset_filter_js = "filter.active = []"
+
+reset_filter_search_js = """
+filter.active = []
+text_input.value_input = ""
+text_input.value = ""
+"""
 
 
-def make_filter(data, on_change=[], filter_length=5) -> CheckboxGroup:
+def make_filter(data, on_change=[], filter_length=5, disabled=False) -> CheckboxGroup:
     """Return a Bokeh CheckboxGroup filter from data filter."""
 
     bokeh_filter = CheckboxGroup(
@@ -31,6 +37,7 @@ def make_filter(data, on_change=[], filter_length=5) -> CheckboxGroup:
             bokeh_filter.on_change(selector, i)
 
     bokeh_filter.sizing_mode = SIZING_MODE
+    bokeh_filter.disabled = disabled
 
     return bokeh_filter
 
@@ -104,14 +111,22 @@ def finish_filter(filter, reset_button=False, search_input=None):
         button = Button(
             label="", sizing_mode="stretch_width", css_classes=["filter_reset_button"]
         )
-        button.js_on_click(CustomJS(code=reset_filter_active, args={"filter": filter}))
-        header = [button] + header
-    if search_input is not None:
-        text_input = TextInput(
-            sizing_mode="stretch_width", css_classes=["filter_search"]
-        )
-        text_input.on_change(*search_input)
-        header += [text_input]
+        if search_input is None:
+            button.js_on_click(CustomJS(code=reset_filter_js, args={"filter": filter}))
+            header = [button] + header
+        else:
+            text_input = TextInput(
+                sizing_mode="stretch_width", css_classes=["filter_search"]
+            )
+            text_input.on_change("value_input", search_input)
+            text_input.on_change("value", search_input)
+            button.js_on_click(
+                CustomJS(
+                    code=reset_filter_search_js,
+                    args={"filter": filter, "text_input": text_input},
+                )
+            )
+            header = [button] + header + [text_input]
     filter = [row(header, css_classes=["filter_title"]), filter]
     return filter
 

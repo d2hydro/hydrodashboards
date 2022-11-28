@@ -10,7 +10,7 @@ class Filter:
     options: List[tuple] = field(default_factory=list)
     value: list = field(default_factory=list)
     active: list = field(default_factory=list)
-    search_input: str = ""
+    search_input: str = None
 
     @property
     def labels(self):
@@ -43,13 +43,11 @@ class Filter:
     def limit_options_on_search_input(self, search_input=None):
         if search_input is not None:
             self.search_input = search_input
-        if len(self.search_input) >= 3:
+        if self.search_input is not None:
             limited_options = [
                 i for i in self.unselected_options if self.search_input in i[1].lower()
             ]
             self.options = self.selected_options + limited_options
-        # else:
-        #     self.options = self._options
 
     def get_values_by_actives(self, actives):
         return [self.options[i][0] for i in actives]
@@ -63,7 +61,9 @@ class Filter:
         self.active = active
         self.value = [self.options[i][0] for i in active]
 
-    def set_options(self, options):
+    def set_options(self, options=None):
+        if options is None:
+            options = self._options
         values = [i[0] for i in options]
         value = [i for i in self.value if i in values]
         selected_options = sorted(
@@ -78,7 +78,7 @@ class Filter:
         values = [i[0] for i in self.options]
         self.set_value([i for i in self.value if i in values])
 
-    def update_from_options(self, options: List[tuple], limit_string=""):
+    def update_from_options(self, options: List[tuple] = None):
         options.sort(key=lambda a: a[1])
         self._options = options
         self.set_options(options)

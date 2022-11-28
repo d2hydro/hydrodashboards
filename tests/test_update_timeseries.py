@@ -9,6 +9,7 @@ from hydrodashboards.bokeh.main import (
     search_period,
     search_time_figure_layout,
     search_time_series,
+    search_source,
     start_time_series_loader,
     time_figure_layout,
     toggle_download_button_on_sources,
@@ -111,15 +112,13 @@ def test_update_view_period():
 
 def test_update_history_search_time_series():
     test_load_beeklandstuw()
-    ts_len = len(data.time_series_sets.get_by_label(search_time_series.value).df)
-    ts_start = data.get_history_period(search_time_series.value)[0]
+    df = data.time_series_sets.get_by_label(search_time_series.value).df
+    assert search_source.data["datetime"].min() == df.index.min()
+    assert search_source.data["datetime"].max() == df.index.max()
 
     update_on_history_search_time_series()
 
-    assert (
-        len(data.time_series_sets.get_by_label(search_time_series.value).df) != ts_len
-    )
-    assert data.get_history_period(search_time_series.value)[0] < ts_start
+    assert search_source.data["datetime"].min() < df.index.min()
 
 
 def test_empty_timeseries():

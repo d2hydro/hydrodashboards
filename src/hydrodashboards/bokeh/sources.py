@@ -19,6 +19,26 @@ def thresholds_to_source(thresholds):
     return ColumnDataSource(data={"datetime": datetime, "value": value, "label": label})
 
 
+def _index_mask(index, start_date_time, end_date_time):
+    return (index > start_date_time) & (index <= end_date_time)
+
+
+def df_to_source(
+    df,
+    start_date_time=None,
+    end_date_time=None,
+    excluded_date_times=None,
+    unreliables=False,
+):
+    if (start_date_time is not None) and (end_date_time is not None):
+        df = df.loc[_index_mask(df.index, start_date_time, end_date_time)]
+    if excluded_date_times is not None:
+        df = df.loc[~df.index.isin(excluded_date_times)]
+    if (not unreliables) & ("flag" in df.columns):
+        df = pd.DataFrame(df.loc[df["flag"] < 6]["value"])
+    return ColumnDataSource(df)
+
+
 def time_series_to_source(
     time_series,
     start_date_time=None,
@@ -26,17 +46,15 @@ def time_series_to_source(
     unreliables=False,
     excluded_date_times=None,
 ):
-    def _index_mask(index, start_date_time, end_date_time):
-        return (index > start_date_time) & (index <= end_date_time)
 
     df = time_series.df
-    if (start_date_time is not None) and (end_date_time is not None):
-        df = df.loc[_index_mask(df.index, start_date_time, end_date_time)]
-    if excluded_date_times is not None:
-        df = df.loc[~df.index.isin(excluded_date_times)]
-    if (not unreliables) & ("flag" in df.columns):
-        df = pd.DataFrame(df.loc[df["flag"] < 6]["value"])
-    source = ColumnDataSource(df)
+    source = df_to_source(
+        df,
+        start_date_time=start_date_time,
+        end_date_time=end_date_time,
+        unreliables=unreliables,
+        excluded_date_times=excluded_date_times,
+    )
     source.name = time_series.label
     source.tags = time_series.tags
     return source
