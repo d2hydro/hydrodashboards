@@ -377,11 +377,14 @@ def update_on_history_search_time_series():
     search_source.data.update(sources.df_to_source(df).data)
 
     # update search_period
-    search_start, search_end = data.get_history_period(df)
+    search_start, search_end = data.get_history_period(search_source.data["datetime"])
     search_period_widget.update_period(search_period, search_start, search_end)
 
     # update search_time_figure y-range
     time_figure_widget.update_search_time_series_y_ranges(search_time_figure_layout)
+
+    # kick of time series loader
+    curdoc().add_next_tick_callback(start_time_series_loader)
 
 
 def update_map_figure_background_control(attrname, old, new):

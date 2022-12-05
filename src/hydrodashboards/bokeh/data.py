@@ -21,6 +21,7 @@ from hydrodashboards import __version__
 # import functions from python modules
 from bokeh.palettes import Category20_20
 from datetime import datetime, timedelta
+import numpy as np
 import itertools
 from operator import itemgetter
 import pandas as pd
@@ -44,6 +45,18 @@ def _get_propeties(filter_id, filter_name, filter_colors):
         "non_selection_fill_color": fill,
         "label": filter_name,
     }
+
+
+def to_datetime(date):
+    """
+    Converts a numpy datetime64 object to a python datetime object
+    Input:
+      date - a np.datetime64 object
+    Output:
+      DATE - a python datetime object
+    """
+    timestamp = (date - np.datetime64("1970-01-01T00:00:00")) / np.timedelta64(1, "s")
+    return datetime.utcfromtimestamp(timestamp)
 
 
 class Data:
@@ -492,11 +505,14 @@ class Data:
         return self._get_df_from_fews_ts_set(fews_ts_set, *time_series_index)
         # self._update_ts_from_fews_ts_set(fews_ts_set)
 
-    def get_history_period(self, df):
-        if df.empty:
+    def get_history_period(self, datetime_array):
+        if len(datetime_array) == 0:
             return (self.periods.search_start, self.periods.search_end)
         else:
-            return (df.index.min(), df.index.max() + timedelta(days=12))
+            return (
+                to_datetime(datetime_array.min()),
+                to_datetime(datetime_array.max()) + timedelta(hours=12),
+            )
 
     def update_time_series_search(self):
         if self.time_series_sets.select_incomplete():
