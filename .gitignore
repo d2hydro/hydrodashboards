@@ -148,3 +148,4 @@ tests/data/*
 # cache dir
 cache/*
 src/hydrodashboards/bokeh/static/css/styles.css
+docs/doc_images.pptx
