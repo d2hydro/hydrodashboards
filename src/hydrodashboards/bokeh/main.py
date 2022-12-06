@@ -22,6 +22,7 @@ from hydrodashboards.bokeh.widgets import (
     time_figure_widget,
     update_graph_widget,
     view_period_widget,
+    ghost_buttons,
 )
 
 from bokeh.models.widgets import Div, Select
@@ -742,10 +743,15 @@ history_search_time_series = search_period_widget.make_button(
     on_click=update_on_history_search_time_series
 )
 
+# add
+
+scale_graphs = ghost_buttons.make_button(
+    time_figure_layout=time_figure_layout,
+    graph_count=config.graph_count)
+
 """
 In this section we add all widgets to the curdoc
 """
-
 
 # left column layout
 curdoc().add_root(
@@ -827,6 +833,12 @@ curdoc().add_root(
 
 curdoc().add_root(column(view_period, name="view_period", sizing_mode="stretch_both"))
 curdoc().add_root(search_time_figure_layout)
+
+curdoc().add_root(
+    column(
+        scale_graphs, name="scale_graphs", sizing_mode="stretch_width"
+    )
+)
 
 curdoc().title = config.title
 
