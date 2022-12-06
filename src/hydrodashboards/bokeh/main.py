@@ -424,6 +424,7 @@ def start_time_series_loader():
 
     # disable view_period
     toggle_view_time_series_controls(value=True)
+    _scale_graphs.disabled = False
 
     # now we go downloading a view
     curdoc().add_next_tick_callback(update_time_series_view)
@@ -478,6 +479,7 @@ def update_time_series_view():
         )
 
         # go to the next callback
+        _scale_graphs.disabled = True
         curdoc().add_next_tick_callback(update_time_series_search)
     else:
         warning = "no time series for selected locations and parameters"
@@ -745,7 +747,7 @@ history_search_time_series = search_period_widget.make_button(
 
 # add
 
-scale_graphs = ghost_buttons.make_button(
+_scale_graphs = ghost_buttons.make_button(
     time_figure_layout=time_figure_layout,
     graph_count=config.graph_count)
 
@@ -836,7 +838,7 @@ curdoc().add_root(search_time_figure_layout)
 
 curdoc().add_root(
     column(
-        scale_graphs, name="scale_graphs_dummy", sizing_mode="stretch_width"
+        _scale_graphs, name="scale_graphs_dummy", sizing_mode="stretch_width"
     )
 )
 

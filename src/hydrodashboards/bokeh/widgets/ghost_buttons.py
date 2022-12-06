@@ -4,7 +4,7 @@ from bokeh.models import CustomJS
 scale_figs_js = """
 console.log(graph_count)
 console.log(button.disabled)
-if (!button.disabled) {
+if (button.disabled) {
     var fig_len = figure.children[0].children.length;
     console.log(fig_len)
     const vh = Math.round(parent.innerHeight * 0.6);
