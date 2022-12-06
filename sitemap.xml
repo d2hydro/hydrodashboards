@@ -16,6 +16,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://d2hydro.github.io/hydrodashboards/user_manuals/url_parameters/</loc>
+         <lastmod>2022-12-06</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://d2hydro.github.io/hydrodashboards/user_manuals/user_nl/</loc>
          <lastmod>2022-12-06</lastmod>
          <changefreq>daily</changefreq>
