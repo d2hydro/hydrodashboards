@@ -101,8 +101,9 @@ def set_filter_values(filters, filter_ids, thematic_view, data_filters):
         ]
         filters[1].active = filters_active
     else:
-        for i in filters:
-            i.active = [idx for idx, j in enumerate(i.options) if j[0] in filter_ids]
+        for idx, i in enumerate(filters):
+            values = [i[0] for i in data_filters.filters[idx].options]
+            i.active = [values.index(i) for i in filter_ids if i in values]
 
 
 def finish_filter(filter, reset_button=False, search_input=None):
