@@ -490,6 +490,14 @@ input[type=checkbox]{
 	align-items:center !important;
 }
 
+#sidebar > .sidebar-bokeh > .update-wrapper > .update > .bk-root > .bk > .bk > .bk.bk-btn-group > .bk.bk-btn.bk-btn-success{
+	background: none;
+	color:none;
+	border:none;
+	width:1px!important;
+	height:1px!important;
+}
+
 /*---------------------------------------------------------
 	Download button styling
 -----------------------------------------------------------  */
@@ -525,6 +533,8 @@ input[type=checkbox]{
     min-width:32px;
 	width:32px;	
 }
+
+
 
 /*-----------------------------------------------------------
 	Sidemenu spinners

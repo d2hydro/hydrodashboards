@@ -119,6 +119,7 @@
                 <div class="update-wrapper" id="update_download"> 
 					<div class="update">
                         {{ embed(roots.update_graph) }}
+						{{ embed(roots.scale_graphs_dummy) }}
 					</div>	
 					<div class="download">
                         {{ embed(roots.download_time_series)}}
@@ -133,8 +134,7 @@
 		
 
         <!-- Page Content Holder -->
-        <div id="content">
-        
+        <div id="content">    
             <nav class="navbar navbar-expand-lg">
                 <div class="container-fluid h-100">
                     <button type="button" id="sidebarCollapse" class="navbar-btn">
