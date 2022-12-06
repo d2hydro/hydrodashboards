@@ -15,10 +15,6 @@
       "fill": "fuchsia",
       "line": "purple"
     },
-    "WDB_FC_MPN": {
-      "fill": "darkorange",
-      "line": "red"
-    },
     "WDB_GW_GMW": {
       "fill": "greenyellow",
       "line": "green"
@@ -71,7 +67,7 @@
     "WDB_ML_KNMI",
     "WDB_GW_GMW"
   ],
-  "history_period": 100000,
+  "history_period": 10000,
   "language": "dutch",
   "log_dir": "./logs",
   "map_overlays": {

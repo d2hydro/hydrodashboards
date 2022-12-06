@@ -1,6 +1,8 @@
 from typing import List
-from .models import Filter
+from hydrodashboards.datamodel.models import Filter
+from hydrodashboards.datamodel.cache import Cache
 from dataclasses import dataclass, field
+
 
 MAX_FILTER_LEN = 5
 SIZING_MODE = "stretch_width"
@@ -9,7 +11,7 @@ SIZING_MODE = "stretch_width"
 @dataclass
 class TimeSeriesFilter(Filter):
     id: str = None
-    cache: dict = field(default_factory=dict)
+    cache: Cache = Cache(sub_dir="filters")
 
 
 @dataclass
@@ -82,3 +84,11 @@ class Filters:
     def values(self):
         values = [[j[0] for j in i.options] for i in self.filters]
         return [j for i in values for j in i]
+
+    def value(self, thematic_view=True):
+        if thematic_view:
+            value = self.thematic_filters[1].value
+        else:
+            values = [i.value for i in self.filters]
+            value = [j for i in values for j in i]
+        return value

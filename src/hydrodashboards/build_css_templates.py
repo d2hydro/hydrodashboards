@@ -11,6 +11,7 @@ map_opt = """
   padding: 2px;
   border: 1px solid #F1F2F3;
   border-radius:4px;
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 20px 30px;
 }}
 """
 

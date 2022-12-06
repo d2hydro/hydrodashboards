@@ -14,14 +14,17 @@ except:
 import hydrodashboards.bokeh.sources as sources
 from hydrodashboards.bokeh.widgets import (
     download_widget,
-    time_figure_widget,
-    map_figure_widget,
     filters_widgets,
+    map_figure_widget,
     search_period_widget,
+    save_widget,
+    thresholds_widget,
+    time_figure_widget,
     update_graph_widget,
     view_period_widget,
-    thresholds_widget,
+    ghost_buttons,
 )
+
 from bokeh.models.widgets import Div, Select
 from hydrodashboards.bokeh.log_utils import import_logger
 import inspect
@@ -58,6 +61,9 @@ def toggle_view_time_series_controls(value=True):
     view_period.disabled = value
     view_period.bar_color = "#e6e6e6"
     download_time_series.disabled = value
+    save_time_series.disabled = value
+    history_search_time_series.disabled = value
+    search_time_series.disabled = value
 
 
 def toggle_download_button_on_sources(sources):
@@ -72,6 +78,9 @@ def toggle_download_button_on_sources(sources):
             disabled = False
     data.time_series_sets.max_events_visible = max_events_visible
     download_time_series.disabled = disabled
+    save_time_series.disabled = disabled
+    history_search_time_series.disabled = disabled
+    search_time_series.disabled = disabled
 
 
 def enable_update_graph():
@@ -98,6 +107,13 @@ def update_time_series_sources():
         v["source"].data.update(_source.data)
 
 
+def update_search_time_series_source():
+    """Update search source assigned to search_fig"""
+    time_series = data.time_series_sets.get_by_label(search_time_series.value)
+    _source = sources.time_series_to_source(time_series)
+    search_source.data.update(_source.data)
+
+
 def view_x_range_as_datetime():
     """Get the view_x_range start and end as datetime."""
 
@@ -121,6 +137,32 @@ def get_visible_renderers(figs):
 def get_visible_sources(figs):
     renderers = get_visible_renderers(figs)
     return [i.data_source for i in renderers]
+
+
+def order_filter(bokeh_filter, filter_cls, active=None):
+    if active is None:
+        active = list(bokeh_filter.active)
+    ordered = False
+
+    if len(active) == 0:
+        filter_cls.order_options([])
+        bokeh_filter.labels = filter_cls.labels
+    elif not (max(active) == len(active) - 1):
+        ordered = True
+        filter_cls.order_options(active)
+        bokeh_filter.labels = filter_cls.labels
+        bokeh_filter.active = filter_cls.active
+    return ordered
+
+
+def report_state():
+    logger.debug(
+        (
+            f"filters: {data.filters.value(thematic_view=config.thematic_view)}",
+            f"locations: {data.locations.value}",
+            f"parameters: {data.parameters.value}",
+        )
+    )
 
 
 """
@@ -152,11 +194,9 @@ def update_on_filter_selector(attrname, old, new):
     logger.debug(inspect.stack()[0][3])
 
     actives = filters_widgets.get_filters_actives(filters, config.thematic_view)
-
     data.update_on_filter_select(actives)
-
     locations.labels = data.locations.labels
-    locations.active = data.locations.active
+    # locations.active = data.locations.active
     parameters.labels = data.parameters.labels
     parameters.active = data.parameters.active
     # update source
@@ -170,6 +210,15 @@ def update_on_filter_selector(attrname, old, new):
     app_status.text = data.app_status(html_type=HTML_TYPE)
 
     logger.debug(f"{inspect.stack()[0][3]} finished")
+
+    if locations.active != data.locations.active:
+        curdoc().add_next_tick_callback(sync_locations_active_with_data)
+
+
+def sync_locations_active_with_data():
+    """Next tick callback to sync locations.active with data.locations.active."""
+    logger.debug(inspect.stack()[0][3])
+    locations.active = data.locations.active
 
 
 def update_on_locations_source_select(attr, old, new):
@@ -186,10 +235,33 @@ def update_on_locations_source_select(attr, old, new):
             locations_source.data["id"].index(i) for i in ids
         ]
     else:
-        data.locations.set_value(ids)
-        # update locations and data.locations value
+        options_ids = [i[0] for i in data.locations.options]
+        active = [options_ids.index(i) for i in ids]
 
-        locations.active = data.locations.active
+        if active:
+            order_filter(locations, data.locations, active=active)
+        else:
+            locations.active = []
+
+
+def update_location_options_on_search_input(attr, old, new):
+    if len(new) >= 3:
+        data.locations.limit_options_on_search_input(new)
+        locations.labels = data.locations.labels
+        locations_source.data.update(
+            data.locations.app_df.loc[[i[0] for i in data.locations.options]]
+            .reset_index()
+            .to_dict(orient="list")
+        )
+    elif len(old) >= 3:
+        options = data.locations._options
+        unselected_options = [
+            i
+            for i in data.locations._options
+            if i not in data.locations.selected_options
+        ]
+        data.locations.options = data.locations.selected_options + unselected_options
+        locations.labels = data.locations.labels
 
 
 def update_on_locations_selector(attr, old, new):
@@ -198,14 +270,26 @@ def update_on_locations_selector(attr, old, new):
 
     if len(new) > 10:
         setattr(locations, config.filter_selector, old)
-    else:
+
+    # order filter so selected come on top (will introduce a new callback)
+    filter_ordered = order_filter(locations, data.locations)
+
+    if not filter_ordered:
         # update datamodel
-        data.locations.set_active(new)
+        data.locations.set_active(locations.active)
         data.update_on_locations_select(data.locations.value)
 
         # update parameters options for (de)selected locations
-        parameters.labels = data.parameters.labels
-        parameters.active = data.parameters.active
+        if len(new) == 0:
+            actives = filters_widgets.get_filters_actives(filters, config.thematic_view)
+            data.update_on_filter_select(actives)
+            data.parameters.limit_options_on_search_input()
+            parameters.active = data.parameters.active
+            parameters.labels = data.parameters.labels
+            parameters.disabled = True
+        else:
+            order_filter(parameters, data.parameters, active=data.parameters.active)
+            parameters.disabled = False
 
         # update location source selected
         indices = [
@@ -220,17 +304,32 @@ def update_on_locations_selector(attr, old, new):
         enable_update_graph()
 
 
+def update_parameter_options_on_search_input(attr, old, new):
+    if len(new) >= 3:
+        data.parameters.limit_options_on_search_input(new)
+        parameters.labels = data.parameters.labels
+    else:
+        data.parameters.search_input = None
+        if len(old) >= 3:
+            data.parameters.set_options()
+            parameters.labels = data.parameters.labels
+
+
 def update_on_parameters_selector(attrname, old, new):
     """Update when values in locations filter are selected"""
     logger.debug(inspect.stack()[0][3])
 
-    data.parameters.set_active(parameters.active)
+    # order filter so selected come on top (will introduce a new callback)
+    filter_ordered = order_filter(parameters, data.parameters)
 
-    # update app status
-    app_status.text = data.app_status(html_type=HTML_TYPE)
+    if not filter_ordered:
+        data.parameters.set_active(parameters.active)
 
-    # enable update_graph button
-    enable_update_graph()
+        # update app status
+        app_status.text = data.app_status(html_type=HTML_TYPE)
+
+        # enable update_graph button
+        enable_update_graph()
 
 
 def update_on_search_period_value(attrname, old, new):
@@ -268,6 +367,27 @@ def update_on_search_period_value(attrname, old, new):
     app_status.text = data.app_status(html_type=HTML_TYPE)
 
 
+def update_on_history_search_time_series():
+    """Get full history for search time series"""
+    logger.debug(inspect.stack()[0][3])
+
+    # get data for the full period
+    df = data.update_history_time_series_search(search_time_series.value)
+
+    # update search_source
+    search_source.data.update(sources.df_to_source(df).data)
+
+    # update search_period
+    search_start, search_end = data.get_history_period(search_source.data["datetime"])
+    search_period_widget.update_period(search_period, search_start, search_end)
+
+    # update search_time_figure y-range
+    time_figure_widget.update_search_time_series_y_ranges(search_time_figure_layout)
+
+    # kick of time series loader
+    curdoc().add_next_tick_callback(start_time_series_loader)
+
+
 def update_map_figure_background_control(attrname, old, new):
     """Update map_figure when background is selected"""
     logger.debug(inspect.stack()[0][3])
@@ -299,8 +419,12 @@ def start_time_series_loader():
     logger.debug(inspect.stack()[0][3])
     update_graph.css_classes = ["loader_time_fig"]
 
+    # report app-state
+    report_state()
+
     # disable view_period
     toggle_view_time_series_controls(value=True)
+    _scale_graphs.disabled = False
 
     # now we go downloading a view
     curdoc().add_next_tick_callback(update_time_series_view)
@@ -313,49 +437,61 @@ def update_time_series_view():
     logger.debug(inspect.stack()[0][3])
     data.update_time_series()
 
-    # update time_series_layout (top figures)
-    parameter_groups = data.parameters.get_groups()
-    time_series_groups = data.time_series_sets.by_parameter_groups(
-        parameter_groups, active_only=True
-    )
+    if data.time_series_sets.any_active:
+        # update time_series_layout (top figures)
+        parameter_groups = data.parameters.get_groups()
+        group_y_labels = data.parameters.get_y_labels(config.vertical_datum)
+        time_series_groups = data.time_series_sets.by_parameter_groups(
+            parameter_groups, active_only=True
+        )
 
-    threshold_groups = data.threshold_groups(time_series_groups)
+        threshold_groups = data.threshold_groups(time_series_groups)
 
-    if config.thresholds:
-        thresholds_active = thresholds_button.active
+        if config.thresholds:
+            thresholds_active = thresholds_button.active
+        else:
+            thresholds_active = False
+        time_series_sources = time_figure_widget.create_time_figures(
+            time_figure_layout=time_figure_layout,
+            time_series_groups=time_series_groups,
+            group_y_labels=group_y_labels,
+            threshold_groups=threshold_groups,
+            threshold_visible=thresholds_active,
+            x_range=view_x_range,
+            press_up_event=press_up_event,
+            renderers_on_change=[("visible", set_visible_labels)],
+        )
+
+        # update search_time_series
+        search_time_series.options = data.time_series_sets.active_labels
+        if search_time_series.value not in search_time_series.options:
+            search_time_series.value = search_time_series.options[0]
+
+        # add_search time_series
+        _time_series = data.time_series_sets.get_by_label(search_time_series.value)
+        time_figure_widget.search_fig(
+            search_time_figure_layout,
+            time_series=_time_series,
+            x_range=search_x_range,
+            periods=data.periods,
+            color=time_series_sources[search_time_series.value]["color"],
+            search_source=search_source,
+        )
+
+        # go to the next callback
+        _scale_graphs.disabled = True
+        curdoc().add_next_tick_callback(update_time_series_search)
     else:
-        thresholds_active = False
-    time_series_sources = time_figure_widget.create_time_figures(
-        time_figure_layout=time_figure_layout,
-        time_series_groups=time_series_groups,
-        threshold_groups=threshold_groups,
-        threshold_visible=thresholds_active,
-        x_range=view_x_range,
-        press_up_event=press_up_event,
-        renderers_on_change=[("visible", set_visible_labels)],
-    )
+        warning = "no time series for selected locations and parameters"
+        time_figure_widget.warning_figure(time_figure_layout, warning)
+        time_figure_widget.warning_figure(search_time_figure_layout, warning)
 
-    # update search_time_series
-    search_time_series.options = data.time_series_sets.active_labels
-    if search_time_series.value not in search_time_series.options:
-        search_time_series.value = search_time_series.options[0]
-
-    # add_search time_series
-    _time_series = data.time_series_sets.get_by_label(search_time_series.value)
-    time_figure_widget.search_fig(
-        search_time_figure_layout,
-        time_series=_time_series,
-        x_range=search_x_range,
-        periods=data.periods,
-        color=time_series_sources[search_time_series.value]["color"],
-        search_source=search_source,
-    )
+        # stop loader and disable update_graph
+        update_graph.css_classes = ["stoploading_time_fig"]
+        update_graph.disabled = True
 
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
-
-    # go to the next callback
-    curdoc().add_next_tick_callback(update_time_series_search)
 
 
 def update_time_series_search():
@@ -366,9 +502,11 @@ def update_time_series_search():
 
     # updating the sources in the used as glyph data_sources
     update_time_series_sources()
+    update_search_time_series_source()
 
     # updating the figure_layout y_ranges
     time_figure_widget.update_time_series_y_ranges(time_figure_layout)
+    time_figure_widget.update_search_time_series_y_ranges(search_time_figure_layout)
 
     # enable view_timeseries_controls
     toggle_view_time_series_controls(value=False)
@@ -530,7 +668,9 @@ locations = filters_widgets.make_filter(data=data.locations, on_change=on_change
 
 # Parameters widget
 on_change = [update_on_parameters_selector]
-parameters = filters_widgets.make_filter(data=data.parameters, on_change=on_change)
+parameters = filters_widgets.make_filter(
+    data=data.parameters, on_change=on_change, disabled=True
+)
 
 # Search period widget
 on_change = [("value", update_on_search_period_value)]
@@ -570,7 +710,7 @@ view_x_range = time_figure_widget.make_x_range(data.periods, graph="top_figs")
 view_x_range.on_change("end", update_on_view_x_range_change)
 view_x_range.on_change("start", update_on_view_x_range_change)
 
-time_figure = time_figure_widget.empty_fig()
+time_figure_layout = time_figure_widget.empty_layout(name="time_figure")
 
 # Search time series widget
 search_time_series = Select(
@@ -578,8 +718,6 @@ search_time_series = Select(
 )
 search_time_series.on_change("value", update_on_search_time_series_value)
 
-# Search download search time series widget
-# download_search_time_series = download_widget.make_button(source=search_source)
 
 # View period widget
 view_period = view_period_widget.make_view_period(data.periods)
@@ -588,12 +726,34 @@ view_period.on_change("value_throttled", update_on_view_period_value_throttled)
 
 # Search time figure widget
 search_x_range = time_figure_widget.make_x_range(data.periods, graph="search_fig")
-search_time_figure = time_figure_widget.empty_fig()
+search_time_figure_layout = time_figure_widget.empty_layout(name="search_time_figure")
+
+# all buttons
+
+#  download data
+download_time_series = download_widget.make_button(
+    time_figure_layout=time_figure_layout,
+    disclaimer_file=config.disclaimer_file,
+    graph_count=config.graph_count,
+)
+
+#  save picture
+save_time_series = save_widget.make_button()
+
+# set full history for search time_series
+history_search_time_series = search_period_widget.make_button(
+    on_click=update_on_history_search_time_series
+)
+
+# add
+
+_scale_graphs = ghost_buttons.make_button(
+    time_figure_layout=time_figure_layout, graph_count=config.graph_count
+)
 
 """
 In this section we add all widgets to the curdoc
 """
-
 
 # left column layout
 curdoc().add_root(
@@ -606,16 +766,24 @@ curdoc().add_root(
 
 filters_widgets.add_css_classes(filters, locations, parameters)
 filters_layout = filters_widgets.finish_filters(
-    filters, thematic_view=config.thematic_view
+    filters, thematic_view=config.thematic_view, reset_button=True
 )
 curdoc().add_root(filters_layout)
 
-locations_layout = filters_widgets.finish_filter(locations)
+search_input = update_location_options_on_search_input
+
+locations_layout = filters_widgets.finish_filter(
+    locations, search_input=None, reset_button=True
+)
 curdoc().add_root(
     column(locations_layout, name="locations", sizing_mode="stretch_width")
 )
 
-parameters_layout = filters_widgets.finish_filter(parameters)
+
+search_input = update_parameter_options_on_search_input
+parameters_layout = filters_widgets.finish_filter(
+    parameters, search_input=search_input, reset_button=True
+)
 curdoc().add_root(
     column(parameters_layout, name="parameters", sizing_mode="stretch_width")
 )
@@ -624,6 +792,16 @@ curdoc().add_root(
 )
 curdoc().add_root(
     column(update_graph, name="update_graph", sizing_mode="stretch_width")
+)
+
+curdoc().add_root(
+    column(
+        download_time_series, name="download_time_series", sizing_mode="stretch_width"
+    )
+)
+
+curdoc().add_root(
+    column(save_time_series, name="save_time_series", sizing_mode="stretch_width")
 )
 
 # map-figure layout
@@ -637,30 +815,30 @@ if config.thresholds:
         column(thresholds_button, name="thresholds_button", sizing_mode="stretch_both")
     )
 
-time_figure_layout = column(time_figure, name="time_figure", sizing_mode="stretch_both")
 curdoc().add_root(time_figure_layout)
 
 
-download_time_series = download_widget.make_button(
-    time_figure_layout=time_figure_layout
-)
+# search time-figure layout
 curdoc().add_root(
     column(
-        download_time_series, name="download_time_series", sizing_mode="stretch_width"
+        history_search_time_series,
+        name="history_search_time_series",
+        sizing_mode="stretch_width",
     )
 )
 
-# search tim-figure layout
 curdoc().add_root(
     column(
         search_time_series, name="select_search_time_series", sizing_mode="stretch_both"
     )
 )
+
 curdoc().add_root(column(view_period, name="view_period", sizing_mode="stretch_both"))
-search_time_figure_layout = column(
-    search_time_figure, name="search_time_figure", sizing_mode="stretch_both"
-)
 curdoc().add_root(search_time_figure_layout)
+
+curdoc().add_root(
+    column(_scale_graphs, name="scale_graphs_dummy", sizing_mode="stretch_width")
+)
 
 curdoc().title = config.title
 
@@ -670,7 +848,7 @@ In this section we parse all url parameters
 
 
 def locations_in_filter(location_ids, filter_id):
-    return data.locations.sets[filter_id].index.isin(location_ids).any()
+    return data.locations.sets.data[filter_id].index.isin(location_ids).any()
 
 
 def convert_to_datetime(date_time):

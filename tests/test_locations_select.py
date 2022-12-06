@@ -2,9 +2,31 @@ from hydrodashboards.bokeh.main import filters, locations_source, data, location
 
 
 # choose filter oppervlaktewater
-filters[0].active = [0]
+filters[0].active = []
 # choose filter gemaal
-filters[1].active = [0]
+location_id = "NL34.HL.KGM007"
+
+
+def test_sorting_at_select():
+    filters[0].active = [0]
+    filters[1].active = [0]
+    # select = [i[0] for i in data.locations.options].index(location_id)
+    select = 22
+    locations.active = [select]
+
+    assert data.locations.value == [location_id]
+    assert data.locations.active == [0]
+    assert locations.active == [0]
+    locations.active = []
+
+
+def test_sorting_at_map_select():
+    # idx = [locations_source.data["id"].index(location_id)]
+    locations_source.selected.indices = [3]
+    assert data.locations.value == [location_id]
+    assert data.locations.active == [0]
+    assert locations.active == [0]
+    locations.active = []
 
 
 def test_in_locations():

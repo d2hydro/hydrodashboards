@@ -1,9 +1,10 @@
 from hydrodashboards.bokeh.language import locations_title
 from hydrodashboards.datamodel.models import Filter
+from hydrodashboards.datamodel.cache import Cache
 from fewspy.time_series import TimeSeries
 import geopandas as gpd
 import pandas as pd
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List
 import itertools
 
@@ -16,7 +17,6 @@ COLUMNS = [
     "geometry",
 ]
 EMPTY_SET = gpd.GeoDataFrame(columns=COLUMNS).set_index("id")
-
 MAP_LOCATIONS = {
     i: []
     for i in [
@@ -40,7 +40,7 @@ class Locations(Filter):
     """Locations-data class for hydrodashboard"""
 
     locations: gpd.GeoDataFrame = EMPTY_SET
-    sets: dict = field(default_factory=dict)
+    sets: Cache = Cache(sub_dir="locations", data_frame=True)
     app_df: pd.DataFrame = pd.DataFrame(MAP_LOCATIONS).set_index("id")
 
     def __post_init__(self):
@@ -106,6 +106,11 @@ class Locations(Filter):
     def name_from_ts_header(self, header):
         return self.locations.loc[header.location_id]["name"]
 
+    def get_parent_name(self, location_id):
+        if not pd.isna(self.locations.at[location_id, "parent_id"]):
+            location_id = self.locations.at[location_id, "parent_id"]
+        return self.locations.at[location_id, "name"]
+
     def from_pi_headers(self, pi_headers: TimeSeries) -> List[tuple]:
         """
         Get all location options from FEWS pi headers
@@ -127,13 +132,6 @@ class Locations(Filter):
         else:
             options = []
         return options
-
-    def update_from_options(self, options: List[tuple], sort=True):
-        if sort:
-            options.sort(key=lambda a: a[1])
-        values = [i[0] for i in options]
-        self.options = options
-        self.set_value([i for i in self.value if i in values])
 
     def options_from_headers_df(self, headers_df: pd.DataFrame):
         """
@@ -189,7 +187,7 @@ class Locations(Filter):
             df[k] = v
 
         # append to set
-        self.sets[filter_id] = df
+        self.sets.set_data(df, filter_id)
 
     def update_map_locations(self, filter_ids: List[str]):
         """
@@ -202,8 +200,37 @@ class Locations(Filter):
             None.
 
         """
+
+        def _defaults():
+            return dict(
+                line_color="black",
+                fill_color="grey",
+                nonselection_line_color="black",
+                non_slection_fill_color="grey",
+                label="meerdere filters",
+            )
+
+        def _flatten_series(series):
+            result = series.iloc[0].to_dict()
+            result["parameter_ids"] = list(
+                set(itertools.chain(*series["parameter_ids"]))
+            )
+            for k, v in _defaults().items():
+                result[k] = v
+            return result
+
         if filter_ids:
-            sets = [self.sets[i] for i in filter_ids if i in self.sets.keys()]
-            self.app_df = pd.concat(sets)
+            sets = [self.sets.data[i] for i in filter_ids if self.sets.exists(i)]
+            df = pd.concat(sets)
+            if df.index.has_duplicates:
+                duplicates = [i for i in df.index if list(df.index).count(i) > 1]
+                new_df = pd.DataFrame.from_dict(
+                    {i: _flatten_series(df.loc[i]) for i in duplicates}, orient="index"
+                )
+                new_df.index.name = "id"
+                df = df.loc[[i for i in df.index if i not in duplicates]]
+                df = pd.concat([df, new_df])
+            self.app_df = df
+
         else:
             self.app_df = pd.DataFrame(MAP_LOCATIONS).set_index("id")

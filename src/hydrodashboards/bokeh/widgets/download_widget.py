@@ -2,18 +2,21 @@ from bokeh.models.widgets import Button
 from bokeh.models import CustomJS
 import json
 
-disclaimer_json = json.dumps(
-    [
-        ["* Aan de gegevens in dit Excelbestand mogen geen rechten worden ontleend"],
-        [
-            "* Met debietformules worden berekeningen uitgevoerd die de werkelijkheid versimpelen; dit gebeurt nooit helemaal correct; er is dus altijd een zekere foutmarge en onzekerheid die in acht moet worden genomen bij het gebruik van deze data"
-        ],
-        [
-            "* De data is tot stand gekomen uit bewerkingen met grotendeels handmatig gevalideerde data; gaten in de tijdreeksen die hierdoor zijn ontstaan zijn niet opgevuld en beschikbaar"
-        ],
-        ["* De x,y coordinaten zijn geprojecterd in: Amersfoort / RD New (epsg:28992)"],
-    ]
-)
+
+def read_disclaimer(disclaimer_file, encoding="utf-8"):
+    if disclaimer_file is not None:
+        disclaimer_json = json.dumps(
+            [[i] for i in disclaimer_file.read_text(encoding=encoding).split("\n")]
+        )
+    else:
+        disclaimer_json = json.dumps(
+            [
+                ["* This is an hydrodashboards export"],
+                ["* Data comes as is, without warranty of any kind"],
+            ]
+        )
+    return disclaimer_json
+
 
 download_js = """
 function resolveAfter1Seconds() {
@@ -160,29 +163,11 @@ write_excel(wb,filename)
 sequentialStart(); //
 """
 
-scale_figs_js = """
-console.log(button.disabled)
-if (!button.disabled) {
-    var fig_len = figure.children[0].children.length;
-    const vh = Math.round(parent.innerHeight * 0.6);
-    
-    if (fig_len == 1) {
-            figure.children[0].height = vh;
-            figure.children[0].children[0].height = vh;
-            }
-    else if (fig_len > 1) {
-        figure.children[0].height = Math.round(fig_len * vh / 2);
-        for (let i = 0; i < figure.children[0].children.length; i++) {
-               figure.children[0].children[i].height = Math.round(vh / 2); 
-               }
-               }
-        }
-   
-"""
 
-
-def make_button(time_figure_layout):
+def make_button(time_figure_layout, disclaimer_file=None, graph_count=3):
     button = Button(label="", button_type="success", disabled=True)
+
+    disclaimer_json = read_disclaimer(disclaimer_file)
 
     button.js_on_click(
         CustomJS(
@@ -192,12 +177,4 @@ def make_button(time_figure_layout):
             code=download_js,
         )
     )
-
-    button.js_on_change(
-        "disabled",
-        CustomJS(
-            args=dict(button=button, figure=time_figure_layout), code=scale_figs_js
-        ),
-    )
-
     return button

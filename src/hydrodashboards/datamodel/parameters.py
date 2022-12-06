@@ -49,10 +49,6 @@ class Parameters(Filter):
 
         return parameter_name
 
-    def clean_value(self):
-        values = [i[0] for i in self.options]
-        self.set_value([i for i in self.value if i in values])
-
     def get_groups(self, parameter_source="fews"):
         if parameter_source == "fews":
             groups = {
@@ -63,11 +59,24 @@ class Parameters(Filter):
             }
         return groups
 
-    def update_from_options(self, options: List[tuple], reinit=True):
-        self._options = options
-        if reinit:
-            self.options = self._options
-        self.clean_value()
+    def get_y_labels(self, vertical_datum):
+        parameter_groups = list(set(self.get_groups().values()))
+        if "parameter_group_name" in self._fews_parameters.columns:
+            label_column = "parameter_group_name"
+        else:
+            label_column = "parameter_group"
+
+        def _label(parameter_group):
+            row = self._fews_parameters[
+                self._fews_parameters["parameter_group"] == parameter_group
+            ].iloc[0]
+
+            label = f"{row[label_column]} [{row.display_unit}]"
+            if row.uses_datum:
+                label = f"{label} [{vertical_datum}]"
+            return label
+
+        return {i: _label(i) for i in parameter_groups}
 
     def options_from_headers_df(self, headers_df: pd.DataFrame):
         """

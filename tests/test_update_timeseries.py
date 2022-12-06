@@ -1,27 +1,34 @@
 from hydrodashboards.bokeh.main import (
-    filters,
-    parameters,
-    locations,
+    convert_to_datetime,
     data,
+    download_time_series,
+    filters,
+    get_visible_sources,
+    locations,
+    parameters,
+    search_period,
+    search_time_figure_layout,
+    search_time_series,
+    search_source,
     start_time_series_loader,
+    time_figure_layout,
+    toggle_download_button_on_sources,
+    update_on_history_search_time_series,
+    update_on_view_period_value_throttled,
     update_time_series_view,
     update_time_series_search,
-    time_figure_layout,
-    get_visible_sources,
-    toggle_download_button_on_sources,
-    download_time_series,
-    update_on_view_period_value_throttled,
     view_period,
     view_x_range,
-    search_period,
-    convert_to_datetime,
 )
+
+# from hydrodashboards.bokeh.widgets import search_period_widget, time_figure_widget
 import copy
 
 from datetime import timedelta
 
 NBR_SERIES = 4
 LIM_EVENTS = 1000000
+EMPTY_WARNING = "no time series for selected locations and parameters"
 
 
 def load_time_series():
@@ -36,13 +43,14 @@ def toggle_renderers_visibility(figs, visible=False):
             renderer.visible = visible
 
 
-def test_load_abelstok():
+def test_load_beeklandstuw():
     # choose theme oppervlaktewater
+    filters[0].active = []
     filters[0].active = [0]
-    # choose filter gemaal
+    # choose filter stuw
     filters[1].active = [1]
 
-    # choose location abelstok
+    # choose location beeklandstuw
     locations.active = [0]
 
     # choose debiet and waterhoogte
@@ -100,3 +108,56 @@ def test_update_view_period():
     search_start -= timedelta(days=5)
     search_period.children[0].value = search_start.strftime("%Y-%m-%d")
     assert data.periods.search_start == search_start
+
+
+def test_update_history_search_time_series():
+    test_load_beeklandstuw()
+    df = data.time_series_sets.get_by_label(search_time_series.value).df
+    assert search_source.data["datetime"].min() == df.index.min()
+    assert search_source.data["datetime"].max() == df.index.max()
+
+    update_on_history_search_time_series()
+
+    assert search_source.data["datetime"].min() < df.index.min()
+
+
+def test_empty_timeseries():
+    # choose theme oppervlaktewater
+    filters[0].active = [0]
+    # choose filter gemaal
+    filters[1].active = [4]
+
+    # choose location abelstok
+
+    id = locations.labels.index("Triplum (KGM071)")
+    locations.active = [id]
+
+    # choose debiet
+    parameters.active = [0]
+
+    start_time_series_loader()
+    update_time_series_view()
+
+    assert not data.time_series_sets.any_active
+    assert EMPTY_WARNING in search_time_figure_layout.children[0].text
+    assert EMPTY_WARNING in time_figure_layout.children[0].text
+
+    filters[0].active = []
+
+
+def test_duplicate_locations():
+    # choose FC
+    filters[0].active = [2]
+    # choose two filters with duplicate locations
+    filters[1].active = [1, 2]
+
+    # choose location
+    locations.active = [7]
+
+    # choose first parameter
+    parameters.active = [0]
+
+    # load data
+    load_time_series()
+
+    assert not data.locations.app_df.index.has_duplicates

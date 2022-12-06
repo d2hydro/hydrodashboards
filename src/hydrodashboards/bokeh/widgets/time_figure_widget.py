@@ -9,6 +9,7 @@ from bokeh.models import (
     NumeralTickFormatter,
     CustomJSHover,
 )
+from bokeh.models.glyphs import Line, Patch
 from bokeh.palettes import Category10_10 as palette
 import pandas as pd
 from itertools import cycle
@@ -24,6 +25,7 @@ colors = cycle(palette)
 SIZING_MODE = "stretch_both"
 DELTA = 0.1
 THRESHOLD_NAME = "threshold"
+SEARCH_PATCH_COLOR = "lightgrey"
 
 DT_JS_FORMAT = r"""
     var date = new Date({});
@@ -86,14 +88,24 @@ def date_time_range_as_datetime(date_time_range):
     return start, end
 
 
-def empty_fig():
+def empty_fig(text="No graph has been generated", color="black"):
     return Div(
-        text='<p style="margin-left:400px;">No graph has been generated</p>',
+        text=f'<p style="margin-left:400px;color:{color};">{text}</p>',
         align="end",
         sizing_mode="stretch_width",
         width_policy="max",
         css_classes=["time_figure"],
     )
+
+
+def empty_layout(name):
+    time_figure = empty_fig()
+    return column(time_figure, name=name, sizing_mode="stretch_both")
+
+
+def warning_figure(figure_layout, text, color="#f16996"):
+    figure_layout.children.pop()
+    figure_layout.children.append(empty_fig(text=text, color=color))
 
 
 def valid_layout(time_figure_layout):
@@ -137,25 +149,27 @@ def make_y_range(time_series, bounds=None):
     return y_range
 
 
+def _get_sources(renderers):
+    return [
+        i.data_source
+        for i in renderers
+        if (len(i.data_source.data["value"]) > 0) & (i.name != THRESHOLD_NAME)
+    ]
+
+
+def _ends(renderers):
+    sources = _get_sources(renderers)
+    if len(sources) > 0:
+        start = min((i.data["value"].min() for i in sources))
+        end = max((i.data["value"].max() for i in sources))
+        if start > end - DELTA:
+            start, end = move_delta_ends(start, end)
+    else:
+        start, end = range_defaults()
+    return start, end
+
+
 def update_time_series_y_ranges(time_figure_layout, fit_y_axis=False):
-    def _get_sources(renderers):
-        return [
-            i.data_source
-            for i in renderers
-            if (len(i.data_source.data["value"]) > 0) & (i.name != THRESHOLD_NAME)
-        ]
-
-    def _ends(renderers):
-        sources = _get_sources(renderers)
-        if len(sources) > 0:
-            start = min((i.data["value"].min() for i in sources))
-            end = max((i.data["value"].max() for i in sources))
-            if start > end - DELTA:
-                start, end = move_delta_ends(start, end)
-        else:
-            start, end = range_defaults()
-        return start, end
-
     def update_range(fig, fit_y_axis=False):
         ends = _ends(fig.renderers)
         if fit_y_axis:
@@ -166,6 +180,16 @@ def update_time_series_y_ranges(time_figure_layout, fit_y_axis=False):
         top_figs = time_figure_layout.children[0].children
         for fig in top_figs:
             update_range(fig, fit_y_axis=fit_y_axis)
+
+
+def update_search_time_series_y_ranges(search_time_figure_layout):
+    if valid_layout(search_time_figure_layout):
+        fig = search_time_figure_layout.children[0]
+
+        # update y-axis
+        renderers = [i for i in fig.renderers if type(i.glyph) == Line]
+        ends = _ends(renderers)
+        fig.y_range.start, fig.y_range.end = ends
 
 
 def toggle_threshold_graphs(time_figure_layout, active):
@@ -225,6 +249,8 @@ def search_fig(
             source=view_period_patch_source(periods),
             alpha=0.5,
             line_width=2,
+            fill_color=SEARCH_PATCH_COLOR,
+            line_color=SEARCH_PATCH_COLOR,
         )
         _add_line()
         search_time_figure_layout.children.append(time_fig)
@@ -254,6 +280,7 @@ def search_fig(
 def top_fig(
     group: tuple,
     x_range: Range1d,
+    y_axis_label: str,
     threshold_groups={},
     threshold_visible=False,
     press_up_event=None,
@@ -265,7 +292,7 @@ def top_fig(
     parameter_group, time_series = group
     # define tools
     time_hover = HoverTool(
-        tooltips=[("datum-tijd", "@datetime{%F %H:%M}"), ("waarde", "@value{(0.00)}")],
+        tooltips=[("datum-tijd", "@datetime{%F %H:%M}"), ("waarde", "@value{'0.0'}")],
         formatters={
             "@datetime": CustomJSHover(code=DT_JS_FORMAT.format("special_vars.data_x"))
         },
@@ -281,13 +308,13 @@ def top_fig(
         "undo",
         "redo",
         "reset",
-        "save",
+        #        "save",
         time_hover,
     ]
 
     y_range = make_y_range(time_series)
     parameters = list(set([i.parameter_name for i in time_series]))
-    y_axis_label = f"{parameter_group} [{time_series[0].units}]"
+    # y_axis_label = f"{parameter_group} [{time_series[0].units}]"
 
     time_fig = figure(
         tools=tools,
@@ -307,7 +334,7 @@ def top_fig(
     time_fig.title.align = "center"
 
     time_fig.xaxis.formatter = FuncTickFormatter(code=DT_JS_FORMAT.format("tick"))
-    time_fig.xaxis.visible = False
+    time_fig.xaxis.visible = True
     time_fig.yaxis[0].formatter = NumeralTickFormatter(format="0.00")
 
     # add lines to figure
@@ -365,6 +392,7 @@ def top_fig(
 def create_time_figures(
     time_figure_layout: column,
     time_series_groups: dict,
+    group_y_labels: dict,
     threshold_groups: dict,
     threshold_visible: bool,
     x_range,
@@ -376,6 +404,7 @@ def create_time_figures(
         top_fig(
             i,
             x_range,
+            y_axis_label=group_y_labels[i[0]],
             threshold_groups=threshold_groups,
             threshold_visible=threshold_visible,
             renderers_on_change=renderers_on_change,

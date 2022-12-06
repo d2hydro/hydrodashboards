@@ -1,6 +1,6 @@
-from bokeh.models.widgets import CheckboxGroup, Div
+from bokeh.models.widgets import CheckboxGroup, Div, TextInput, Button
 from bokeh.models import CustomJS
-from bokeh.layouts import column
+from bokeh.layouts import column, row
 from typing import List
 
 SIZING_MODE = "stretch_width"
@@ -12,8 +12,16 @@ if (window.MenuEvents && typeof window.MenuEvents.onFiltersChanged === 'function
 }
 """
 
+reset_filter_js = "filter.active = []"
 
-def make_filter(data, on_change=[], filter_length=5) -> CheckboxGroup:
+reset_filter_search_js = """
+filter.active = []
+text_input.value_input = ""
+text_input.value = ""
+"""
+
+
+def make_filter(data, on_change=[], filter_length=5, disabled=False) -> CheckboxGroup:
     """Return a Bokeh CheckboxGroup filter from data filter."""
 
     bokeh_filter = CheckboxGroup(
@@ -29,6 +37,7 @@ def make_filter(data, on_change=[], filter_length=5) -> CheckboxGroup:
             bokeh_filter.on_change(selector, i)
 
     bokeh_filter.sizing_mode = SIZING_MODE
+    bokeh_filter.disabled = disabled
 
     return bokeh_filter
 
@@ -92,20 +101,39 @@ def set_filter_values(filters, filter_ids, thematic_view, data_filters):
         ]
         filters[1].active = filters_active
     else:
-        for i in filters:
-            i.active = [idx for idx, j in enumerate(i.options) if j[0] in filter_ids]
+        for idx, i in enumerate(filters):
+            values = [i[0] for i in data_filters.filters[idx].options]
+            i.active = [values.index(i) for i in filter_ids if i in values]
 
 
-def finish_filter(filter, css_class_num=1):
-    div = Div(
-        text=filter.name, sizing_mode="stretch_width", css_classes=["filter_title"]
-    )
-    filter = [div, filter]
+def finish_filter(filter, reset_button=False, search_input=None):
+    header = [Div(text=filter.name, sizing_mode="stretch_width")]
+    if reset_button:
+        button = Button(
+            label="", sizing_mode="stretch_width", css_classes=["filter_reset_button"]
+        )
+        if search_input is None:
+            button.js_on_click(CustomJS(code=reset_filter_js, args={"filter": filter}))
+            header = [button] + header
+        else:
+            text_input = TextInput(
+                sizing_mode="stretch_width", css_classes=["filter_search"]
+            )
+            text_input.on_change("value_input", search_input)
+            text_input.on_change("value", search_input)
+            button.js_on_click(
+                CustomJS(
+                    code=reset_filter_search_js,
+                    args={"filter": filter, "text_input": text_input},
+                )
+            )
+            header = [button] + header + [text_input]
+    filter = [row(header, css_classes=["filter_title"]), filter]
     return filter
 
 
-def finish_filters(filters, thematic_view=False):
-    filters = [finish_filter(i) for i in filters]
+def finish_filters(filters, thematic_view=False, reset_button=False, search_input=None):
+    filters = [finish_filter(i, reset_button, search_input) for i in filters]
     filters = [i for j in filters for i in j]
     filters_layout = column(filters, name="filters", sizing_mode="stretch_width")
 
@@ -114,6 +142,6 @@ def finish_filters(filters, thematic_view=False):
 
 def add_css_classes(filters, locations, parameters):
     class_num = 1
-    for i in filters + [locations] + [parameters]:
+    for i in filters + [locations, parameters]:
         i.css_classes = [f"filter_checkboxgroup_{class_num}"]
         class_num += 1

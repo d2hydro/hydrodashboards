@@ -34,6 +34,16 @@ class TimeSeries:
     def index(self):
         return (self.location, self.parameter)
 
+    @property
+    def data_start(self):
+        if not self.df.empty:
+            return pd.to_datetime(self.df.index.min())
+
+    @property
+    def data_end(self):
+        if not self.df.empty:
+            return pd.to_datetime(self.df.index.max())
+
     def within_period(self, period, selection="view"):
         within_period = False
         if selection == "view":
@@ -73,6 +83,10 @@ class TimeSeriesSets:
     @property
     def first_active(self):
         return next((i for i in self.time_series if i.active), None)
+
+    @property
+    def any_active(self):
+        return any([i.active for i in self.time_series])
 
     @property
     def max_events_loaded(self):

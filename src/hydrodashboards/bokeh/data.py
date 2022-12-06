@@ -19,10 +19,15 @@ from hydrodashboards.datamodel.utils import (
 from hydrodashboards import __version__
 
 # import functions from python modules
-from datetime import datetime
+from bokeh.palettes import Category20_20
+from datetime import datetime, timedelta
+import numpy as np
+import itertools
+from operator import itemgetter
 import pandas as pd
 
 FEWS_BUGS = dict(qualifier_ids=True)
+COLOR_CYCLE = itertools.cycle(Category20_20)
 
 
 def _get_propeties(filter_id, filter_name, filter_colors):
@@ -30,8 +35,8 @@ def _get_propeties(filter_id, filter_name, filter_colors):
         line = filter_colors[filter_id]["line"]
         fill = filter_colors[filter_id]["fill"]
     else:
-        line = "orange"
-        fill = "black"
+        line = next(COLOR_CYCLE)
+        fill = next(COLOR_CYCLE)
 
     return {
         "line_color": line,
@@ -40,6 +45,18 @@ def _get_propeties(filter_id, filter_name, filter_colors):
         "non_selection_fill_color": fill,
         "label": filter_name,
     }
+
+
+def to_datetime(date):
+    """
+    Converts a numpy datetime64 object to a python datetime object
+    Input:
+      date - a np.datetime64 object
+    Output:
+      DATE - a python datetime object
+    """
+    timestamp = (date - np.datetime64("1970-01-01T00:00:00")) / np.timedelta64(1, "s")
+    return datetime.utcfromtimestamp(timestamp)
 
 
 class Data:
@@ -64,7 +81,7 @@ class Data:
 
         # time properties
         self.now = now
-        self.periods = Periods(self.now, history_period=self.config.history_period)
+        self.periods = Periods(self.now, history_period_days=self.config.history_period)
 
         # data-classes linked to dashboard
         self.filters = Filters.from_fews(
@@ -109,6 +126,8 @@ class Data:
             period = self.periods.view_period
         elif selection == "search":
             period = self.periods.search_period
+        elif selection == "full_history":
+            period = self.periods.history_period
         return int(period.total_seconds() * 1000 / width)
 
     def _get_fews_ts(self, indices=None, request_type="headers"):
@@ -163,6 +182,16 @@ class Data:
             )
             start_time = self.periods.search_start
             end_time = self.periods.search_end
+        elif request_type == "full_history":
+            parallel = self.config.fews_parallel
+            thinning = self._get_thinning(selection="full_history")
+            (
+                location_ids,
+                parameter_ids,
+                qualifier_ids,
+            ) = self._fews_locators_from_indices(indices)
+            start_time = self.periods.history_start
+            end_time = self.periods.search_end
 
         result = self._fews_api.get_time_series(
             filter_id=self.config.root_filter,
@@ -203,7 +232,7 @@ class Data:
             ]
             tags = [
                 header.location_id,
-                location_name,
+                self.locations.get_parent_name(header.location_id),
                 xy,
                 header.parameter_id,
                 qualifiers_tag,
@@ -245,6 +274,111 @@ class Data:
                         ts_select.empty = fews_ts.events.empty
                         ts_select.start_datetime = fews_ts.header.start_date
                         ts_select.end_datetime = fews_ts.header.end_date
+
+    def _get_df_from_fews_ts_set(self, fews_ts_set, location_id, parameter_id):
+        for fews_ts in fews_ts_set.time_series:
+            header = fews_ts.header
+            if (header.location_id == location_id) and (
+                concat_fews_parameter_ids(
+                    fews_ts.header.parameter_id, fews_ts.header.qualifier_id
+                )
+                == parameter_id
+            ):
+                return fews_ts.events
+
+    """
+
+    Section with functions handling cache
+
+    """
+
+    def delete_cache(self):
+        for i in self.filters.filters:
+            i.cache.delete_cache()
+        self.locations.sets.delete_cache()
+
+    def build_cache(self):
+        self.logger.info("building cache")
+        filter_ids = self.filters.values
+
+        for filter_id in filter_ids:
+            filter_data = self.filters.get_filter(filter_id)
+            self.cache_filter(filter_data, filter_id)
+
+    def cache_filter(self, filter_data, filter_id):
+        def _get_from_header(i):
+            location_id = self.locations.parent_id_from_ts_header(i)
+            # If the location is parent, it has no parent_id. And if the parent has no
+            # timeseries the location can not be revealed via the FEWS API. In both
+            # cases we use the location_id in the app.
+            if pd.isna(location_id) | (
+                location_id not in self.locations.locations.index
+            ):
+                location_id = i.location_id
+
+            if location_id in self.locations.locations.index:
+
+                child_id = i.location_id
+                location_name = self.locations.locations.at[location_id, "name"]
+                parameter_id = self.parameters.id_from_ts_header(i)
+                parameter_name = self.parameters.name_from_ts_header(i)
+
+                return (
+                    location_id,
+                    location_name,
+                    child_id,
+                    parameter_id,
+                    parameter_name,
+                )
+            else:
+                return [None for i in range(5)]
+
+        def _pi_headers_to_df(pi_headers):
+
+            data = [_get_from_header(i.header) for i in pi_headers.time_series]
+
+            df = pd.DataFrame.from_records(
+                data=data,
+                columns=[
+                    "location_id",
+                    "location_name",
+                    "child_ids",
+                    "parameter_ids",
+                    "parameter_names",
+                ],
+            )
+            df = df.loc[~df["parameter_ids"].isin(self.config.exclude_pars)]
+            return df
+
+        filter_name = self.filters.get_name(filter_id, filter_data)
+        if filter_id in self.config.headers_full_history:
+            start_time = self.periods.search_start
+        else:
+            start_time = self.now
+        pi_headers = self._fews_api.get_time_series(
+            filter_id=filter_id,
+            start_time=start_time,
+            end_time=self.now,
+            only_headers=True,
+        )
+        headers_df = _pi_headers_to_df(pi_headers)
+        locations = self.locations.options_from_headers_df(headers_df)
+        parameters = self.parameters.options_from_headers_df(headers_df)
+        filter_data.cache.set_data(
+            {
+                "locations": locations,
+                "parameters": parameters,
+            },
+            filter_id,
+        )
+
+        # if not yet in sets, add it there too
+        if not self.locations.sets.exists(filter_id):
+            properties = _get_propeties(
+                filter_id, filter_name, self.config.filter_colors
+            )
+            self.locations.add_to_sets(filter_id, headers_df, properties)
+        return locations, parameters
 
     """
 
@@ -296,50 +430,6 @@ class Data:
 
         """
 
-        def _get_from_header(i):
-            location_id = self.locations.parent_id_from_ts_header(i)
-            # If the location is parent, it has no parent_id. And if the parent has no
-            # timeseries the location can not be revealed via the FEWS API. In both
-            # cases we use the location_id in the app.
-            if pd.isna(location_id) | (
-                location_id not in self.locations.locations.index
-            ):
-                location_id = i.location_id
-
-            if location_id in self.locations.locations.index:
-
-                child_id = i.location_id
-                location_name = self.locations.locations.at[location_id, "name"]
-                parameter_id = self.parameters.id_from_ts_header(i)
-                parameter_name = self.parameters.name_from_ts_header(i)
-
-                return (
-                    location_id,
-                    location_name,
-                    child_id,
-                    parameter_id,
-                    parameter_name,
-                )
-            else:
-                return [None for i in range(5)]
-
-        def _pi_headers_to_df(pi_headers):
-
-            data = [_get_from_header(i.header) for i in pi_headers.time_series]
-
-            df = pd.DataFrame.from_records(
-                data=data,
-                columns=[
-                    "location_id",
-                    "location_name",
-                    "child_ids",
-                    "parameter_ids",
-                    "parameter_names",
-                ],
-            )
-            df = df.loc[~df["parameter_ids"].isin(self.config.exclude_pars)]
-            return df
-
         all_locations = []
         all_parameters = []
 
@@ -350,40 +440,20 @@ class Data:
 
         for filter_id in values:
             filter_data = self.filters.get_filter(filter_id)
-            filter_name = self.filters.get_name(filter_id, filter_data)
 
             # get locations and parameters from sub-filter
-            if filter_id not in filter_data.cache.keys():  # add to cache if
-                if filter_id in self.config.headers_full_history:
-                    start_time = self.periods.search_start
-                else:
-                    start_time = self.now
-                pi_headers = self._fews_api.get_time_series(
-                    filter_id=filter_id,
-                    start_time=start_time,
-                    end_time=self.now,
-                    only_headers=True,
-                )
-                headers_df = _pi_headers_to_df(pi_headers)
-                locations = self.locations.options_from_headers_df(headers_df)
-                parameters = self.parameters.options_from_headers_df(headers_df)
-                filter_data.cache[filter_id] = {
-                    "locations": locations,
-                    "parameters": parameters,
-                }
-            else:
-                locations, parameters = filter_data.cache[filter_id].values()
+            if not filter_data.cache.exists(filter_id):  # add to cache if
+                locations, parameters = self.cache_filter(filter_data, filter_id)
 
-            # if not yet in sets, add it there too
-            if filter_id not in self.locations.sets.keys():
-                properties = _get_propeties(
-                    filter_id, filter_name, self.config.filter_colors
-                )
-                self.locations.add_to_sets(filter_id, headers_df, properties)
+            else:
+                filter_data = self.filters.get_filter(filter_id)
+                locations, parameters = filter_data.cache.data[filter_id].values()
 
             # add locations and parameters to list
             all_locations = list(set(all_locations + locations))
-            all_parameters = list(set(all_parameters + parameters))
+            all_parameters = sorted(
+                list(set(all_parameters + parameters)), key=itemgetter(1)
+            )
 
         # update locations and parameter filter data
         self.locations.update_from_options(all_locations)
@@ -418,7 +488,31 @@ class Data:
             self.parameters.options = self.parameters._options
 
         # clean parameter value to options
+        self.parameters.limit_options_on_search_input()
         self.parameters.clean_value()
+
+    def update_history_time_series_search(self, search_time_series_label):
+
+        search_time_series = self.time_series_sets.get_by_label(
+            search_time_series_label
+        )
+        time_series_index = (search_time_series.location, search_time_series.parameter)
+
+        fews_ts_set = self._get_fews_ts(
+            indices=[time_series_index], request_type="full_history"
+        )
+
+        return self._get_df_from_fews_ts_set(fews_ts_set, *time_series_index)
+        # self._update_ts_from_fews_ts_set(fews_ts_set)
+
+    def get_history_period(self, datetime_array):
+        if len(datetime_array) == 0:
+            return (self.periods.search_start, self.periods.search_end)
+        else:
+            return (
+                to_datetime(datetime_array.min()),
+                to_datetime(datetime_array.max()) + timedelta(hours=12),
+            )
 
     def update_time_series_search(self):
         if self.time_series_sets.select_incomplete():
@@ -443,13 +537,14 @@ class Data:
         self.time_series_sets.set_visible(indices=indices)
 
         # set data for search time_series
-        first_active = self.time_series_sets.first_active
-        if not first_active.within_period(period=self.periods, selection="search"):
-            fews_ts_set = self._get_fews_ts(
-                indices=[first_active.index], request_type="search"
-            )
+        if self.time_series_sets.any_active:
+            first_active = self.time_series_sets.first_active
+            if not first_active.within_period(period=self.periods, selection="search"):
+                fews_ts_set = self._get_fews_ts(
+                    indices=[first_active.index], request_type="search"
+                )
 
-            self._update_ts_from_fews_ts_set(fews_ts_set)
+                self._update_ts_from_fews_ts_set(fews_ts_set)
 
         # set data for view time_series
         if self.time_series_sets.select_view(self.periods):

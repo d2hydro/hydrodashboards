@@ -24,9 +24,9 @@
     <!-- Our Custom JS -->
     <script src="/bokeh/static/js/main.js"></script>
 	<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+	<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
     <script type="text/javascript">
-	
-
         $(document).ready(function () {
             $('#sidebarCollapse').on('click', function () {
                 $('#sidebar').toggleClass('active');
@@ -36,8 +36,6 @@
                 AnimationUtils.onResizePage();
             });
         });
-		
-
         function scale_graph() {
           var but_leg = document.getElementById("button_leg_bar");
           var maplayer_icon=document.getElementById("maplayer_icon");
@@ -45,33 +43,20 @@
           var kaart = document.getElementById("kaart");
           var zoekgraf = document.getElementById("zoekgrafiek-en-slider");
           var but = document.getElementById("button_lower");
-          const h = document.getElementById("grafiek_upper");
+          var h = document.getElementById("grafiek_upper");
           var download = document.getElementsByClassName("bk bk-btn bk-btn-success")[0];
           but.classList.toggle("fa-angle-double-up");
           but.classList.toggle("fa-angle-double-down");
           if (zoekgraf.style.display === "none") {
             zoekgraf.style.display = "block";
             h.style.height = "60.5vh";
-            download.style.backgroundColor = "#3681C1";
-            download.style.borderColor = "#495568";	
-          
-			  var xs = document.querySelectorAll(".bk.time-figure");
-			  // Declare i and qty for "for" loop
-			  console.log(xs.length);	
-			  var i, qty = xs.length;
-			    console.log("hello");		
-				// Use "for" loop to iterate through NodeList
-				for (i = 0; i < qty; i++) {
-				// If this div.image at index [i] is "none"...
-				
-				  xs[i].style.minHeight = "400px";
-				console.log(xs[i]);	
-			  }			
+<!--            download.style.backgroundColor = "#3681C1"; -->
+<!--            download.style.borderColor = "#495568";		-->		
           } else {
             zoekgraf.style.display = "none";
             h.style.height = "78vh";
-            download.style.backgroundColor = "white";
-            download.style.borderColor = "white";
+<!--            download.style.backgroundColor = "white";-->
+<!--            download.style.borderColor = "white";-->
           }
           
           AnimationUtils.dispatchResizeEvent();
@@ -84,8 +69,7 @@
           var kaart = document.getElementById("kaart");
         if (map_opt.style.display == "none") {
             map_opt.style.position = "fixed";
-            map_opt.style.display = "block";
-			
+            map_opt.style.display = "block";		
           } else {
             map_opt.style.display = "none";
             dummy.style.display= "block";
@@ -104,13 +88,19 @@
 		ctrlKey = false
 		}});
 		};
-	keyDown();
-	keyUp();
-	
+		keyDown();
+		keyUp();
+	    
+		
+		
+		
+		function refresh_app() {
+			window.location.reload();
+			
+			}
+			
 
     </script>
-	
-
 {% endblock %}
 
 {% block contents%} 
@@ -126,22 +116,25 @@
                 {{ embed(roots.locations) }}
                 {{ embed(roots.parameters) }}
                 {{ embed(roots.search_period) }}
-			</div>
-			<div class="row" id="update_download">  			
-				<div class="col-9">
-					{{ embed(roots.update_graph) }}
-				</div>	
-				<div class="col-2">
-					{{ embed(roots.download_time_series)}}
-				</div>	
-			</div>					
+                <div class="update-wrapper" id="update_download"> 
+					<div class="update">
+                        {{ embed(roots.update_graph) }}
+						{{ embed(roots.scale_graphs_dummy) }}
+					</div>	
+					<div class="download">
+                        {{ embed(roots.download_time_series)}}
+					</div>	
+					<div class="save">
+					    {{ embed(roots.save_time_series)}}
+					</div>
+                </div>
+			</div>				
         </nav>
 		
 		
 
         <!-- Page Content Holder -->
-        <div id="content">
-        
+        <div id="content">    
             <nav class="navbar navbar-expand-lg">
                 <div class="container-fluid h-100">
                     <button type="button" id="sidebarCollapse" class="navbar-btn">
@@ -152,10 +145,9 @@
                     <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                         <i class="fas fa-align-justify"></i>
                      </button>
-                    <button onClick="window.location.reload();"style="border:none; height:22px;cursor:pointer;color:white; background: rgba(0,0,0,0);">
-                        <i style="font-size:19px;" ; class="fas fa-align-justify">&#xf01e;</i>
-                    </button>
-                    <button class="btn btn-dark"style="border:none;cursor:pointer; height:35px;background: rgba(0,0,0,0);color:white" type="button" onclick="window.open('https://d2hydro.github.io/hydrodashboards/manuals/user_nl/','_blank')">
+                    <button onclick="refresh_app()" id="refresh_app">
+					</button>
+                    <button class="btn btn-dark"style="border:none;cursor:pointer; height:35px;background: rgba(0,0,0,0);color:white" type="button" onclick="window.open('https://d2hydro.github.io/hydrodashboards/user_manuals/user_nl/','_blank')">
                         <i class='fas fa-info-circle ' style="font-size: 24px;"></i>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -174,12 +166,12 @@
             </nav>
             <div class="tab-content">
                 <div class="tab-pane fade show active row" id="kaart" role="tabpanel" aria- labelledby="kaart-tab" aria-expanded="false">
-                            <div class="col-12" id="kaart">
+                    <div class="col-12" id="kaart">
                                 {{ embed(roots.map_figure)}}
-                            </div>
-                            <div class="test" id ="button_leg_bar" >
+                    </div>
+                    <div class="test" id ="button_leg_bar" >
                                 <button onclick="popMapLegend()" class="maplayer_icon" id="maplayer_icon" aria-hidden="true"></button>
-                            </div>
+                     </div>
                             <div class="map_opt" id="map_opt">
                                  {{ embed(roots.map_options) }}
                             </div>    
@@ -194,16 +186,15 @@
                                 {{ embed(roots.time_figure) }}
                             </div>   
 							
+/thresholds/
                         </div>
                         <div class="row" id="zoekgrafiek-bar">    
-                            <div class="col-4">
-                                <button onclick="scale_graph()" class="fas fa-angle-double-down" id="button_lower" aria-hidden="true"></button>
-                                <h6 style="color:#3681C1;" id="button-text">Zoekgrafiek</h6>
-                            </div>    
-                            <div class="col-5" style="margin-left:-240px;">
-                                {{ embed(roots.select_search_time_series) }}
+							<div class="col-1" id="history">
+									{{ embed(roots.history_search_time_series) }}
+							</div>
+							<div class="col-6">
+                                {{ embed(roots.select_search_time_series) }}							 
                             </div> 
-                          
                         </div>
                         <div class="row" id="zoekgrafiek-en-slider" >
                             <div class="col-12"id="grafiek-slider">
