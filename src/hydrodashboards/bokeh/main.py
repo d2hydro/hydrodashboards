@@ -158,7 +158,7 @@ def order_filter(bokeh_filter, filter_cls, active=None):
 def report_state():
     logger.debug(
         (
-            f"filters: {data.filters.value}",
+            f"filters: {data.filters.value(thematic_view=config.thematic_view)}",
             f"locations: {data.locations.value}",
             f"parameters: {data.parameters.value}",
         )
@@ -748,8 +748,8 @@ history_search_time_series = search_period_widget.make_button(
 # add
 
 _scale_graphs = ghost_buttons.make_button(
-    time_figure_layout=time_figure_layout,
-    graph_count=config.graph_count)
+    time_figure_layout=time_figure_layout, graph_count=config.graph_count
+)
 
 """
 In this section we add all widgets to the curdoc
@@ -837,9 +837,7 @@ curdoc().add_root(column(view_period, name="view_period", sizing_mode="stretch_b
 curdoc().add_root(search_time_figure_layout)
 
 curdoc().add_root(
-    column(
-        _scale_graphs, name="scale_graphs_dummy", sizing_mode="stretch_width"
-    )
+    column(_scale_graphs, name="scale_graphs_dummy", sizing_mode="stretch_width")
 )
 
 curdoc().title = config.title

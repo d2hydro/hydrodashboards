@@ -28,6 +28,7 @@ if (button.disabled) {
    
 """
 
+
 def make_button(time_figure_layout, js_callback=scale_figs_js, graph_count=3):
     button = Button(label="", button_type="success", disabled=True)
     button.js_on_change(

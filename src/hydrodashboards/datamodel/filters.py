@@ -85,7 +85,6 @@ class Filters:
         values = [[j[0] for j in i.options] for i in self.filters]
         return [j for i in values for j in i]
 
-    @property
     def value(self, thematic_view=True):
         if thematic_view:
             value = self.thematic_filters[1].value
