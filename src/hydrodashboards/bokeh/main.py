@@ -836,7 +836,7 @@ curdoc().add_root(search_time_figure_layout)
 
 curdoc().add_root(
     column(
-        scale_graphs, name="scale_graphs", sizing_mode="stretch_width"
+        scale_graphs, name="scale_graphs_dummy", sizing_mode="stretch_width"
     )
 )
 
