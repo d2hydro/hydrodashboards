@@ -21,7 +21,7 @@
 
 3\. Selecteer locaties uit de lijst of,
 
-4\. selecteer locaties op de kaart. Houd bij het selecteren van meerdere locaties op de kaart de SHIFT knop op uw toetsenbord ingedrukt.
+4\. selecteer locaties op de kaart. Houd bij het selecteren van meerdere locaties op de kaart de CTRL knop op uw toetsenbord ingedrukt.
 
 **Resultaten**:
 
@@ -98,7 +98,7 @@ De gezochte periode kunt u ook aanpassen met de volgende mogelijkheden:
 
 **Acties**:
 
-12\. Toon de zoekperiode voor álle data beschikbaar voor de zoekgrafke (=onderste grafiek)
+12\. Toon de zoekperiode voor álle data beschikbaar voor de zoekgrafiek (=onderste grafiek)
 
 13\. Kies een datum verder terug in de tijd
 
