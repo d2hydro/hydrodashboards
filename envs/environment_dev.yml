@@ -1,4 +1,4 @@
-name: bokeh
+name: bokeh3
 
 channels:
   - conda-forge
@@ -10,7 +10,7 @@ dependencies:
   - black
   - jupyter
   - pandas
-  - bokeh
+  - bokeh==3.0.3
   - mkdocs
   - mkdocstrings
   - mkdocstrings-python
