@@ -694,7 +694,7 @@ map_figure = map_figure_widget.make_map(
 map_options = map_figure_widget.make_options(
     map_overlays=config.map_overlays,
     overlays_change=update_map_figure_overlay_control,
-    background_title="Achtergrond",
+    background_title="____________",
     background_change=update_map_figure_background_control,
 )
 
