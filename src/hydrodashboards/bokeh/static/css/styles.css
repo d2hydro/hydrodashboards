@@ -4,7 +4,7 @@
 ----------------------------------------------------- */
 .map_opt{
   display:block;
-  position: fixed;
+  position: absolute;
   background: white;
   width: 165px;
   top: calc(100% - 434px);
@@ -16,8 +16,21 @@
   box-shadow: rgba(0, 0, 0, 0.2) 0px 20px 30px;
 }
 
-/*.map_opt*/
 
+.map_opt
+{
+  display:block;
+  position: absolute;
+  background: white;
+  width: 116px;
+  top: calc(100% - 236px);
+  left: calc(100% - 126px);
+  background-color: white;
+  padding: 2px;
+  border: 1px solid #F1F2F3;
+  border-radius:4px;
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 20px 30px;
+}
 
 
 .bk.threshold{
@@ -66,9 +79,6 @@ a, a:hover, a:focus {
     padding-right: 20px;
 }
 
-
-
-
 :root {
     accent-color: #F16996;
 }
@@ -76,41 +86,80 @@ a, a:hover, a:focus {
    Navbar
 ----------------------------------------------------- */
 .navbar {
-    padding: 12px 0px;
     border: none;
-    border-radius: 0;
     position: relative;
-	height: 60px;
+	height: 10px;
 	border-left: 1px solid white;
-	border-right: 1px solid white;	
+	border-right: 1px solid white;
+	z-index:1;
 }
+
+.navbar-expand-lg .navbar-nav {
+    flex-direction: row;
+	float:right;
+}
+
 
 .navbar-btn {
     box-shadow: none;
     outline: none !important;
 	position: relative;
     border: none;
+	min-width: 20px;
 	
 }
+/* top bar*/
 .navbar-expand-lg {
-   background: #363F4D;
+   background: #363f4d;
+   padding-bottom: 0;
+   height:44px;
    }
    
 a[data-toggle="collapse"] {
     position: relative;
 }
 
-.nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active{
-	background-color:#F16996;
-	color: white!important
+.nav-item.nav-link{
+	background-color: #363f4d;
+	color: lightgrey;
+	border-width:1px;
+	border-color:grey;
 }
 
-.nav-link {
-  color: #EBECED;
-  background-color: white;
-  width: 100%;
-  height: 100%;
+.nav-item.nav-link.active.show{
+	background-color:white;
+	color: #363f4d;
+	border-width:1px;
 }
+
+.nav-link{
+		padding: 0.2rem 0.2rem!important;
+	}
+
+.navbar-nav > ul{
+	margin-bottom:0px!important;
+	padding-bottom:0px;
+	height:100%;
+}
+
+.nav{
+	flex-wrap:nowrap !important
+}
+
+.nav-tabs .nav-item{
+    width: 80px!important;
+}
+
+.nav-tabs .nav-link{
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	border-top-color:white;
+	border-right-color:white;
+	border-left-color:white;
+	border-bottom-width:0px;
+}
+
+
 
 /* ---------------------------------------------------
     SIDEBAR STYLE
@@ -134,6 +183,8 @@ a[data-toggle="collapse"] {
     color: #fff;
     transition: all 0.6s cubic-bezier(0.945, 0.020, 0.270, 0.665);
     transform-origin: bottom left;
+	z-index:1;
+
 }
 
 #sidebar > .sidebar-bokeh {
@@ -152,8 +203,14 @@ a[data-toggle="collapse"] {
 
 #sidebar.active {
     margin-left: -310px;
-    transform: rotateY(100deg);
+	background: black;
 }
+#sidebar.active > .sidebar-bokeh{
+	opacity: 0;
+	pointer-events: none;	
+}
+
+
 #sidebar > .sidebar-bokeh > .bk-root > .bk {
     height: 100% !important;
     width: auto !important;
@@ -171,14 +228,13 @@ a[data-toggle="collapse"] {
 #sidebar .sidebar-header {
     padding-right: 10px;
 	padding-left: 10px;
-	padding-top: 10px;
-    background: #363F4D;
-	height:59px;
-	margin-bottom:0px;
+    background: #363f4d;
+	height:44px;
+
 }
 
 #sidebar > .sidebar-header .bk.app_title{
-    display:inline-block; min-width: 270px;
+    display:flex; min-width:240px;height:30px!important
 }
 /*---------------------------------------------------------
 	Sidemenu Checkboxes positioning
@@ -186,7 +242,7 @@ a[data-toggle="collapse"] {
 #sidebar > .sidebar-bokeh > .bk-root:first-child {
     min-height: 150px;
     flex-grow: 2;
-    max-height: 300px;
+    max-height: 310px;
     flex-basis: 0;
 }
 
@@ -598,9 +654,9 @@ input[type=checkbox]{
     CONTENT STYLE
 ----------------------------------------------------- */
 #content {
-    width: 101%;
-    height: 100%;
-    min-height: 100%;
+    width: 100%;
+    height: 99.6%;
+    min-height: 99.6%;
     transition: all 0.3s;
 	position:relative;
 	background-color:#F1F2F3;
@@ -608,6 +664,7 @@ input[type=checkbox]{
 	margin-right:0px;
 	display:block;
 	padding:0px;	
+	z-index:-1;
 }
 
 #sidebarCollapse {
@@ -615,8 +672,14 @@ input[type=checkbox]{
     height: 40px;
     background: rgba(0,0,0,0);
     cursor: pointer;
+	right:-38px;
+
 }
 
+#sidebarCollapse.active {
+	right:-38px;
+	z-index:1;
+}
 #sidebarCollapse span {
     width: 80%;
     height: 2px;
@@ -625,6 +688,11 @@ input[type=checkbox]{
     background: white;
     transition: all 0.8s cubic-bezier(0.810, -0.330, 0.345, 1.375);
     transition-delay: 0.2s;
+}
+
+#sidebarCollapse.navbar-btn.active{
+/*	position:absolute;
+    z-index:999;*/
 }
 
 #sidebarCollapse span:first-of-type {
@@ -641,7 +709,9 @@ input[type=checkbox]{
     transform: none;
     opacity: 1;
     margin: 5px auto;
+
 }
+
 
 /* ---------------------------------------------------
     Refresh app and chart-graph tab
@@ -651,7 +721,7 @@ input[type=checkbox]{
 	background-image: url(/bokeh/static/icons/refresh.png);
 	background-repeat: no-repeat;
 	background-position: center;
-	height: 30px;
+	height: 20px;
 	border: 0;
 	outline: none;
 	border-color:#363F4D;
@@ -664,31 +734,65 @@ input[type=checkbox]{
   background-color:#f16996;
 }
 
-#kaart-tab{
-	color:#0C0F2E;
-}
-#grafiek-tab{
-	color:#0C0F2E;
-}
-
 /* ---------------------------------------------------
   Map
 ----------------------------------------------------- */
 .tab-content{
 	width: 100%;
-	height: calc(100% - 70px);
+	height: 94.5%;
 	display:block;
 	position: absolute;
 }
 #kaart{
 	position:absolute; 
 	width:100%;
-	height:100%;
-	border-color:grey;
-	border-width: 1px;
+	height:102%;
 	display: block;
-    margin-left: auto;
-    margin-right: auto ;	
+    margin-left: 0;
+    margin-right: 0;
+	top:-15px;
+	border:none;
+	padding:0;
+}
+ 
+#kaart > .bk-root > .bk{
+	width:100% !important;
+	display: block!important;
+}
+#kaart > .bk-root > .bk > .bk{ 
+	width:100% !important;
+	display: block!important;
+}
+
+#kaart > .bk-root > .bk >.bk >.bk > .bk.bk-canvas-events > .bk {
+	top:70%!important;
+	z-index: 2;
+	left: 12px!important;
+	width: 30px!important;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	overflow:visible!important;
+}
+.bk-root .bk-above .bk-toolbar-button.bk-active {
+	border-bottom: 2px solid #f16996;
+}
+
+.bk.bk-toolbar-button.bk-tool-icon-save, .bk.bk-toolbar-button.bk-tool-icon-reset, .bk.bk-toolbar-button.bk-tool-icon-tap-select.bk-active, .bk.bk-toolbar-button.bk-tool-icon-wheel-zoom.bk-active,.bk.bk-toolbar-button.bk-tool-icon-box-select, .bk.bk-toolbar-button.bk-tool-icon-pan.bk-active{
+	background-color:white!important;
+}
+
+.bk.menu-animation-width.menu-animation-tag{
+	width:100% !important;
+}
+
+.bk-root .bk-above .bk-divider{
+	height:0px!important;
+}
+
+.bk-root .bk-toolbar.bk-above{
+	display:flex;
+	 flex-direction: column;
 }
 /* ---------------------------------------------------
   Map legend
@@ -699,6 +803,13 @@ input[type=checkbox]{
 .map_opt .bk-root .bk .bk .bk .bk.bk-input-group label[class=bk] input[type=radio]{
     accent-color: lightgrey;	
 }
+
+	
+.h6, h6{
+	font-family:serif;
+}
+
+
 
 #button_leg_bar {
   background-color: transparent;
@@ -745,13 +856,13 @@ input[type=checkbox]{
 .app_status
 {
 	display: block;
-	margin-left:10px;
+	margin-left:22px;
 	height:2px;
 	width: 300px;
 	color: #3A4453;
 	white-space: nowrap ;
 	position:absolute;
-    top:97%;
+    top:95.6%;
 }
 
 /* ---------------------------------------------------
@@ -809,7 +920,7 @@ input[type=checkbox]{
     Figures
 ----------------------------------------------------- */
 #grafiek_upper {
-    height: 60.5vh;	
+    height: 62.5vh;	
 	background-color: white;
 	margin-top:2vh;
 	overflow-y:auto;
@@ -818,8 +929,8 @@ input[type=checkbox]{
 #zoekgrafiek-bar{
 	background: #F8F9FA;
 	border: 2px solid white;
-	margin-left:0px;
-	margin-right:0px;
+	margin-left:10px;
+	margin-right:10px;
 	margin-top:2vh;
 	display:flex!important;
 }
@@ -847,14 +958,16 @@ input[type=checkbox]{
 
 #zoekgrafiek-en-slider {
 	position: relative;
-	margin-left:0px;
-	margin-right:0px;
+	margin-left:10px;
+	margin-right:10px;
+	margin-top:0px;
+	margin-bottom:0px;
 	display:block;
 	background-color: white;
 }
 
 #grafiek-lower{
-    height: 16vh;
+    height: 14vh;
 	margin-top: -1.2vh;
 	margin-right:0px;
 	margin-left:0px;
@@ -1055,16 +1168,49 @@ input[type=checkbox]{
 /* ---------------------------------------------------
     MEDIAQUERIES
 ----------------------------------------------------- */
+
 @media (max-width: 768px) {
+	#button_leg_bar{
+		display:none!important
+	}
+	.map_opt{
+		display:none!important
+	} 
+	
+	#app_status{
+		display:none
+	}
     #sidebar {
-        margin-left: -300px;
-        transform: rotateY(90deg);
+        margin-left: -310px;
+		background: #363f4d;
     }
 	
-    #sidebar.active {
-        margin-left: 0;
-        transform: none;
+	#sidebar > .sidebar-bokeh{
+		opacity: 0;
+		pointer-events: none;	
+	}
+	
+	#sidebar.active > .sidebar-bokeh {
+		opacity:1;	
+	}
+		
+    #sidebar.active {	
+		margin-left: 0;
+		transform: none;
+		width:100%!important;
+		background: #69788c;
+		height:100vh;
+		transition: all 0.6s cubic-bezier(0.945, 0.020, 0.270, 0.665);
+		transform-origin: bottom left;
     }
+	#sidebarCollapse.navbar-btn{
+		right:-38px;
+		
+	}
+	#sidebarCollapse.navbar-btn.active{
+		right:5px;
+	}
+	
     #sidebarCollapse span:first-of-type,
     #sidebarCollapse span:nth-of-type(2),
     #sidebarCollapse span:last-of-type {
