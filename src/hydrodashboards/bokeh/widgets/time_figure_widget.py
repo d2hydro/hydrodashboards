@@ -342,7 +342,7 @@ def top_fig(
     for i in time_series:
         label = i.label
         legend_label = trucate_label(i.label)
-        source = time_series_to_source(i, start_date_time=x_start, end_date_time=x_end)
+        source = time_series_to_source(i, start_date_time=x_start, end_date_time=x_end, sample=True)
         renderer = time_fig.line(
             x="datetime",
             y="value",

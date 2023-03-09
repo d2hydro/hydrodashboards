@@ -29,6 +29,7 @@ def df_to_source(
     end_date_time=None,
     excluded_date_times=None,
     unreliables=False,
+    sample=False
 ):
     if (start_date_time is not None) and (end_date_time is not None):
         df = df.loc[_index_mask(df.index, start_date_time, end_date_time)]
@@ -36,6 +37,11 @@ def df_to_source(
         df = df.loc[~df.index.isin(excluded_date_times)]
     if (not unreliables) & ("flag" in df.columns):
         df = pd.DataFrame(df.loc[df["flag"] < 6]["value"])
+
+    # To Do (Neeltje): advanced sampling preserving peaks and depressions
+    if sample:
+        df = df.sample(min(len(df), 2000)).sort_index()
+    # end of improvements
     return ColumnDataSource(df)
 
 
@@ -45,15 +51,16 @@ def time_series_to_source(
     end_date_time=None,
     unreliables=False,
     excluded_date_times=None,
+    sample=False
 ):
 
-    df = time_series.df
     source = df_to_source(
-        df,
+        time_series.df,
         start_date_time=start_date_time,
         end_date_time=end_date_time,
         unreliables=unreliables,
         excluded_date_times=excluded_date_times,
+        sample=sample
     )
     source.name = time_series.label
     source.tags = time_series.tags
@@ -94,7 +101,7 @@ def view_period_patch_source(data):
     )
 
 
-def time_series_sources(time_series=[], unreliables=False, active_only=False):
+def time_series_sources(time_series=[], unreliables=False, active_only=False, sample=False):
     def _active(i, active_only=active_only):
         if active_only:
             return i.active
@@ -102,13 +109,13 @@ def time_series_sources(time_series=[], unreliables=False, active_only=False):
             return True
 
     return {
-        i.label: time_series_to_source(i, unreliables)
+        i.label: time_series_to_source(i, unreliables, sample=sample)
         for i in time_series
         if _active(i)
     }
 
 
-def update_time_series_sources(sources, time_series=[], unreliables=False):
+def update_time_series_sources(sources, time_series=[], unreliables=False, sample=False):
     for i in time_series:
-        source = time_series_to_source(i, unreliables)
+        source = time_series_to_source(i, unreliables, sample=sample)
         sources[i.label].data.update(source.data)

@@ -93,7 +93,7 @@ def enable_update_graph():
         update_graph.disabled = True
 
 
-def update_time_series_sources():
+def update_time_series_sources(sample=False):
     """Update of time_series_sources assigned to top_figs."""
     start, end = view_x_range_as_datetime()
     for k, v in time_series_sources.items():
@@ -103,6 +103,7 @@ def update_time_series_sources():
             start_date_time=start,
             end_date_time=end,
             unreliables=False,
+            sample=sample
         )
         v["source"].data.update(_source.data)
 
@@ -358,7 +359,7 @@ def update_on_search_period_value(attrname, old, new):
     )
 
     # update sources
-    update_time_series_sources()
+    update_time_series_sources(sample=False)
 
     # updating the figure_layout y_ranges
     time_figure_widget.update_time_series_y_ranges(time_figure_layout)
@@ -501,7 +502,7 @@ def update_time_series_search():
     data.update_time_series_search()
 
     # updating the sources in the used as glyph data_sources
-    update_time_series_sources()
+    update_time_series_sources(sample=False)
     update_search_time_series_source()
 
     # updating the figure_layout y_ranges
@@ -567,7 +568,7 @@ def update_on_view_period_value_throttled(attrname, old, new):
         data.periods.view_end,
     )
 
-    update_time_series_sources()
+    update_time_series_sources(sample=True)
     # updating the figure_layout y_ranges
     time_figure_widget.update_time_series_y_ranges(time_figure_layout, fit_y_axis=True)
     # toggle download button
@@ -597,7 +598,7 @@ def update_on_view_x_range_change(attrname, old, new):
 
 def press_up_event(event=None):
     logger.debug(inspect.stack()[0][3])
-    update_time_series_sources()
+    update_time_series_sources(sample=True)
 
     # updating the figure_layout y_ranges
     time_figure_widget.update_time_series_y_ranges(time_figure_layout)
