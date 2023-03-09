@@ -359,7 +359,7 @@ def update_on_search_period_value(attrname, old, new):
     )
 
     # update sources
-    update_time_series_sources(sample=False)
+    update_time_series_sources(sample=True)
 
     # updating the figure_layout y_ranges
     time_figure_widget.update_time_series_y_ranges(time_figure_layout)
@@ -502,7 +502,7 @@ def update_time_series_search():
     data.update_time_series_search()
 
     # updating the sources in the used as glyph data_sources
-    update_time_series_sources(sample=False)
+    update_time_series_sources(sample=True)
     update_search_time_series_source()
 
     # updating the figure_layout y_ranges
