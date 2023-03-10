@@ -333,11 +333,12 @@ class Data:
         for i in self.filters.filters:
             i.cache.delete_cache()
         self.locations.sets.delete_cache()
+        self._root_cache.delete_cache()
 
     def build_cache(self):
         self.logger.info("building cache")
-        filter_ids = self.filters.values
 
+        filter_ids = self.filters.values
         for filter_id in filter_ids:
             filter_data = self.filters.get_filter(filter_id)
             self.cache_filter(filter_data, filter_id)
