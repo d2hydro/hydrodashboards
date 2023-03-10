@@ -26,6 +26,8 @@ import itertools
 from operator import itemgetter
 import pandas as pd
 
+from hydrodashboards.datamodel.cache import Cache
+
 FEWS_BUGS = dict(qualifier_ids=True)
 COLOR_CYCLE = itertools.cycle(Category20_20)
 
@@ -63,21 +65,15 @@ class Data:
     def __init__(self, config, logger=None, now: datetime = datetime.now()):
         self.config = config
         self.logger = logger
+
         # fews properties
-        self._fews_api = Api(
-            url=self.config.fews_url, ssl_verify=self.config.ssl_verify, logger=logger
-        )
-        self._fews_qualifiers = self._fews_api.get_qualifiers()
-        self._fews_root_parameters = self._fews_api.get_parameters(
-            filter_id=self.config.root_filter
-        )
-        self._fews_root_locations = self._fews_api.get_locations(
-            filter_id=self.config.root_filter,
-            attributes=self.config.location_attributes,
-        )
-        self._fews_filters = self._fews_api.get_filters(
-            filter_id=self.config.root_filter
-        )
+        self._fews_api = None
+        self._fews_qualifiers = None
+        self._fews_root_parameters = None
+        self._fews_root_locations = None
+        self._fews_filters = None
+        self._root_cache = Cache(sub_dir="root")
+        self.__init_fews_api()
 
         # time properties
         self.now = now
@@ -102,6 +98,51 @@ class Data:
     Section with FEWS API helper functions
 
     """
+
+    def __init_fews_api(self):
+        self._fews_api = Api(
+            url=self.config.fews_url, ssl_verify=self.config.ssl_verify, logger=self.logger
+        )
+
+        # get root qualifiers
+        if self._root_cache.exists("_fews_qualifiers"):
+            self.logger.info("reading FEWS-qualifiers from cache")
+            self._fews_qualifiers = self._root_cache.data["_fews_qualifiers"]
+        else:
+            self._fews_qualifiers = self._fews_api.get_qualifiers()
+            self._root_cache.set_data(self._fews_qualifiers, "_fews_qualifiers")
+
+        # get root parameters
+        if self._root_cache.exists("_fews_root_parameters"):
+            self.logger.info("reading FEWS-parameters from cache")
+            self._fews_root_parameters = self._root_cache.data["_fews_root_parameters"]
+        else:
+            self._fews_root_parameters = self._fews_api.get_parameters(
+                filter_id=self.config.root_filter
+                )
+            self._root_cache.set_data(self._fews_root_parameters, "_fews_root_parameters")
+
+        # get root locations
+        if self._root_cache.exists("_fews_root_locations"):
+            self.logger.info("reading FEWS-locations from cache")
+            self._fews_root_locations = self._root_cache.data["_fews_root_locations"]
+        else:
+            self._fews_root_locations = self._fews_api.get_locations(
+                filter_id=self.config.root_filter,
+                attributes=self.config.location_attributes,
+            )
+            self._root_cache.set_data(self._fews_root_locations, "_fews_root_locations")
+
+        # get root filters
+        if self._root_cache.exists("_fews_filters"):
+            self.logger.info("reading FEWS-filters from cache")
+            self._fews_filters = self._root_cache.data["_fews_filters"]
+        else:
+            self._fews_filters = self._fews_api.get_filters(
+                filter_id=self.config.root_filter
+            )
+            self._root_cache.set_data(self._fews_filters, "_fews_filters")
+        
 
     def _fews_locators_from_generator(self, generator):
         """Returns location_ids, parameter_ids and qualifier_ids from list"""
@@ -296,11 +337,12 @@ class Data:
         for i in self.filters.filters:
             i.cache.delete_cache()
         self.locations.sets.delete_cache()
+        self._root_cache.delete_cache()
 
     def build_cache(self):
         self.logger.info("building cache")
-        filter_ids = self.filters.values
 
+        filter_ids = self.filters.values
         for filter_id in filter_ids:
             filter_data = self.filters.get_filter(filter_id)
             self.cache_filter(filter_data, filter_id)
