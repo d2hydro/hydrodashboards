@@ -164,12 +164,13 @@ sequentialStart(); //
 """
 
 
-def make_button(time_figure_layout, disclaimer_file=None, graph_count=3):
+def make_ghost_button(time_figure_layout, disclaimer_file=None, graph_count=3):
     button = Button(label="", button_type="success", disabled=True)
 
     disclaimer_json = read_disclaimer(disclaimer_file)
 
-    button.js_on_click(
+    button.js_on_change(
+        "disabled",
         CustomJS(
             args=dict(
                 figure=time_figure_layout, disclaimer=disclaimer_json, button=button
@@ -177,4 +178,10 @@ def make_button(time_figure_layout, disclaimer_file=None, graph_count=3):
             code=download_js,
         )
     )
+    return button
+
+
+def make_button(on_click):
+    button = Button(label="", button_type="success", disabled=True)
+    button.on_click(on_click)
     return button

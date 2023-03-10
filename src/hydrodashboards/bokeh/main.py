@@ -627,6 +627,16 @@ def set_visible_labels(attr, old, new):
     app_status.text = data.app_status(html_type=HTML_TYPE)
 
 
+def start_timeseries_downloader():
+    """Start the timeseries downloading process."""
+    logger.debug(inspect.stack()[0][3])
+
+    # get all data in sourced
+    update_time_series_sources(sample=False)
+
+    # trigger jscript downloading process
+    _download_time_series.disabled = not _download_time_series.disabled
+
 """
 We read the config
 """
@@ -733,6 +743,10 @@ search_time_figure_layout = time_figure_widget.empty_layout(name="search_time_fi
 
 #  download data
 download_time_series = download_widget.make_button(
+    on_click=start_timeseries_downloader
+    )
+
+_download_time_series = download_widget.make_ghost_button(
     time_figure_layout=time_figure_layout,
     disclaimer_file=config.disclaimer_file,
     graph_count=config.graph_count,
@@ -837,8 +851,13 @@ curdoc().add_root(
 curdoc().add_root(column(view_period, name="view_period", sizing_mode="stretch_both"))
 curdoc().add_root(search_time_figure_layout)
 
+# add ghost buttons
 curdoc().add_root(
     column(_scale_graphs, name="scale_graphs_dummy", sizing_mode="stretch_width")
+)
+
+curdoc().add_root(
+    column(_download_time_series, name="download_time_series_dummy", sizing_mode="stretch_width")
 )
 
 curdoc().title = config.title
