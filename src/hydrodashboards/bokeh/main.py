@@ -500,18 +500,23 @@ def update_time_series_search():
     logger.debug(inspect.stack()[0][3])
     # update full history of all non-complete time-series
     data.update_time_series_search()
+    print("1")
     # updating the sources in the used as glyph data_sources
     update_time_series_sources(sample=True)
     update_search_time_series_source()
+    print("2")
     # updating the figure_layout y_ranges
     time_figure_widget.update_time_series_y_ranges(time_figure_layout)
     time_figure_widget.update_search_time_series_y_ranges(search_time_figure_layout)
+    print("3")
     # enable view_timeseries_controls
     toggle_view_time_series_controls(value=False)
     sources = [i["source"] for i in time_series_sources.values()]
     toggle_download_button_on_sources(sources)
+    print("4")
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
+    print("5")
     # stop loader and disable update_graph
     update_graph.css_classes = ["stoploading_time_fig"]
     update_graph.disabled = True
@@ -717,7 +722,7 @@ search_time_series.on_change("value", update_on_search_time_series_value)
 
 # View period widget
 view_period = view_period_widget.make_view_period(data.periods)
-view_period.on_change("value", update_on_view_period_value)
+view_period.on_change("value_throttled", update_on_view_period_value)
 view_period.on_change("value_throttled", update_on_view_period_value_throttled)
 
 # Search time figure widget
