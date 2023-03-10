@@ -106,6 +106,7 @@ class Data:
 
         # get root qualifiers
         if self._root_cache.exists("_fews_qualifiers"):
+            self.logger.info("reading FEWS-qualifiers from cache")
             self._fews_qualifiers = self._root_cache.data["_fews_qualifiers"]
         else:
             self._fews_qualifiers = self._fews_api.get_qualifiers()
@@ -113,6 +114,7 @@ class Data:
 
         # get root parameters
         if self._root_cache.exists("_fews_root_parameters"):
+            self.logger.info("reading FEWS-parameters from cache")
             self._fews_root_parameters = self._root_cache.data["_fews_root_parameters"]
         else:
             self._fews_root_parameters = self._fews_api.get_parameters(
@@ -122,6 +124,7 @@ class Data:
 
         # get root locations
         if self._root_cache.exists("_fews_root_locations"):
+            self.logger.info("reading FEWS-locations from cache")
             self._fews_root_locations = self._root_cache.data["_fews_root_locations"]
         else:
             self._fews_root_locations = self._fews_api.get_locations(
@@ -132,6 +135,7 @@ class Data:
 
         # get root filters
         if self._root_cache.exists("_fews_filters"):
+            self.logger.info("reading FEWS-filters from cache")
             self._fews_filters = self._root_cache.data["_fews_filters"]
         else:
             self._fews_filters = self._fews_api.get_filters(
