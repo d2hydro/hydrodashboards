@@ -29,7 +29,7 @@ def df_to_source(
     end_date_time=None,
     excluded_date_times=None,
     unreliables=False,
-    sample=False
+    sample=True
 ):
     if (start_date_time is not None) and (end_date_time is not None):
         df = df.loc[_index_mask(df.index, start_date_time, end_date_time)]
@@ -51,7 +51,7 @@ def time_series_to_source(
     end_date_time=None,
     unreliables=False,
     excluded_date_times=None,
-    sample=False
+    sample=True
 ):
 
     source = df_to_source(
@@ -115,7 +115,7 @@ def time_series_sources(time_series=[], unreliables=False, active_only=False, sa
     }
 
 
-def update_time_series_sources(sources, time_series=[], unreliables=False, sample=False):
+def update_time_series_sources(sources, time_series=[], unreliables=False, sample=True):
     for i in time_series:
         source = time_series_to_source(i, unreliables, sample=sample)
         sources[i.label].data.update(source.data)

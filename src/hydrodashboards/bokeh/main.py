@@ -93,7 +93,7 @@ def enable_update_graph():
         update_graph.disabled = True
 
 
-def update_time_series_sources(sample=False):
+def update_time_series_sources(sample=True):
     """Update of time_series_sources assigned to top_figs."""
     start, end = view_x_range_as_datetime()
     for k, v in time_series_sources.items():
@@ -500,23 +500,18 @@ def update_time_series_search():
     logger.debug(inspect.stack()[0][3])
     # update full history of all non-complete time-series
     data.update_time_series_search()
-
     # updating the sources in the used as glyph data_sources
     update_time_series_sources(sample=True)
     update_search_time_series_source()
-
     # updating the figure_layout y_ranges
     time_figure_widget.update_time_series_y_ranges(time_figure_layout)
     time_figure_widget.update_search_time_series_y_ranges(search_time_figure_layout)
-
     # enable view_timeseries_controls
     toggle_view_time_series_controls(value=False)
     sources = [i["source"] for i in time_series_sources.values()]
     toggle_download_button_on_sources(sources)
-
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
-
     # stop loader and disable update_graph
     update_graph.css_classes = ["stoploading_time_fig"]
     update_graph.disabled = True
