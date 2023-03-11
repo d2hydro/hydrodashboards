@@ -165,7 +165,12 @@ sequentialStart(); //
 
 
 def make_ghost_button(time_figure_layout, disclaimer_file=None, graph_count=3):
-    button = Button(label="", button_type="success", disabled=True)
+    button = Button(label="",
+                    button_type="success",
+                    disabled=True,
+                    visible=False,
+                    width=1,
+                    height=1)
 
     disclaimer_json = read_disclaimer(disclaimer_file)
 
