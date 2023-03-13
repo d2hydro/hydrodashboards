@@ -6,9 +6,12 @@ from bokeh.layouts import column
 try:
     from data import Data
     from config import Config
-except:
+    from pathlib import Path
+    CONFIG_JSON = Path(__file__).parent.joinpath("config.json")
+except ImportError:
     from hydrodashboards.bokeh.data import Data
     from hydrodashboards.bokeh.config import Config
+    from hydrodashboards.bokeh import CONFIG_JSON
 
 # import bokeh sources
 import hydrodashboards.bokeh.sources as sources
@@ -28,7 +31,7 @@ from hydrodashboards.bokeh.widgets import (
 from bokeh.models.widgets import Div, Select
 from hydrodashboards.bokeh.log_utils import import_logger
 import inspect
-from pathlib import Path
+
 
 from hydrodashboards.bokeh.language import update_graph_title
 
@@ -37,7 +40,6 @@ import pandas as pd
 
 LANG = "dutch"
 HTML_TYPE = "table"
-CONFIG_JSON = Path(__file__).parent.joinpath("config.json")
 
 
 """
