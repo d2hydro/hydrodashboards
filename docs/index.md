@@ -31,8 +31,8 @@ As alternative; hydrodashboards works in any environment with the following pack
  * pandas
  * requests
 
-## About
+## About and Credits
 
-Hydrodashboards is developed and maintained by [D2Hydro](https://d2hydro.nl/) and freely available under an Open Source <a href="https://github.com/d2hydro/hydrodashboards/blob/main/LICENSE" target="_blank">MIT license</a>. This project is made possible by Dutch water authorities <a href="https://www.aaenmaas.nl/" target="_blank">Aa and Maas</a> and <a href="https://www.noorderzijlvest.nl/" target="_blank">Noorderzijlvest</a>.
+Hydrodashboards is developed and maintained by [D2Hydro](https://d2hydro.nl/) and freely available under an Open Source <a href="https://github.com/d2hydro/hydrodashboards/blob/main/LICENSE" target="_blank">MIT license</a>. This project is made possible by Dutch water authorities:
 
-<img src="images/logo-aam.svg"  height="50">   <img src="images/logo-nzv.svg"  height="50">
+<a href="https://www.aaenmaas.nl/"><img src="images/logo-aam.png"  height="50"><a>   <a href="https://www.noorderzijlvest.nl/"><img src="images/logo-nzv.png"  height="50">
