@@ -1,0 +1,203 @@
+{
+	
+
+	
+	"bounds": [
+		150000,
+		370000,
+		190000,
+		430000
+	],
+        "exclude_pars": [
+		"Dummy"
+	],
+
+        "fews_parallel": true,
+        "fews_url": "https://hydrobase.nl/fews/wik/FewsWebServices/rest/fewspiservice/v1/",
+	"filter_colors": {
+		"WIK_KET_Neerslag": {
+			"fill": "lightblue",
+			"line": "blue"
+		},
+		"WIK_KET_Rioolgemaal": {
+			"fill": "wheat",
+			"line": "red"
+		},
+		"WIK_KET_RWZI": {
+			"fill": "lightgreen",
+			"line": "green"
+		},
+		"WIK_KET_Deurne": {
+			"fill": "cyan",
+			"line": "black"
+		},
+		"WIK_KET_Gemert-Bakel": {
+			"fill": "yellow",
+			"line": "green"
+		},
+		"WIK_KET_Helmond": {
+			"fill": "lightcyan",
+			"line": "red"
+		},
+		"WIK_KET_Laarbeek": {
+			"fill": "chartreuse",
+			"line": "black"
+		},
+		"Hydronet_Kwartier": {
+			"fill": "blue",
+			"line": "lightblue"
+		},
+		"WIK_OW_Kwaliteit": {
+			"fill": "purple",
+			"line": "pink"
+		},
+		"Grondwater_Automatisch": {
+			"fill": "bisque",
+			"line": "blue"
+		},
+		"WIK_GW_DINO": {
+			"fill": "lightblue",
+			"line": "black"
+		}
+	},
+        "filter_dimensions": [
+                         {
+                         "items": 4, 
+                        "long_names":false
+                          },
+                         {
+                         "items": 2, 
+                         "long_names":false
+                         },
+                         {
+                         "items": 2, 
+                         "long_names":false
+                         },
+                         {
+                         "items": 4, 
+                         "long_names":true
+                         },
+                         {"items": 4, 
+                         "long_names":true
+                         }],
+
+        "headers_full_history": [
+	],
+        "history_period": 3650,
+        "language": "dutch",
+        "log_dir": "./logs",
+	"map_overlays": {
+		"rwzi": {
+			"url": "https://maps.aaenmaas.nl/services/wms?dpi=96&service=WMS&version=1.3.0&request=GetMap&layers=DAMO_S:RWZI&width=600&height=600&styles=&crs=EPSG:28992&format=image/png&transparent=true&bbox={XMIN},{YMIN},{XMAX},{YMAX}",
+			"class": "BBoxTileSource",
+			"visible": true
+		},
+		"hoofdrioolgemaal": {
+			"url": "https://maps.aaenmaas.nl/services/wms?service=WMS&version=1.3.0&request=GetMap&layers=LCMS_afvalwater:RIOOLGEMAAL&width=600&height=600&styles=&crs=EPSG:28992&format=image/png&transparent=true&bbox={XMIN},{YMIN},{XMAX},{YMAX}",
+			"class": "BBoxTileSource",
+			"visible": true
+		},
+		"overstortconstructie": {
+			"url": "https://maps.aaenmaas.nl/services/DAMO_S/ows?service=WMS&version=1.3.0&request=GetMap&layers=WS_RIOOLOVERSTORT&width=600&height=600&styles=&crs=EPSG:28992&format=image/png&transparent=true&bbox={XMIN},{YMIN},{XMAX},{YMAX}",
+			"class": "BBoxTileSource",
+			"visible": false
+		},
+		"leidingtrace": {
+			"url": "https://maps.aaenmaas.nl/services/wms?service=WMS&version=1.3.0&request=GetMap&layers=LCMS_afvalwater:LEIDINGSEGMENT&width=600&height=600&styles=&crs=EPSG:28992&format=image/png&transparent=true&bbox={XMIN},{YMIN},{XMAX},{YMAX}",
+			"class": "BBoxTileSource",
+			"visible": false
+		},
+		"watergangen": {
+			"url": "https://maps.aaenmaas.nl/services/wms?service=WMS&version=1.3.0&request=GetMap&layers=DAMO_S:HYDROOBJECT&width=200&height=200&styles=&crs=EPSG:28992&format=image/png&transparent=true&bbox={XMIN},{YMIN},{XMAX},{YMAX}",
+			"class": "BBoxTileSource",
+			"visible": false
+		},
+		"rioleringsdeelgebied": {
+			"url": "https://maps.aaenmaas.nl/services/DAMO_S/ows?service=WMS&version=1.3.0&request=GetMap&layers=WS_RIOLERINGSGEBIED&width=200&height=200&styles=&crs=EPSG:28992&format=image/png&transparent=true&bbox={XMIN},{YMIN},{XMAX},{YMAX}",
+			"class": "BBoxTileSource",
+			"visible": false,
+			"alpha": 0.5
+		},
+		"waterschapsgrens": {
+			"url": "https://maps.aaenmaas.nl/services/wms?service=WMS&version=1.3.0&request=GetMap&layers=LCMS:GRE_WATERSCHAP&width=1480&height=1480&styles=&crs=EPSG:28992&format=image/png&transparent=true&bbox={XMIN},{YMIN},{XMAX},{YMAX}",
+			"class": "BBoxTileSource",
+			"visible": true
+		},
+		"bro put": {
+			"url": "https://service.pdok.nl/bzk/brogmwkenset/wms/v2_1?SERVICE=WMS&language=dut&version=1.3.0&service=WMS&request=GetMap&layers=gmw_kenset&width=600&height=600&styles=&crs=EPSG:28992&format=image/png&transparent=true&FORMAT_OPTIONS=dpi:113&bbox={XMIN},{YMIN},{XMAX},{YMAX}",
+			"class": "BBoxTileSource",
+			"visible": false
+		},
+		"gwsw put": {
+			"url": "https://geodata.nationaalgeoregister.nl/rioned/gwsw/wms/v1_0?SERVICE=WMS&language=dut&version=1.3.0&service=WMS&request=GetMap&layers=beheer_put&width=600&height=600&styles=&crs=EPSG:28992&format=image/png&transparent=true&FORMAT_OPTIONS=dpi:113&bbox={XMIN},{YMIN},{XMAX},{YMAX}",
+			"class": "BBoxTileSource",
+			"visible": false
+		},
+		"gwsw pomp": {
+			"url": "https://geodata.nationaalgeoregister.nl/rioned/gwsw/wms/v1_0?SERVICE=WMS&language=dut&version=1.3.0&service=WMS&request=GetMap&layers=beheer_pomp&width=600&height=600&crs=EPSG:28992&format=image/png&transparent=true&FORMAT_OPTIONS=dpi:113&bbox={XMIN},{YMIN},{XMAX},{YMAX}",
+			"class": "BBoxTileSource",
+			"visible": false
+		},
+		"gwsw lozing": {
+			"url": "https://geodata.nationaalgeoregister.nl/rioned/gwsw/wms/v1_0?SERVICE=WMS&language=dut&version=1.3.0&service=WMS&request=GetMap&layers=beheer_lozing&width=600&height=600&styles=&crs=EPSG:28992&format=image/png&transparent=true&FORMAT_OPTIONS=dpi:113&bbox={XMIN},{YMIN},{XMAX},{YMAX}",
+			"class": "BBoxTileSource",
+			"visible": false
+		},
+		"gwsw leiding": {
+			"url": "https://geodata.nationaalgeoregister.nl/rioned/gwsw/wms/v1_0?SERVICE=WMS&language=dut&version=1.3.0&service=WMS&request=GetMap&layers=beheer_leiding&width=600&height=600&styles=&crs=EPSG:28992&format=image/png&transparent=true&FORMAT_OPTIONS=dpi:113&bbox={XMIN},{YMIN},{XMAX},{YMAX}",
+			"class": "BBoxTileSource",
+			"visible": false
+		},
+		"gwsw gebied": {
+			"url": "https://geodata.nationaalgeoregister.nl/rioned/gwsw/wms/v1_0?SERVICE=WMS&language=dut&version=1.3.0&service=WMS&request=GetMap&layers=beheer_gebied&width=600&height=600&STYLE=gwsw:beheer_gebied&crs=EPSG:28992&format=image/png&bbox={XMIN},{YMIN},{XMAX},{YMAX}",
+			"class": "BBoxTileSource",
+			"visible": false,
+			"alpha": 0.5
+		}
+	},
+
+	
+	
+
+	"root_filter": "WIK_App",
+	"ssl_verify": false,
+        "thematic_view": false,
+        "thresholds": [
+		{
+			"name": "drempelhoogte",
+			"attribute": "DREMPEL_Z",
+			"parameter_group": "Hoogte",
+			"color": "#FE6F9E",
+			"line_width": 2.5
+		},
+		{
+			"name": "drempelhoogte intern",
+			"attribute": "DREMPEL_INT",
+			"parameter_group": "Hoogte",
+			"color": "#FE6F9E",
+			"line_width": 2.5
+		},
+		{
+			"name": "drempelhoogte extern",
+			"attribute": "DREMPEL_EXT",
+			"parameter_group": "Hoogte",
+			"color": "#FE6F9E",
+			"line_width": 2.5
+		},
+		{
+			"name": "inslagpeil",
+			"attribute": "INSLAGPEIL",
+			"parameter_group": "Hoogte",
+			"color": "#FE6F9E",
+			"line_width": 2.5
+		},
+		{
+			"name": "uitslagpeil",
+			"attribute": "UITSLAGPEIL",
+			"parameter_group": "Hoogte",
+			"color": "#FE6F9E",
+			"line_width": 2.5
+		}
+	],
+        "title": "WIK Dashboard"
+}
