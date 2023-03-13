@@ -34,3 +34,5 @@ As alternative; hydrodashboards works in any environment with the following pack
 ## About
 
 Hydrodashboards is developed and maintained by [D2Hydro](https://d2hydro.nl/) and freely available under an Open Source <a href="https://github.com/d2hydro/hydrodashboards/blob/main/LICENSE" target="_blank">MIT license</a>. This project is made possible by Dutch water authorities <a href="https://www.aaenmaas.nl/" target="_blank">Aa and Maas</a> and <a href="https://www.noorderzijlvest.nl/" target="_blank">Noorderzijlvest</a>.
+
+<img src="images/logo-aam.svg"  height="50">   <img src="images/logo-nzv.svg"  height="50">
