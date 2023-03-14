@@ -23,6 +23,7 @@ conda env create -f environment.yml
 ```
 
 As alternative; hydrodashboards works in any environment with the following packages properly installed:
+
  * aiohttp
  * bokeh
  * fewspy
