@@ -4,6 +4,7 @@ from hydrodashboards import bokeh
 AAM_CONFIG_JSON = r"data\wik_config.json"
 
 bokeh.set_config_json(AAM_CONFIG_JSON)
+bokeh.delete_cache()
 
 # %% now we import main (will be initialized for WIK)
 from hydrodashboards.bokeh.main import config, filters, data

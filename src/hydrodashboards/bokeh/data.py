@@ -73,7 +73,7 @@ class Data:
         self._fews_root_locations = None
         self._fews_filters = None
         self._root_cache = Cache(sub_dir="root")
-        self.__init_fews_api()
+        self._init_fews_api()
 
         # time properties
         self.now = now
@@ -99,7 +99,7 @@ class Data:
 
     """
 
-    def __init_fews_api(self):
+    def _init_fews_api(self):
         self._fews_api = Api(
             url=self.config.fews_url, ssl_verify=self.config.ssl_verify, logger=self.logger
         )
