@@ -45,6 +45,7 @@ class Cache:
     def set_data(self, data, key):
         self.data[key] = data
         cache_file = self.cache_file(key)
+        cache_file.parent.mkdir(exist_ok=True, parents=True)
         if self.data_frame:
             data.to_pickle(cache_file)
         else:
