@@ -212,20 +212,20 @@ def search_fig(
     def _add_line():
         time_fig.line(x="datetime", y="value", source=search_source, color=color)
 
+    # get source
+    x_start, x_end = date_time_range_as_datetime(x_range)
+    source = time_series_to_source(
+        time_series, start_date_time=x_start, end_date_time=x_end, sample=True
+    )
+
     # get y-axis start and end
-    values = time_series.df["value"].values
+    values = source.data["value"]
     if len(values) == 0:
         y_start, y_end = range_defaults()
     else:
         y_start = values.min()
         y_end = values.max()
         y_start, y_end = correct_ends(y_start, y_end)
-
-    # get source
-    x_start, x_end = date_time_range_as_datetime(x_range)
-    source = time_series_to_source(
-        time_series, start_date_time=x_start, end_date_time=x_end, sample=True
-    )
 
     # create or update graph
     if isinstance(search_time_figure_layout.children[0], Div):
