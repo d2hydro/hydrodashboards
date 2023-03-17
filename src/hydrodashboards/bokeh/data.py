@@ -504,6 +504,9 @@ class Data:
         # update map_locations
         self.locations.update_map_locations(values)
 
+        # limit parameters by selected location
+        self.update_on_locations_select(self.locations.value)
+
     def update_on_locations_select(self, values: list):
         """
         Update data-class on selected locations

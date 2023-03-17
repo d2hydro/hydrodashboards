@@ -199,7 +199,6 @@ def update_on_filter_selector(attrname, old, new):
     actives = filters_widgets.get_filters_actives(filters, config.thematic_view)
     data.update_on_filter_select(actives)
     locations.labels = data.locations.labels
-    # locations.active = data.locations.active
     parameters.labels = data.parameters.labels
     parameters.active = data.parameters.active
     # update source
