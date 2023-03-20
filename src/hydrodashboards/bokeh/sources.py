@@ -1,7 +1,7 @@
 from bokeh.models import ColumnDataSource, CustomJS
 import numpy as np
 import pandas as pd
-from hydrodashboards.bokeh.time_series_sampling import sample_df
+from hydrodashboards.datamodel.time_series_sampling import sample_df
 
 locations_source_js = """
 if (window.MenuEvents && typeof window.MenuEvents.onLocationsDataChanged === 'function') {

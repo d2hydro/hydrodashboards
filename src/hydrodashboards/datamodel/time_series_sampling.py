@@ -1,8 +1,8 @@
 from pandas import DataFrame
-from hydrodashboards.bokeh import time_series_sampling
+from hydrodashboards.datamodel import time_series_sampling
 
 
-def sample_df(df: DataFrame, time_series_sampling_config: dict) -> dict:
+def sample_df(df: DataFrame, sampling_config: dict) -> dict:
     """
     samples based on a time series sample config dictionary
 
@@ -15,10 +15,10 @@ def sample_df(df: DataFrame, time_series_sampling_config: dict) -> dict:
     """
 
     function = getattr(time_series_sampling,
-                       time_series_sampling_config["method"])
-    time_series_sampling_config.pop("method")
+                       sampling_config["method"])
+    kwargs = {k: v for k,v in sampling_config.items() if k != "method"}
 
-    return function(**time_series_sampling_config)
+    return function(df, **kwargs)
 
 
 def random_sample(df: DataFrame, max_samples: int = 20000) -> DataFrame:
