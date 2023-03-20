@@ -208,6 +208,7 @@ def search_fig(
     periods,
     color="#1f77b4",
     search_source=None,
+    sample_config=None
 ):
     def _add_line():
         time_fig.line(x="datetime", y="value", source=search_source, color=color)
@@ -215,7 +216,7 @@ def search_fig(
     # get source
     x_start, x_end = date_time_range_as_datetime(x_range)
     source = time_series_to_source(
-        time_series, start_date_time=x_start, end_date_time=x_end, sample=True
+        time_series, start_date_time=x_start, end_date_time=x_end, sample_config=sample_config
     )
 
     # get y-axis start and end
@@ -285,6 +286,7 @@ def top_fig(
     threshold_visible=False,
     press_up_event=None,
     renderers_on_change=[],
+    sample_config=None
 ):
 
     """Generate a time-figure from supplied bokeh input parameters."""
@@ -342,7 +344,7 @@ def top_fig(
     for i in time_series:
         label = i.label
         legend_label = trucate_label(i.label)
-        source = time_series_to_source(i, start_date_time=x_start, end_date_time=x_end, sample=True)
+        source = time_series_to_source(i, start_date_time=x_start, end_date_time=x_end, sample_config=sample_config)
         renderer = time_fig.line(
             x="datetime",
             y="value",
@@ -398,6 +400,7 @@ def create_time_figures(
     x_range,
     renderers_on_change=[],
     press_up_event=None,
+    sample_config=None,
 ):
     time_figure_layout.children.pop()
     top_figs = [
@@ -409,6 +412,7 @@ def create_time_figures(
             threshold_visible=threshold_visible,
             renderers_on_change=renderers_on_change,
             press_up_event=press_up_event,
+            sample_config=sample_config,
         )
         for i in time_series_groups.items()
     ]
