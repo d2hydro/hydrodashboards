@@ -21,7 +21,7 @@ def sample_df(df: DataFrame, time_series_sampling_config: dict) -> dict:
     return function(**time_series_sampling_config)
 
 
-def random_sample(df: DataFrame, max_sample: int = 20000) -> DataFrame:
+def random_sample(df: DataFrame, max_samples: int = 20000) -> DataFrame:
     """
     Takes a random sample from a pandas dataframe
 
@@ -33,4 +33,4 @@ def random_sample(df: DataFrame, max_sample: int = 20000) -> DataFrame:
         DataFrame: Sampled DataFrame
 
     """
-    return df.sample(min(len(df), max_sample)).sort_index()
+    return df.sample(min(len(df), max_samples)).sort_index()
