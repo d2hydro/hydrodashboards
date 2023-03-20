@@ -538,18 +538,6 @@ def update_on_search_time_series_value(attrname, old, new):
 
 def update_on_view_period_value(attrname, old, new):
     """Update periods when view_period value changes"""
-    # logger.debug(inspect.stack()[0][3])
-
-    is_moving = all((new[0] != old[0], new[1] != old[1]))
-    if is_moving:
-        force = True
-    else:
-        force = False
-    values_accepted = data.periods.set_view_period(
-        *view_period.value_as_datetime, force
-    )
-    if not values_accepted:
-        view_period.value = (data.periods.view_start, data.periods.view_end)
 
     # update patch source
     if type(search_time_figure_layout.children[0]) != Div:
@@ -561,6 +549,13 @@ def update_on_view_period_value(attrname, old, new):
 def update_on_view_period_value_throttled(attrname, old, new):
     """Update time_series_sources as view_x_range"""
     logger.debug(inspect.stack()[0][3])
+    
+    is_moving = all((new[0] != old[0], new[1] != old[1]))
+    values_accepted = data.periods.set_view_period(
+        *view_period.value_as_datetime, is_moving
+    )
+    if not values_accepted:
+        view_period.value = (data.periods.view_start, data.periods.view_end)
 
     view_x_range.start, view_x_range.end = (
         data.periods.view_start,
@@ -596,7 +591,7 @@ def update_on_view_x_range_change(attrname, old, new):
 
 
 def press_up_event(event=None):
-    logger.debug(inspect.stack()[0][3])
+    # logger.debug(inspect.stack()[0][3])
     update_time_series_sources()
 
     # updating the figure_layout y_ranges
@@ -731,7 +726,7 @@ search_time_series.on_change("value", update_on_search_time_series_value)
 
 # View period widget
 view_period = view_period_widget.make_view_period(data.periods)
-view_period.on_change("value", update_on_view_period_value)
+view_period.on_change("value_throttled", update_on_view_period_value)
 view_period.on_change("value_throttled", update_on_view_period_value_throttled)
 
 # Search time figure widget
