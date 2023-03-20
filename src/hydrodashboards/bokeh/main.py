@@ -731,7 +731,7 @@ search_time_series.on_change("value", update_on_search_time_series_value)
 
 # View period widget
 view_period = view_period_widget.make_view_period(data.periods)
-view_period.on_change("value_throttled", update_on_view_period_value)
+view_period.on_change("value", update_on_view_period_value)
 view_period.on_change("value_throttled", update_on_view_period_value_throttled)
 
 # Search time figure widget
