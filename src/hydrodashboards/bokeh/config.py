@@ -13,6 +13,7 @@ class Config:
     log_dir: Path
     root_filter: str
     title: str
+    cache_filters: list = field(default_factory=list)
     disclaimer_file: Path = None
     exclude_pars: list = field(default_factory=list)
     fews_parallel: bool = False

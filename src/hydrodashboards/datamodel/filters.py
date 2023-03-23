@@ -76,6 +76,12 @@ class Filters:
     def get_filter(self, id):
         return next((i for i in self.filters if id in [j[0] for j in i.options]), None)
 
+    def get_filter_index(self, id):
+        return next(
+            (idx for idx, i in enumerate(self.filters) if id in [j[0] for j in i.options])
+            , None
+            )
+
     def get_name(self, filter_id, locations_filter):
         options = locations_filter.options
         return next((i[1] for i in options if i[0] == filter_id), None)

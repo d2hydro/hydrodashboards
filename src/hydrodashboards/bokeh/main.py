@@ -446,7 +446,6 @@ def update_time_series_view():
         time_series_groups = data.time_series_sets.by_parameter_groups(
             parameter_groups, active_only=True
         )
-
         threshold_groups = data.threshold_groups(time_series_groups)
 
         if config.thresholds:

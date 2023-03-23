@@ -559,25 +559,57 @@ class Data:
                 to_datetime(datetime_array.max()) + timedelta(hours=12),
             )
 
+    def update_time_series_from_cache(self, indices):
+        """Update the time_series_sets.time_series from cache if existing."""
+        for index in indices:
+            self.logger.info("trying to update from cache")
+            if not self.time_series_sets.exists(index):
+                self.logger.info(f"cache file found for {index[0]}, {index[1]}")
+                self.time_series_sets.append_from_cache(*index)
+                self.logger.info(
+                    f"new cache length: {len(self.time_series_sets)}"
+                    )
+
+    def clean_time_series_within_period(self, period, selection="search"):
+        self.time_series_sets.time_series = [
+            i for i in self.time_series_sets.time_series if i.within_period(
+                period,
+                selection=selection
+                )
+            ]
+
     def update_time_series_search(self):
         if self.time_series_sets.select_incomplete():
             fews_ts_set = self._get_fews_ts(request_type="history")
             self._update_ts_from_fews_ts_set(fews_ts_set, complete=True)
+    
+    def get_time_series_headers(self, indices=None):
+        # get headers and initalize time series
+        if indices is None:
+            indices = self.locations.max_time_series_indices(
+                self.parameters.value
+                )
+        self.update_time_series_from_cache(indices)
+        self.clean_time_series_within_period(self.periods, selection="search")
+        self.logger.info(f"amount of time-series in memory {len(self.time_series_sets)}")
+
+        # indices should not exist in memory
+        fews_indices = [i for i in indices if not self.time_series_sets.exists(i)]
+
+        # we try to append new time-series from FEWS
+        if fews_indices:
+            self.logger.info(f"indices in fews requrest {fews_indices}")
+            fews_ts_set = self._get_fews_ts(indices=fews_indices, request_type="headers")
+            properties = self._properties_from_fews_ts_headers(fews_ts_set.time_series)
+            self.time_series_sets.append_from_dict(properties)
+        
 
     def update_time_series(self):
-        """
-        Updates time_series when button is clicked.
+        """Updates time_series when button is clicked."""
 
-        Returns:
-            TYPE: DESCRIPTION.
-
-        """
-
-        # get headers and initalize time series
         indices = self.locations.max_time_series_indices(self.parameters.value)
-        fews_ts_set = self._get_fews_ts(indices=indices, request_type="headers")
-        properties = self._properties_from_fews_ts_headers(fews_ts_set.time_series)
-        self.time_series_sets.append_from_dict(properties)
+        self.get_time_series_headers(indices=indices)
+
         self.time_series_sets.set_active(indices)
         self.time_series_sets.set_visible(indices=indices)
 
@@ -596,7 +628,7 @@ class Data:
             fews_ts_set = self._get_fews_ts(request_type="view")
 
             self._update_ts_from_fews_ts_set(fews_ts_set)
-
+    
         # finalize time_series_sets with search_start and search_end
         self.time_series_sets.set_search_period(*self.periods.search_dates)
 
