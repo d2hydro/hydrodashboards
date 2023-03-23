@@ -217,7 +217,7 @@ def search_fig(
     # get source
     x_start, x_end = date_time_range_as_datetime(x_range)
     source = time_series_to_source(
-        time_series, start_date_time=x_start, end_date_time=x_end, sample_config=sample_config
+        time_series, start_date_time=x_start, end_date_time=x_end,  sample_config=sample_config
     )
 
     # get y-axis start and end
