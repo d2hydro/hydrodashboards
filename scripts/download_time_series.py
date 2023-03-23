@@ -1,16 +1,11 @@
 from hydrodashboards import bokeh
-from datetime import datetime
-from bokeh.plotting import figure
-from bokeh.io import show
-from bokeh.models import ColumnDataSource,FuncTickFormatter
-
-from hydrodashboards.bokeh.widgets.time_figure_widget import DT_JS_FORMAT
-from time import time
+from hydrodashboards.datamodel.time_series_sampling import simplify
 
 # %% here we overwrite the default (WAM) config with WIK
 AAM_CONFIG_JSON = r"..\tests\data\wik_config.json"
 bokeh.set_config_json(AAM_CONFIG_JSON)
 bokeh.delete_cache()
+
 
 def load_time_series():
     data.get_time_series_headers()
@@ -22,9 +17,6 @@ from hydrodashboards.bokeh.main import (data,
                                         locations,
                                         parameters,
                                         search_period,
-                                        start_time_series_loader,
-                                        update_time_series_view,
-                                        update_time_series_search
                                         )
 
 search_start = data.periods.history_start.strftime("%Y-%m-%d")
@@ -40,36 +32,11 @@ sub_filter_index = next(
     )
 filters[main_filter_index].active = [sub_filter_index]
 locations.active = [0]
-parameters.active = [0]
+parameters.active = [0, 1]
 load_time_series()
 
-time_series = data.time_series_sets.time_series[0]
-
-# %%
-tic = time()
-pickle_path = time_series.cache.cache_dir / f"{time_series.key}.pickle"
-time_series.to_cache()
-
-
-key = time_series.key
-
-print(f"to pickle {time() - tic:.2f} seconds")
-tic = time()
-hdf_path = time_series.cache.cache_dir / f"{time_series.key}.hdf"
-time_series.df.to_hdf(hdf_path, time_series.key)
-print(f"to hdf {time() - tic:.2f} seconds")
-
-# filters[main_filter_index].active = [sub_filter_index]
-# for idx, location in enumerate(locations.labels):
-#     print(f"caching data for {location} ({idx+1}/{len(locations.labels)})")
-#     tic = time()
-#     locations.active = [idx]
-#     parameters.active = [idx for idx, i in enumerate(parameters.labels)]
-#     load_time_series()
-#     print(f" loaded in {time() - tic:.2f} seconds")
-#     tic = time()
-#     for time_series in data.time_series_sets.time_series:
-#         if not time_series.cache.exists(time_series.key):
-#             time_series.to_cache()
-#     print(f" saved in {time() - tic:.2f} seconds")
-#     data.time_series_sets.time_series = []
+for time_series in data.time_series_sets.time_series:
+    print(time_series.key)
+    _df = simplify(time_series.df, max_samples=500000, intervals=True)
+    time_series.df = _df
+    time_series.to_cache()

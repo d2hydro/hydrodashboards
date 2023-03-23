@@ -39,6 +39,9 @@ def df_to_source(
     if (not unreliables) & ("flag" in df.columns):
         df = pd.DataFrame(df.loc[df["flag"] < 6]["value"])
 
+    if "flag" in df.columns:
+        df = df[["value"]]
+
     if sample_config is not None:
         df = sample_df(df, sample_config)
 

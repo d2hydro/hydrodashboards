@@ -113,7 +113,7 @@ def update_time_series_sources():
 def update_search_time_series_source():
     """Update search source assigned to search_fig"""
     time_series = data.time_series_sets.get_by_label(search_time_series.value)
-    _source = sources.time_series_to_source(time_series,sample_config=config.time_series_sampling)
+    _source = sources.time_series_to_source(time_series, sample_config=config.time_series_sampling)
     search_source.data.update(_source.data)
 
 
