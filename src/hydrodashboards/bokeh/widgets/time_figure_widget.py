@@ -7,14 +7,13 @@ from bokeh.models import (
     FuncTickFormatter,
     Range1d,
     NumeralTickFormatter,
-    CustomJSHover,
+    CustomJSHover
 )
-from bokeh.models.glyphs import Line, Patch
+from bokeh.models.glyphs import Line
 from bokeh.palettes import Category10_10 as palette
 import pandas as pd
 from itertools import cycle
 from hydrodashboards.bokeh.sources import (
-    time_series_template,
     view_period_patch_source,
     time_series_to_source,
     thresholds_to_source,
@@ -38,6 +37,7 @@ DT_JS_FORMAT = r"""
         day: 'numeric'
     }});
 """
+
 LABEL_LEN = 50
 
 
@@ -206,6 +206,7 @@ def search_fig(
     time_series,
     x_range,
     periods,
+    patch_source,
     color="#1f77b4",
     search_source=None,
     sample_config=None
@@ -247,7 +248,7 @@ def search_fig(
         time_fig.patch(
             x="x",
             y="y",
-            source=view_period_patch_source(periods),
+            source=patch_source,
             alpha=0.5,
             line_width=2,
             fill_color=SEARCH_PATCH_COLOR,
@@ -260,7 +261,7 @@ def search_fig(
         time_fig = search_time_figure_layout.children[0]
 
         # update patch data_source
-        time_fig.renderers[0].data_source.data.update(
+        patch_source.data.update(
             view_period_patch_source(periods).data
         )
 

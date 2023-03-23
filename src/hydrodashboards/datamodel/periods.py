@@ -71,6 +71,7 @@ class Periods:
         if (nw_view_period.total_seconds() > 1800) | force:
             self.view_start = view_start
             self.view_end = view_end
+            print(f"data set: {self.view_start}, {self.view_end}")
             return True
         else:
             return False
