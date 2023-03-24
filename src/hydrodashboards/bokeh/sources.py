@@ -32,16 +32,18 @@ def df_to_source(
     unreliables=False,
     sample_config=None
 ):
+
     if (start_date_time is not None) and (end_date_time is not None):
         df = df.loc[_index_mask(df.index, start_date_time, end_date_time)]
     if excluded_date_times is not None:
         df = df.loc[~df.index.isin(excluded_date_times)]
     if (not unreliables) & ("flag" in df.columns):
+        df.loc[df.flag.isna(), "flag"] = 0
         df = pd.DataFrame(df.loc[df["flag"] < 6]["value"])
 
     if "flag" in df.columns:
         df = df[["value"]]
-
+    
     if sample_config is not None:
         df = sample_df(df, sample_config)
 

@@ -9,7 +9,7 @@ def sample_df(df: DataFrame, sampling_config: dict) -> dict:
     samples based on a time series sample config dictionary
 
     Args:
-        time_series_sampling_config (dict): Time Series sampling conig
+        time_series_sampling_config (dict): Time Series sampling config
 
     Returns:
         DataFrame: Sampled DataFrame
@@ -18,7 +18,7 @@ def sample_df(df: DataFrame, sampling_config: dict) -> dict:
 
     function = getattr(time_series_sampling, sampling_config["method"])
     kwargs = {k: v for k, v in sampling_config.items() if k != "method"}
-
+    print(f"sample_df init {df}")
     if not df.empty:
         return function(df, **kwargs)
     else:
@@ -37,6 +37,7 @@ def random_sample(df: DataFrame, max_samples: int = 20000) -> DataFrame:
         DataFrame: Sampled DataFrame
 
     """
+    print(f"random sample {df}")
     return df.sample(min(len(df), max_samples)).sort_index()
 
 
@@ -55,6 +56,7 @@ def simplify(df, max_samples: int = 250000, intervals=False) -> DataFrame:
     """
 
     p = max_samples / len(df)
+    print(len(df))
     if len(df) > max_samples:
         # compute slope
         delta_time = (
@@ -73,13 +75,15 @@ def simplify(df, max_samples: int = 250000, intervals=False) -> DataFrame:
         slope_min = slope.quantile(q=(p / 2))
 
         # simplified sample
-        df_simplified = df[
+        simplified = df[
             (slope > slope_max)
             | (df.value > max_value)
             | (df.value < min_value)
             | (slope < slope_min)
         ]
+        print("0",len(simplified))
         if intervals:
+            print("intervals")
             func_idxmax = lambda x: x.idxmax() if not x.empty else pd.NA # noqa
             func_idxmin = lambda x: x.idxmin() if not x.empty else pd.NA # noqa
             func_max = lambda x: x.max() if not x.empty else pd.NA # noqa
@@ -97,31 +101,36 @@ def simplify(df, max_samples: int = 250000, intervals=False) -> DataFrame:
                 ]
             )
             regular_max = (
-                intervals.rename(columns={"idxmax": "datetime", "max": "value"})
+                intervals.rename
+                (columns={"idxmax": "datetime", "max": "value"})
                 .dropna()
                 .set_index("datetime")[["value"]]
             )
             regular_min = (
-                intervals.rename(columns={"idxmin": "datetime", "min": "value"})
+                intervals.rename
+                (columns={"idxmin": "datetime", "min": "value"})
                 .dropna()
                 .set_index("datetime")[["value"]]
             )
 
             # concat in one dataframe
             df_simplified = (
-                pd.concat([df_simplified, regular_max, regular_min])
+                pd.concat([simplified, regular_max, regular_min])
                 .reset_index()
                 .drop_duplicates(subset="datetime", keep="last")
                 .set_index("datetime")
                 .sort_index()
             )
+            print("1",len(df_simplified),len(simplified),len(regular_max),len(regular_min))
         else:
             df_simplified = (
-                df_simplified.reset_index()
+                simplified
+                .reset_index()
                 .drop_duplicates(subset="datetime", keep="last")
                 .set_index("datetime")
                 .sort_index()
             )
+        print(f"simplified {df}")   
         return df_simplified
     else:
         return df
