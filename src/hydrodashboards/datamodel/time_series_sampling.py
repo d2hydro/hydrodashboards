@@ -1,5 +1,7 @@
 from pandas import DataFrame
 from hydrodashboards.datamodel import time_series_sampling
+#from hydrodashboards.bokeh.main import update_search_time_series_source
+
 import pandas as pd
 from datetime import timedelta
 
@@ -18,7 +20,6 @@ def sample_df(df: DataFrame, sampling_config: dict) -> dict:
 
     function = getattr(time_series_sampling, sampling_config["method"])
     kwargs = {k: v for k, v in sampling_config.items() if k != "method"}
-    print(f"sample_df init {df}")
     if not df.empty:
         return function(df, **kwargs)
     else:
@@ -37,7 +38,6 @@ def random_sample(df: DataFrame, max_samples: int = 20000) -> DataFrame:
         DataFrame: Sampled DataFrame
 
     """
-    print(f"random sample {df}")
     return df.sample(min(len(df), max_samples)).sort_index()
 
 
@@ -55,8 +55,8 @@ def simplify(df, max_samples: int = 250000, intervals=False) -> DataFrame:
 
     """
 
+
     p = max_samples / len(df)
-    print(len(df))
     if len(df) > max_samples:
         # compute slope
         delta_time = (
@@ -69,8 +69,8 @@ def simplify(df, max_samples: int = 250000, intervals=False) -> DataFrame:
         slope = delta_value / delta_time
 
         # compute percentiles
-        max_value = df.value.quantile(q=(1 - p / 8))
-        min_value = df.value.quantile(q=p / 8)
+        max_value = df.value.quantile(q=(1 - p / 4))
+        min_value = df.value.quantile(q=p / 4)
         slope_max = slope.quantile(q=(1 - p / 2))
         slope_min = slope.quantile(q=(p / 2))
 
@@ -81,7 +81,6 @@ def simplify(df, max_samples: int = 250000, intervals=False) -> DataFrame:
             | (df.value < min_value)
             | (slope < slope_min)
         ]
-        print("0",len(simplified))
         if intervals:
             print("intervals")
             func_idxmax = lambda x: x.idxmax() if not x.empty else pd.NA # noqa
@@ -130,7 +129,6 @@ def simplify(df, max_samples: int = 250000, intervals=False) -> DataFrame:
                 .set_index("datetime")
                 .sort_index()
             )
-        print(f"simplified {df}")   
         return df_simplified
     else:
         return df

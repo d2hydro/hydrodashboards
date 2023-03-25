@@ -113,7 +113,8 @@ def update_time_series_sources():
 def update_search_time_series_source():
     """Update search source assigned to search_fig"""
     time_series = data.time_series_sets.get_by_label(search_time_series.value)
-    _source = sources.time_series_to_source(time_series, sample_config=config.time_series_sampling)
+    
+    _source = sources.time_series_to_source(time_series, sample_config=search_sample_config)
     search_source.data.update(_source.data)
 
 
@@ -377,7 +378,7 @@ def update_on_history_search_time_series():
     df = data.update_history_time_series_search(search_time_series.value)
 
     # update search_source
-    search_source.data.update(sources.df_to_source(df, sample_config=config.time_series_sampling).data)
+    search_source.data.update(sources.df_to_source(df, sample_config=search_sample_config).data)
 
     # update search_period
     search_start, search_end = data.get_history_period(search_source.data["datetime"])
@@ -636,6 +637,8 @@ We read the config
 """
 
 config = Config.from_json(CONFIG_JSON)
+search_sample_config = {k:v for k,v in config.time_series_sampling.items()}
+search_sample_config["max_samples"] = 200000
 
 """
 We initialize the dataclass
