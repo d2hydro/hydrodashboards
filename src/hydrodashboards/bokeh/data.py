@@ -563,16 +563,17 @@ class Data:
         """Update the time_series_sets.time_series from cache if existing."""
         for index in indices:
             self.logger.info("trying to update from cache")
-            if not self.time_series_sets.exists(index):
-                self.logger.info(f"cache file found for {index[0]}, {index[1]}")
-                self.time_series_sets.append_from_cache(
-                    *index,
-                    self.periods.search_start,
-                    self.periods.search_end
-                    )
-                self.logger.info(
-                    f"new cache length: {len(self.time_series_sets)}"
-                    )
+            if self.time_series_sets.exists(index):
+                self.time_series_sets.remove(index)
+            self.logger.info(f"cache file found for {index[0]}, {index[1]}")
+            self.time_series_sets.append_from_cache(
+                *index,
+                self.periods.search_start,
+                self.periods.search_end
+                )
+            self.logger.info(
+                f"new cache length: {len(self.time_series_sets)}"
+                )
 
     def clean_time_series_within_period(self, period, selection="search"):
         self.time_series_sets.time_series = [

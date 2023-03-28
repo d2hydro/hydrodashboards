@@ -121,6 +121,9 @@ class TimeSeriesSets:
     def remove_inactive(self):
         self.time_series = [i for i in self.time_series if i.active]
 
+    def remove(self, index):
+        self.time_series = [i for i in self.time_series if i.index != index]
+
     def within_period(self, start_datetime: datetime, end_datetime: datetime):
         if (self.search_start is not None) | (self.search_end is not None):
             within_period = (self.search_start <= start_datetime) & (
@@ -170,7 +173,6 @@ class TimeSeriesSets:
     def append_from_cache(self, location, parameter, start, end):
         key = KEY.format(location=location, parameter=parameter)
         if self.cache.exists(key):
-            print("append from cache")
             time_series = self.cache.get_data(key)
             time_series.complete = True
             time_series.df = time_series.df.loc[
