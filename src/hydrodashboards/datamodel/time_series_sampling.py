@@ -82,45 +82,60 @@ def simplify(df, max_samples: int = 250000, intervals=False) -> DataFrame:
             | (slope < slope_min)
         ]
         if intervals:
+            round_datetime = df.reset_index().set_index("datetime", drop=False).datetime.dt.round('5min')
+            df['round_datetime'] = round_datetime
+            df_rounded_max = df.sort_values(['value'],ascending=False).groupby('round_datetime').head(1)
+            df_rounded_max = df_rounded_max.sort_values(['datetime'],ascending=True).drop(columns=['round_datetime'])
+            df_rounded_min = df.sort_values(['value'],ascending=True).groupby('round_datetime').head(1)
+            df_rounded_min = df_rounded_min.sort_values(['datetime'],ascending=True).drop(columns=['round_datetime'])
+            
             print("intervals")
-            func_idxmax = lambda x: x.idxmax() if not x.empty else pd.NA # noqa
-            func_idxmin = lambda x: x.idxmin() if not x.empty else pd.NA # noqa
-            func_max = lambda x: x.max() if not x.empty else pd.NA # noqa
-            func_min = lambda x: x.min() if not x.empty else pd.NA # noqa
+#            func_idxmax = lambda x: x.idxmax() if not x.empty else pd.NA # noqa
+#            func_idxmin = lambda x: x.idxmin() if not x.empty else pd.NA # noqa
+#            func_max = lambda x: x.max() if not x.empty else pd.NA # noqa
+#            func_min = lambda x: x.min() if not x.empty else pd.NA # noqa
 
             # regular max and min
-            intervals = df.groupby(
-                pd.Grouper(freq=timedelta(minutes=1))
-                ).value.agg(
-                [
-                    ("idxmax", func_idxmax),
-                    ("idxmin", func_idxmin),
-                    ("max", func_max),
-                    ("min", func_min),
-                ]
-            )
-            regular_max = (
-                intervals.rename
-                (columns={"idxmax": "datetime", "max": "value"})
-                .dropna()
-                .set_index("datetime")[["value"]]
-            )
-            regular_min = (
-                intervals.rename
-                (columns={"idxmin": "datetime", "min": "value"})
-                .dropna()
-                .set_index("datetime")[["value"]]
-            )
+#            intervals = df.groupby(
+#                pd.Grouper(freq=timedelta(minutes=1))
+#                ).value.agg(
+#                [
+#                    ("idxmax", func_idxmax),
+#                    ("idxmin", func_idxmin),
+#                    ("max", func_max),
+#                    ("min", func_min),
+#                ]
+#            )
+#            regular_max = (
+#                intervals.rename
+#                (columns={"idxmax": "datetime", "max": "value"})
+#                .dropna()
+#                .set_index("datetime")[["value"]]
+#            )
+#            regular_min = (
+#                intervals.rename
+#                (columns={"idxmin": "datetime", "min": "value"})
+#                .dropna()
+#                .set_index("datetime")[["value"]]
+#            )
 
             # concat in one dataframe
-            df_simplified = (
-                pd.concat([simplified, regular_max, regular_min])
-                .reset_index()
-                .drop_duplicates(subset="datetime", keep="last")
-                .set_index("datetime")
-                .sort_index()
-            )
-            print("1",len(df_simplified),len(simplified),len(regular_max),len(regular_min))
+     #       df_simplified = (
+      #          pd.concat([simplified, regular_max, regular_min])
+     #           .reset_index()
+     #           .drop_duplicates(subset="datetime", keep="last")
+     #           .set_index("datetime")
+     #           .sort_index()
+     #       )
+            df_simplified = (pd.concat(
+            [simplified,df_rounded_max, df_rounded_min])
+            .reset_index()
+            .drop_duplicates(subset="datetime", keep="last")
+            .set_index("datetime")
+            .sort_index()
+        )
+            
+            print("1",len(df_simplified),len(simplified),len(df_rounded_max),len(df_rounded_min))
         else:
             df_simplified = (
                 simplified
