@@ -22,10 +22,11 @@ from hydrodashboards.bokeh.main import (data,
                                         update_time_series_view
                                         )
 
-filters[0].active = [0]
+filters[0].active = [1]
 locations.active = [0]
-parameters.active = [0,1,2]
+parameters.active = [0,1]
 search_period.children[0].value = "2017-01-01"
+
 
 # %%
 start_time_series_loader()
