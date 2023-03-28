@@ -167,11 +167,15 @@ class TimeSeriesSets:
             else:
                 i.visible = False
 
-    def append_from_cache(self, location, parameter):
+    def append_from_cache(self, location, parameter, start, end):
         key = KEY.format(location=location, parameter=parameter)
         if self.cache.exists(key):
+            print("append from cache")
             time_series = self.cache.get_data(key)
             time_series.complete = True
+            time_series.df = time_series.df.loc[
+                (time_series.df.index >= start) & (time_series.df.index <= end)
+                ]
             self.time_series += [time_series]
 
     def append_from_dict(self, properties: List[dict]):
