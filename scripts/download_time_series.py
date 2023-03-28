@@ -38,7 +38,7 @@ load_time_series()
 for time_series in data.time_series_sets.time_series:
     print(time_series.key)
     time_series.df = time_series.df.loc[time_series.df.flag < 6]
-    _df = simplify(time_series.df, max_samples=300000, intervals=True)
+    _df = simplify(time_series.df, max_samples=100, intervals=True)
     _df.loc[_df.flag.isna(), "flag"] = 0
     time_series.df = _df
     time_series.to_cache()

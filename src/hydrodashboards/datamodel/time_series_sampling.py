@@ -77,7 +77,7 @@ def simplify(df, max_samples: int = 250000, intervals=False) -> DataFrame:
             | (slope < slope_min)
         ]
         if intervals:
-          round_datetime = df.reset_index().set_index("datetime", drop=False).datetime.dt.round('5min')
+          round_datetime = df.reset_index().set_index("datetime", drop=False).datetime.dt.round('1min')
           df['round_datetime'] = round_datetime
           df_sort = df.sort_values(['value'],ascending=False)
           regular_max = df_sort.groupby('round_datetime').head(1).drop(columns=['round_datetime'])
