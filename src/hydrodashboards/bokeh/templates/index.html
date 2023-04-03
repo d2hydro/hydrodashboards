@@ -31,7 +31,6 @@
             $('#sidebarCollapse').on('click', function () {
                 $('#sidebar').toggleClass('active');
                 $(this).toggleClass('active');
-
                 AnimationUtils.tagElements();
                 AnimationUtils.onResizePage();
             });
@@ -44,13 +43,11 @@
           but.classList.toggle("fa-angle-double-down");
           if (zoekgraf.style.display === "none") {
             zoekgraf.style.display = "block";
-            h.style.height = "62.5vh";
-	
+            h.style.height = "62.5vh";	
           } else {
             zoekgraf.style.display = "none";
             h.style.height = "78vh";
-          }
-          
+          }      
           AnimationUtils.dispatchResizeEvent();
         }
 	
@@ -80,9 +77,6 @@
 		};
 		keyDown();
 		keyUp();
-	    
-		
-		
 		
 		function refresh_app() {
 			window.location.reload();
@@ -141,10 +135,10 @@
         <div id="content">    
             <nav class="navbar navbar-expand-lg">
                
-				   <div class="row" style="width:100%;">
+				   <div class="row" style="width:100%;margin-bottom: -10px">
 					<div class="col-9">
 					
-					<button class="btn btn-dark"style="border:none;cursor:pointer;padding-top:0px;padding-left:28px;padding-right:4px;background: rgba(0,0,0,0);color:white" type="button" onclick="window.open('https://d2hydro.github.io/hydrodashboards/user_manuals/user_nl/','_blank')">
+					<button class="btn btn-dark"style="border:none;cursor:pointer;padding-top:0px;padding-right:4px;background: rgba(0,0,0,0);color:white" type="button" onclick="window.open('https://d2hydro.github.io/hydrodashboards/user_manuals/user_nl/','_blank')">
 							<i class='fas fa-info-circle ' style="font-size: 24px"></i>
 						</button>
 						 <button onclick="refresh_app()" id="refresh_app">
@@ -156,10 +150,8 @@
 					
                       
 					</div>
-					<div class="col-3">	
+					<div class="col-3" style="bottom:-1px">	
 						  <ul class="nav navbar-nav">
-						
-
                             <ul class="nav nav-tabs" id="nav-tab" role="tablist">
                             <li class="nav-item">
                                 <button class="nav-item nav-link active" id="kaart-tab" data-toggle="tab" data-target="#kaart" role="tab" aria-controls="nav-kaart" aria-selected="true">Kaart</button>
@@ -168,10 +160,7 @@
                                 <button class="nav-item nav-link" id="grafiek-tab" data-toggle="tab" data-target="#grafiek" role="tab" aria-controls="nav-grafiek" aria-selected="false">Grafiek</button>
                             </li>
                             </ul>
-                        </ul>
-					
-					
-						
+                        </ul>						
 					</div>
 				</div>	
                 
@@ -198,8 +187,6 @@
                             <div class="col-12" id="grafiek_upper">
                                 {{ embed(roots.time_figure) }}
                             </div>   
-							
-
                             <div class="col-1" id="threshold">
                                 {{ embed(roots.thresholds_button) }}
                             </div>

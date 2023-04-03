@@ -85,9 +85,7 @@ a, a:hover, a:focus {
    Navbar
 ----------------------------------------------------- */
 .navbar {
-
     border: none;
-
     position: relative;
 	height: 10px;
 	border-left: 1px solid white;
@@ -113,7 +111,7 @@ a, a:hover, a:focus {
 .navbar-expand-lg {
    background: #363f4d;
    padding-bottom: 0;
-   height:44px;
+   height:50px;
    }
    
 a[data-toggle="collapse"] {
@@ -131,7 +129,6 @@ a[data-toggle="collapse"] {
 	background-color:white;
 	color: #363f4d;
 	border-width:1px;
-
 }
 
 .nav-link{
@@ -141,35 +138,15 @@ a[data-toggle="collapse"] {
 .navbar-nav > ul{
 	margin-bottom:0px!important;
 	padding-bottom:0px;
-
 	height:100%;
-
-
 }
 
 .nav{
 	flex-wrap:nowrap !important
-
-
-
-
-
-
-
 }
 
 .nav-tabs .nav-item{
     width: 80px!important;
-
-
-
-
-
-
-
-
-
-
 }
 
 .nav-tabs .nav-link{
@@ -230,12 +207,6 @@ a[data-toggle="collapse"] {
 #sidebar.active > .sidebar-bokeh{
 	opacity: 0;
 	pointer-events: none;	
-
-
-
-
-
-
 }
 
 
@@ -257,17 +228,15 @@ a[data-toggle="collapse"] {
     padding-right: 10px;
 	padding-left: 10px;
     background: #363f4d;
-	height:44px;
+	height:50px;
 
 }
 
 #sidebar > .sidebar-header .bk.app_title{
-    display:flex; min-width:240px;height:30px!important
-
-
-
-
-
+    display:flex; 
+	min-width:240px;
+	top: 7px!important;
+	height:30px!important
 }
 /*---------------------------------------------------------
 	Sidemenu Checkboxes positioning
@@ -294,13 +263,6 @@ a[data-toggle="collapse"] {
 /*search bar*/
 #sidebar > .sidebar-bokeh > .bk-root:nth-child(4) {
     height: 74px;
-
-
-
-
-
-
-
 }
 
 #sidebar > .sidebar-bokeh > .bk-root:nth-child(4) > .bk > .bk {
@@ -345,33 +307,8 @@ a[data-toggle="collapse"] {
 #sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_4 {
     min-height: 68px;
     height: calc(100% - 42px) !important;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	border-bottom-left-radius: 2px!important;
     border-bottom-right-radius: 2px!important;
-
-
-
-
-
-
-
     box-shadow: 0px 4px 8px #495568;
   }
 #sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_5 {
@@ -379,27 +316,8 @@ a[data-toggle="collapse"] {
     height: calc(100% - 42px) !important;
 	border-bottom-left-radius: 2px!important;
     border-bottom-right-radius: 2px!important;
-
-
-
-
-
-
-
     box-shadow: 0px 4px 8px #495568;
   }
-
-
-
-
-
-
-
-
-
-
-
-
 
 /*---------------------------------------------------------
 	Sidemenu inside Checkboxes 
@@ -766,8 +684,8 @@ input[type=checkbox]{
     height: 40px;
     background: rgba(0,0,0,0);
     cursor: pointer;
-	right:-38px;
-
+    right: 12px;
+    top: 9px;
 }
 
 #sidebarCollapse.active {
@@ -785,8 +703,8 @@ input[type=checkbox]{
 }
 
 #sidebarCollapse.navbar-btn.active{
-/*	position:absolute;
-    z-index:999;*/
+	right: -22px;
+    width: 36px;
 }
 
 #sidebarCollapse span:first-of-type {
