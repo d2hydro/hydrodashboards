@@ -9,7 +9,7 @@
     <!-- Bootstrap CSS CDN -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
     <!-- Our Custom CSS -->
-    <link rel="stylesheet" href="/bokeh/static/css/styles.css">
+    <link rel="stylesheet" href="/wik/static/css/styles.css">
 
     <!-- Font Awesome JS -->
     <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
@@ -22,7 +22,7 @@
     <!-- Bootstrap JS -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
     <!-- Our Custom JS -->
-    <script src="/bokeh/static/js/main.js"></script>
+    <script src="/wik/static/js/main.js"></script>
 	<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 	<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
@@ -37,34 +37,24 @@
             });
         });
         function scale_graph() {
-          var but_leg = document.getElementById("button_leg_bar");
-          var maplayer_icon=document.getElementById("maplayer_icon");
-          var map_opt = document.getElementById("map_opt");
-          var kaart = document.getElementById("kaart");
           var zoekgraf = document.getElementById("zoekgrafiek-en-slider");
           var but = document.getElementById("button_lower");
           var h = document.getElementById("grafiek_upper");
-          var download = document.getElementsByClassName("bk bk-btn bk-btn-success")[0];
           but.classList.toggle("fa-angle-double-up");
           but.classList.toggle("fa-angle-double-down");
           if (zoekgraf.style.display === "none") {
             zoekgraf.style.display = "block";
-            h.style.height = "60.5vh";
-<!--            download.style.backgroundColor = "#3681C1"; -->
-<!--            download.style.borderColor = "#495568";		-->		
+            h.style.height = "62.5vh";
+	
           } else {
             zoekgraf.style.display = "none";
             h.style.height = "78vh";
-<!--            download.style.backgroundColor = "white";-->
-<!--            download.style.borderColor = "white";-->
           }
           
           AnimationUtils.dispatchResizeEvent();
         }
 	
         function popMapLegend() {
-          var but_leg = document.getElementById("button_leg_bar");
-          var maplayer_icon=document.getElementById("maplayer_icon");
           var map_opt = document.getElementById("map_opt");
           var kaart = document.getElementById("kaart");
         if (map_opt.style.display == "none") {
@@ -109,7 +99,20 @@
         <!-- Sidebar Holder -->
         <nav id="sidebar">
             <div class="sidebar-header">
-                {{ embed(roots.app_title) }}
+                 <div class="row"style="height:100%" > 
+				<div class="col-10" style="display:flex;align-items:center;height:100%">
+				
+				  {{ embed(roots.app_title) }}
+				</div>			 
+				<div class="col-2" style="height:100%" >			 
+					<button type="button" id="sidebarCollapse" class="navbar-btn">
+						<span></span>
+						<span></span>
+						<span></span>
+					</button>
+				
+				</div>
+			   </div>
             </div>
             <div class="sidebar-bokeh">
                 {{ embed(roots.filters) }}
@@ -137,22 +140,26 @@
         <!-- Page Content Holder -->
         <div id="content">    
             <nav class="navbar navbar-expand-lg">
-                <div class="container-fluid h-100">
-                    <button type="button" id="sidebarCollapse" class="navbar-btn">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </button>
-                    <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+               
+				   <div class="row" style="width:100%;">
+					<div class="col-9">
+					
+					<button class="btn btn-dark"style="border:none;cursor:pointer;padding-top:0px;padding-left:28px;padding-right:4px;background: rgba(0,0,0,0);color:white" type="button" onclick="window.open('https://d2hydro.github.io/hydrodashboards/user_manuals/user_nl/','_blank')">
+							<i class='fas fa-info-circle ' style="font-size: 24px"></i>
+						</button>
+						 <button onclick="refresh_app()" id="refresh_app">
+				  </button>
+                <!--    <div class="collapse navbar-collapse" id="navbarSupportedContent">-->
+				<!--	<button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="False" aria-label="Toggle navigation">
                         <i class="fas fa-align-justify"></i>
-                     </button>
-                    <button onclick="refresh_app()" id="refresh_app">
-					</button>
-                    <button class="btn btn-dark"style="border:none;cursor:pointer; height:35px;background: rgba(0,0,0,0);color:white" type="button" onclick="window.open('https://d2hydro.github.io/hydrodashboards/user_manuals/user_nl/','_blank')">
-                        <i class='fas fa-info-circle ' style="font-size: 24px;"></i>
-                    </button>
-                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                        <ul class="nav navbar-nav ml-auto">
+				</button>-->
+					
+                      
+					</div>
+					<div class="col-3">	
+						  <ul class="nav navbar-nav">
+						
+
                             <ul class="nav nav-tabs" id="nav-tab" role="tablist">
                             <li class="nav-item">
                                 <button class="nav-item nav-link active" id="kaart-tab" data-toggle="tab" data-target="#kaart" role="tab" aria-controls="nav-kaart" aria-selected="true">Kaart</button>
@@ -162,8 +169,13 @@
                             </li>
                             </ul>
                         </ul>
-                    </div>
-            </div>
+					
+					
+						
+					</div>
+				</div>	
+                
+			
             </nav>
             <div class="tab-content">
                 <div class="tab-pane fade show active row" id="kaart" role="tabpanel" aria- labelledby="kaart-tab" aria-expanded="false">
@@ -182,12 +194,15 @@
                 </div>
                 <div class="tab-pane fade show" id="grafiek" role="tabpanel" aria- labelledby="grafiek-tab"aria-expanded="false">
                     <div class="container-fluid h-100" >
-                        <div class="row"style="margin-left:0px;margin-right:0px" > 
+                        <div class="row"style="margin-left:10px; margin-right:10px; margin-top:10px; margin-bottom:0px" > 
                             <div class="col-12" id="grafiek_upper">
                                 {{ embed(roots.time_figure) }}
                             </div>   
 							
-/thresholds/
+
+                            <div class="col-1" id="threshold">
+                                {{ embed(roots.thresholds_button) }}
+                            </div>
                         </div>
                         <div class="row" id="zoekgrafiek-bar">    
 							<div class="col-1" id="history">
