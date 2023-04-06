@@ -44,9 +44,11 @@
           if (zoekgraf.style.display === "none") {
             zoekgraf.style.display = "block";
             h.style.height = "62.5vh";	
+			
           } else {
             zoekgraf.style.display = "none";
             h.style.height = "78vh";
+			zoekgraf.style.opacity = "1";
           }      
           AnimationUtils.dispatchResizeEvent();
         }
@@ -54,13 +56,16 @@
         function popMapLegend() {
           var map_opt = document.getElementById("map_opt");
           var kaart = document.getElementById("kaart");
-        if (map_opt.style.display == "none") {
-            map_opt.style.position = "fixed";
-            map_opt.style.display = "block";		
-          } else {
-            map_opt.style.display = "none";
-            dummy.style.display= "block";
-          }
+			if(map_opt.style.opacity < "0.1"){
+				map_opt.style.opacity = "1";
+				}
+			else if(map_opt.style.display == "none" ) {
+				map_opt.style.position = "fixed";
+				map_opt.style.display = "block";		
+			  } 
+			else {
+				map_opt.style.display = "none";
+			  }
           }
 		let ctrlKey = false;
 		   const keyDown = () => {

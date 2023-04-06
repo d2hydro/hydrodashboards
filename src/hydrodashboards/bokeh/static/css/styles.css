@@ -7,12 +7,13 @@
   position: fixed;
   background: white;
   width: 165px;
-  top: calc(100% - 434px);
+  top: calc(100% - 400px);
   left: calc(100% - 185px);
   background-color: white;
   padding: 2px;
   border: 1px solid #F1F2F3;
   border-radius:6px;
+  opacity:0;
   box-shadow: rgba(0, 0, 0, 0.2) 0px 20px 30px;
 }
 
@@ -23,12 +24,13 @@
   position: fixed;
   background: white;
   width: 175px;
-  top: calc(100% - 434px);
+  top: calc(100% - 400px);
   left: calc(100% - 185px);
   background-color: white;
   padding: 2px;
   border: 1px solid #F1F2F3;
   border-radius:4px;
+  opacity:0;
   box-shadow: rgba(0, 0, 0, 0.2) 0px 20px 30px;
 }
 
@@ -667,8 +669,8 @@ input[type=checkbox]{
 ----------------------------------------------------- */
 #content {
     width: 100%;
-    height: 99.6%;
-    min-height: 99.6%;
+    height: 98.4%;
+    min-height: 98.4%;
     transition: all 0.3s;
 	position:relative;
 	background-color:#F1F2F3;
@@ -703,7 +705,7 @@ input[type=checkbox]{
 }
 
 #sidebarCollapse.navbar-btn.active{
-	right: -22px;
+	right: -24px;
     width: 36px;
 }
 
@@ -752,46 +754,35 @@ input[type=checkbox]{
 ----------------------------------------------------- */
 .tab-content{
 	width: 100%;
-	height: 94.5%;
+	height: 94.8%;
 	display:block;
 	position: absolute;
+	background:#f1f2f3;
 }
 #kaart{
 	position:absolute; 
 	width:100%;
 	height:102%;
-
-
 	display: block;
-    margin-left: 0;
+    margin-left: -1px;
     margin-right: 0;
 	top:-15px;
 	border:none;
 	padding:0;
+	background-color:white;
 }
  
 #kaart > .bk-root > .bk{
 	width:100% !important;
 	display: block!important;
-
-
-
-
 }
 #kaart > .bk-root > .bk > .bk{ 
 	width:100% !important;
 	display: block!important;
-
-
-
-
-
-
-
 }
 
 #kaart > .bk-root > .bk >.bk >.bk > .bk.bk-canvas-events > .bk {
-	top:70%!important;
+	top:6.4%!important;
 	z-index: 2;
 	left: 12px!important;
 	width: 30px!important;
@@ -800,14 +791,31 @@ input[type=checkbox]{
 	align-items: flex-start;
 	overflow:visible!important;
 }
+
+#kaart > .bk-root > .bk >.bk >.bk > .bk.bk-canvas-events > .bk >.bk.bk-toolbar.bk-above{
+}
+
 .bk-root .bk-above .bk-toolbar-button.bk-active {
-	border-bottom: 2px solid #f16996;
+	border: none;
+	box-shadow: inset #FE6F9E 0px 0px 5px 0px, white 0px 2px 2px -2px;
+	width:30px;
+	border-radius:2px;
+	background-color:white;
+}
+.bk.bk-toolbar-button.bk-tool-icon-zoom-in.bk-active {
+    border: none!important;
+	box-shadow: inset #FE6F9E 0px 0px 5px 0px, white 0px 2px 2px -2px!important;
+	width:30px!important;
+	border-radius:2px!important;
+	background-color:white!important;
+	-webkit-tap-highlight-color: #FE6F9E!important;
+}
 
-
-
-
-
-
+.bk.bk-toolbar-button.bk-tool-icon-save, .bk.bk-toolbar-button.bk-tool-icon-reset, .bk.bk-toolbar-button.bk-tool-icon-tap-select.bk-active, .bk.bk-toolbar-button.bk-tool-icon-wheel-zoom.bk-active, .bk.bk-toolbar-button.bk-tool-icon-box-select, .bk.bk-toolbar-button.bk-tool-icon-pan.bk-active {
+    background-color: white!important;
+    border-radius: 2px;
+    -webkit-tap-highlight-color: #FE6F9E!important;
+	animation-delay: 1s!important;
 }
 
 .bk.bk-toolbar-button.bk-tool-icon-save, .bk.bk-toolbar-button.bk-tool-icon-reset, .bk.bk-toolbar-button.bk-tool-icon-tap-select.bk-active, .bk.bk-toolbar-button.bk-tool-icon-wheel-zoom.bk-active,.bk.bk-toolbar-button.bk-tool-icon-box-select, .bk.bk-toolbar-button.bk-tool-icon-pan.bk-active{
@@ -815,9 +823,15 @@ input[type=checkbox]{
 
 }
 
+
+
+.bk-root .bk-above .bk-toolbar-button {
+	background-color:white;
+	border-radius:2px;
+}
+
 .bk.menu-animation-width.menu-animation-tag{
 	width:100% !important;
-
 }
 
 .bk-root .bk-above .bk-divider{
@@ -845,13 +859,15 @@ input[type=checkbox]{
 
 #button_leg_bar {
   background-color: transparent;
-  background-image: url(/wik/static/icons/layers.svg);
+  background-image: url(/wik/static/icons/layers.svg), linear-gradient(90deg, white 0%, white 100%) ;
   background-repeat: no-repeat;
   border-width: 0px;
-  bottom: 20px;
+  bottom: 10px;
   right: 10px;
-  width: 70px;
+  width: 50px;
   position:fixed;
+  border-radius: 4px;
+  box-shadow: 1px 1px 10px lightgrey ;
 }
 
 #dummy {
@@ -864,11 +880,12 @@ input[type=checkbox]{
 }
 
 #maplayer_icon{
-  width: 60px;
-  height:60px;
+  width: 46px;
+  height:42px;
   border-color: transparent;
   background-color: transparent;
   border-width: 0px;
+
   outline: none;
 }
 
@@ -894,7 +911,7 @@ input[type=checkbox]{
 	color: #3A4453;
 	white-space: nowrap ;
 	position:absolute;
-    top:95.6%;
+    top:95.8%;
 }
 
 /* ---------------------------------------------------
@@ -957,7 +974,10 @@ input[type=checkbox]{
 	margin-top:2vh;
 	overflow-y:auto;
 	overflow-x:hidden;
+	box-shadow: rgba(17, 17, 26, 0.05) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 0px 8px;
 }
+
+
 #zoekgrafiek-bar{
 	background: #F8F9FA;
 	border: 2px solid white;
@@ -966,6 +986,7 @@ input[type=checkbox]{
 	margin-top:2vh;
 	margin-top:0px;
 	display:flex!important;
+	box-shadow: rgba(17, 17, 26, 0.05) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 0px 8px;
 }
 
 #grafiek_upper >.bk-root > .bk > .bk > .bk.time_figure > .bk > .bk.bk-canvas-events > .bk > .bk-toolbar.bk-above {
@@ -1002,18 +1023,16 @@ input[type=checkbox]{
 	margin-bottom:0px;
 	display:block;
 	background-color: white;
+	box-shadow: rgba(17, 17, 26, 0.05) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 0px 8px;
 }
-
-
-
 
 .bk-root .noUi-horizontal .noUi-tooltip {
     left: -8px!important;
 }
 
 #grafiek-lower{
-    height: 14vh;
-	margin-top: -1.2vh;
+    height: 13vh;
+	margin-top: -1vh;
 	margin-right:0px;
 	margin-left:0px;
 }
