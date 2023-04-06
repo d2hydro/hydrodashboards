@@ -303,11 +303,9 @@ def top_fig(
     time_hover.toggleable = False
 
     tools = [
-        "pan",
+        "xpan",
         "box_zoom",
         "xwheel_zoom",
-        "zoom_in",
-        "zoom_out",
         "undo",
         "redo",
         "reset",
@@ -338,6 +336,7 @@ def top_fig(
 
     time_fig.xaxis.formatter = FuncTickFormatter(code=DT_JS_FORMAT.format("tick"))
     time_fig.xaxis.visible = True
+
     time_fig.yaxis[0].formatter = NumeralTickFormatter(format="0.00")
 
     # add lines to figure
