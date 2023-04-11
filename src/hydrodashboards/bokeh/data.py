@@ -27,6 +27,7 @@ from operator import itemgetter
 import pandas as pd
 
 from hydrodashboards.datamodel.cache import Cache
+from hydrodashboards.datamodel.time_series import KEY
 
 FEWS_BUGS = dict(qualifier_ids=True)
 COLOR_CYCLE = itertools.cycle(Category20_20)
@@ -541,14 +542,27 @@ class Data:
         search_time_series = self.time_series_sets.get_by_label(
             search_time_series_label
         )
-        time_series_index = (search_time_series.location, search_time_series.parameter)
 
-        fews_ts_set = self._get_fews_ts(
-            indices=[time_series_index], request_type="full_history"
-        )
+        # try to get the time-series from cache
+        cache_key = KEY.format(
+            location=search_time_series.location,
+            parameter=search_time_series.parameter
+            )
+        if self.time_series_sets.cache.exists(cache_key):
+            time_series = self.time_series_sets.cache.get_data(cache_key)
+            df = time_series.df
+        # if we can't, we get the full history from FEWS
+        else:
+            time_series_index = (
+                search_time_series.location,
+                search_time_series.parameter
+                )
+            fews_ts_set = self._get_fews_ts(
+                indices=[time_series_index], request_type="full_history"
+            )
+            df = self._get_df_from_fews_ts_set(fews_ts_set, *time_series_index)
 
-        return self._get_df_from_fews_ts_set(fews_ts_set, *time_series_index)
-        # self._update_ts_from_fews_ts_set(fews_ts_set)
+        return df
 
     def get_history_period(self, datetime_array):
         if len(datetime_array) == 0:
@@ -583,10 +597,10 @@ class Data:
                 )
             ]
 
-    def update_time_series_search(self):
-        if self.time_series_sets.select_incomplete():
-            fews_ts_set = self._get_fews_ts(request_type="history")
-            self._update_ts_from_fews_ts_set(fews_ts_set, complete=True)
+    # def update_time_series_search(self):
+    #     if self.time_series_sets.select_incomplete():
+    #         fews_ts_set = self._get_fews_ts(request_type="history")
+    #         self._update_ts_from_fews_ts_set(fews_ts_set, complete=True)
     
     def get_time_series_headers(self, indices=None):
         # get headers and initalize time series
@@ -618,21 +632,25 @@ class Data:
         self.time_series_sets.set_active(indices)
         self.time_series_sets.set_visible(indices=indices)
 
-        # set data for search time_series
-        if self.time_series_sets.any_active:
-            first_active = self.time_series_sets.first_active
-            if not first_active.within_period(period=self.periods, selection="search"):
-                fews_ts_set = self._get_fews_ts(
-                    indices=[first_active.index], request_type="search"
-                )
+        if self.time_series_sets.select_incomplete():
+            fews_ts_set = self._get_fews_ts(request_type="history")
+            self._update_ts_from_fews_ts_set(fews_ts_set, complete=True)
 
-                self._update_ts_from_fews_ts_set(fews_ts_set)
+        # # set data for search time_series
+        # if self.time_series_sets.any_active:
+        #     first_active = self.time_series_sets.first_active
+        #     if not first_active.within_period(period=self.periods, selection="search"):
+        #         fews_ts_set = self._get_fews_ts(
+        #             indices=[first_active.index], request_type="search"
+        #         )
 
-        # set data for view time_series
-        if self.time_series_sets.select_view(self.periods):
-            fews_ts_set = self._get_fews_ts(request_type="view")
+        #         self._update_ts_from_fews_ts_set(fews_ts_set)
 
-            self._update_ts_from_fews_ts_set(fews_ts_set)
+        # # set data for view time_series
+        # if self.time_series_sets.select_view(self.periods):
+        #     fews_ts_set = self._get_fews_ts(request_type="view")
+
+        #     self._update_ts_from_fews_ts_set(fews_ts_set)
     
         # finalize time_series_sets with search_start and search_end
         self.time_series_sets.set_search_period(*self.periods.search_dates)
