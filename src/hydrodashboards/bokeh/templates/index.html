@@ -99,8 +99,7 @@
         <nav id="sidebar">
             <div class="sidebar-header">
                  <div class="row"style="height:100%" > 
-				<div class="col-10" style="display:flex;align-items:center;height:100%">
-				
+				<div class="col-10" style="display:flex;align-items:center;height:100%">		
 				  {{ embed(roots.app_title) }}
 				</div>			 
 				<div class="col-2" style="height:100%" >			 
@@ -122,13 +121,16 @@
 					<div class="update">
                         {{ embed(roots.update_graph) }}
 						{{ embed(roots.scale_graphs_dummy)}}
+						<span class="tooltiptext">Toon grafiek (na selectie)</span>
 					</div>	
-					<div class="download">
+					<div class="download">		
                         {{ embed(roots.download_time_series)}}
-                        {{ embed(roots.download_time_series_dummy)}}
+                        {{ embed(roots.download_time_series_dummy)}}						
+						<span class="tooltiptext">Download data (excel)</span>
 					</div>	
 					<div class="save">
 					    {{ embed(roots.save_time_series)}}
+						<span class="tooltiptext">Opslaan grafiek (jpg)</span>
 					</div>
                 </div>
 			</div>				
@@ -145,8 +147,11 @@
 					
 					<button class="btn btn-dark"style="border:none;cursor:pointer;padding-top:0px;padding-right:4px;background: rgba(0,0,0,0);color:white" type="button" onclick="window.open('https://d2hydro.github.io/hydrodashboards/user_manuals/user_nl/','_blank')">
 							<i class='fas fa-info-circle ' style="font-size: 24px"></i>
+							<span class="tooltiptext">Open user manual</span>
 						</button>
-						 <button onclick="refresh_app()" id="refresh_app">
+						 <button class="refresh" onclick="refresh_app()" id="refresh_app">
+						 <span class="tooltiptext">Ververs WIK dashboard</span>
+						 </button>
 				  </button>
                 <!--    <div class="collapse navbar-collapse" id="navbarSupportedContent">-->
 				<!--	<button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="False" aria-label="Toggle navigation">

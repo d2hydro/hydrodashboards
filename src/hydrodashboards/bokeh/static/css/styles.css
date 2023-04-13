@@ -552,11 +552,11 @@ input[type=checkbox]{
 	background: #F16996;
 	border:0px solid black;
 	height: 30px;
-	width: 180px;	
+	width: 100px;	
 	min-height:30px;
 	position: inline-block;
 	bottom:auto;
-	left:40px!important;
+	left:32px!important;
 	align-items:center !important;
 }
 
@@ -566,6 +566,32 @@ input[type=checkbox]{
 	border:none;
 	width:1px!important;
 	height:1px!important;
+	cursor: pointer;
+}
+
+.update .tooltiptext {
+  visibility: hidden;
+  width: 160px;
+  background-color: white;
+  color: black;
+  font-size: 12px;
+  text-align: center;
+  border-radius: 4px;
+  padding: 2px 0;
+  border: 1px solid ;
+  
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  top: 100%;
+  left: 48%;
+}
+
+
+.update:hover .tooltiptext {
+  visibility: visible;
+  animation: tooltipkeys 1s 1;
+  opacity: 1;
 }
 
 /*---------------------------------------------------------
@@ -584,7 +610,35 @@ input[type=checkbox]{
 	height: 30px;
     min-width:32px;
 	width:32px;	
+	cursor: pointer;
 }
+
+.download .tooltiptext {
+  visibility: hidden;
+  width: 150px;
+  background-color: white;
+  color: black;
+  font-size: 12px;
+  text-align: center;
+  border-radius: 4px;
+  padding: 4px 0;
+  border: 1px solid ;
+  
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  top: 100%;
+  left: 75%;
+}
+
+
+.download:hover .tooltiptext {
+  visibility: visible;
+  animation: tooltipkeys 1s 1 ;
+  opacity: 1;
+}
+
+
 
 /*---------------------------------------------------------
 	Save button styling
@@ -601,8 +655,36 @@ input[type=checkbox]{
 	border-width:0px;
 	height: 30px;
     min-width:32px;
-	width:32px;	
+	width:32px;
+	cursor: pointer;	
 }
+
+.save .tooltiptext {
+  visibility: hidden;
+  width: 140px;
+  background-color: white;
+  color: black;
+  font-size: 12px; 
+  text-align: center;
+  border-radius: 4px;
+  padding: 4px 0;
+  border: 1px solid ;
+  
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  top: 100%;
+  left: 96%;
+}
+
+
+.save:hover .tooltiptext {
+  visibility: visible !important;
+  animation: tooltipkeys 1s 1;
+  opacity: 1;
+
+}
+
 
 
 
@@ -730,23 +812,73 @@ input[type=checkbox]{
     Refresh app and chart-graph tab
 ----------------------------------------------------- */
 #refresh_app{
-	background-color:#363F4D;
-	background-image: url(/wik/static/icons/refresh.png);
-	background-repeat: no-repeat;
-	background-position: center;
-	height: 20px;
-	border: 0;
-	outline: none;
-	border-color:#363F4D;
-	min-width:26px;
-	margin-left:1px;	
-    cursor: pointer;	
+    background-color: #363F4D;
+    background-image: url(/wik/static/icons/refresh.png);
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 28px;
+    border: 0;
+    min-width: 26px;
+    margin-left: 1px;
+    padding-top: 18px!important;
+    cursor: pointer;
 }
 
 #refresh_app:active {
   background-color:#f16996;
 }
 
+.refresh .tooltiptext {
+  visibility: hidden;
+  width: 150px;
+  background-color: white;
+  color: black;
+  font-size: 12px;
+  text-align: center;
+  border-radius: 4px;
+  padding: 4px 0;
+  border: 1px solid ;
+  
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  top: 100%;
+  left: 6%;
+}
+
+
+.refresh:hover .tooltiptext {
+  visibility: visible;
+  animation: tooltipkeys 1s 1 ;
+  opacity: 1;
+}
+
+
+.btn.btn-dark .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: white;
+  color: black;
+  font-size: 12px; 
+  text-align: center;
+  border-radius: 4px;
+  padding: 4px 0;
+  border: 1px solid ;
+  
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  top: 100%;
+  left: 4%;
+}
+
+
+.btn.btn-dark:hover .tooltiptext {
+  visibility: visible !important;
+  animation: tooltipkeys 1s 1;
+  opacity: 1;
+
+}
 
 
 /* ---------------------------------------------------
@@ -1294,6 +1426,53 @@ input[type=checkbox]{
         transform: rotate(-45deg) translate(1px, -1px);
     }
 
+}
+@-webkit-keyframes tooltipkeys {
+  0% {
+    opacity: 0;
+  }
+  75% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@-moz-keyframes tooltipkeys {
+  0% {
+    opacity: 0;
+  }
+  75% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@-o-keyframes tooltipkeys {
+  0% {
+    opacity: 0;
+  }
+  75% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes tooltipkeys {
+  0% {
+    opacity: 0;
+  }
+  75% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 
