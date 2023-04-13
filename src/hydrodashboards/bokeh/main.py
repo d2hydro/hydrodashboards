@@ -485,40 +485,47 @@ def update_time_series_view():
 
         # go to the next callback
         _scale_graphs.disabled = True
-        curdoc().add_next_tick_callback(update_time_series_search)
+        #curdoc().add_next_tick_callback(update_time_series_search)
+
+        # enable view_timeseries_controls
+        toggle_view_time_series_controls(value=False)
+        sources = [i["source"] for i in time_series_sources.values()]
+        toggle_download_button_on_sources(sources)
+        # update app status
+        app_status.text = data.app_status(html_type=HTML_TYPE)
     else:
         warning = "no time series for selected locations and parameters"
         time_figure_widget.warning_figure(time_figure_layout, warning)
         time_figure_widget.warning_figure(search_time_figure_layout, warning)
 
-        # stop loader and disable update_graph
-        update_graph.css_classes = ["stoploading_time_fig"]
-        update_graph.disabled = True
-
-    # update app status
-    app_status.text = data.app_status(html_type=HTML_TYPE)
-
-
-def update_time_series_search():
-
-    logger.debug(inspect.stack()[0][3])
-    # update full history of all non-complete time-series
-    data.update_time_series_search()
-    # updating the sources in the used as glyph data_sources
-    update_time_series_sources()
-    update_search_time_series_source()
-    # updating the figure_layout y_ranges
-    time_figure_widget.update_time_series_y_ranges(time_figure_layout)
-    time_figure_widget.update_search_time_series_y_ranges(search_time_figure_layout)
-    # enable view_timeseries_controls
-    toggle_view_time_series_controls(value=False)
-    sources = [i["source"] for i in time_series_sources.values()]
-    toggle_download_button_on_sources(sources)
-    # update app status
-    app_status.text = data.app_status(html_type=HTML_TYPE)
     # stop loader and disable update_graph
     update_graph.css_classes = ["stoploading_time_fig"]
     update_graph.disabled = True
+
+    # update app status
+    app_status.text = data.app_status(html_type=HTML_TYPE)
+
+
+# def update_time_series_search():
+
+#     logger.debug(inspect.stack()[0][3])
+#     # update full history of all non-complete time-series
+#     data.update_time_series_search()
+#     # updating the sources in the used as glyph data_sources
+#     update_time_series_sources()
+#     update_search_time_series_source()
+#     # updating the figure_layout y_ranges
+#     time_figure_widget.update_time_series_y_ranges(time_figure_layout)
+#     time_figure_widget.update_search_time_series_y_ranges(search_time_figure_layout)
+#     # enable view_timeseries_controls
+#     toggle_view_time_series_controls(value=False)
+#     sources = [i["source"] for i in time_series_sources.values()]
+#     toggle_download_button_on_sources(sources)
+#     # update app status
+#     app_status.text = data.app_status(html_type=HTML_TYPE)
+#     # stop loader and disable update_graph
+#     update_graph.css_classes = ["stoploading_time_fig"]
+#     update_graph.disabled = True
 
 
 def update_on_search_time_series_value(attrname, old, new):
@@ -560,12 +567,6 @@ def update_on_view_period_value_throttled(attrname, old, new):
     # toggle download button
     figs = time_figure_layout.children[0].children
     toggle_download_button_on_sources(get_visible_sources(figs))
-
-    # # update patch source
-    # if type(search_time_figure_layout.children[0]) != Div:
-    #     search_time_figure_layout.children[0].renderers[0].data_source.data.update(
-    #         sources.view_period_patch_source(data.periods).data
-    #     )
 
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)

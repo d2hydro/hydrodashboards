@@ -7,7 +7,8 @@ from bokeh.models import (
     FuncTickFormatter,
     Range1d,
     NumeralTickFormatter,
-    CustomJSHover
+    CustomJSHover,
+    WheelZoomTool
 )
 from bokeh.models.glyphs import Line
 from bokeh.palettes import Category10_10 as palette
@@ -302,14 +303,13 @@ def top_fig(
     )
     time_hover.toggleable = False
 
+    wheel_zoom = WheelZoomTool(speed=0.001, dimensions="width")
+
     tools = [
-        "xpan",
+        "pan",
         "box_zoom",
-        "xwheel_zoom",
-        "undo",
-        "redo",
+        wheel_zoom,
         "reset",
-        #        "save",
         time_hover,
     ]
 
@@ -323,7 +323,7 @@ def top_fig(
         x_range=x_range,
         y_range=y_range,
         y_axis_label=y_axis_label,
-        active_scroll="xwheel_zoom",
+        active_scroll=wheel_zoom,
         active_drag="box_zoom",
         toolbar_location="above",
         css_classes=["time_figure"],

@@ -1,6 +1,7 @@
 from pandas import DataFrame
 from hydrodashboards.datamodel import time_series_sampling
-#from hydrodashboards.bokeh.main import update_search_time_series_source
+
+# from hydrodashboards.bokeh.main import update_search_time_series_source
 import pandas as pd
 from datetime import timedelta
 
@@ -23,6 +24,7 @@ def sample_df(df: DataFrame, sampling_config: dict) -> dict:
     else:
         return df
 
+
 def random_sample(df: DataFrame, max_samples: int = 20000) -> DataFrame:
     """
     Takes a random sample from a pandas dataframe
@@ -37,6 +39,7 @@ def random_sample(df: DataFrame, max_samples: int = 20000) -> DataFrame:
     """
     return df.sample(min(len(df), max_samples)).sort_index()
 
+
 def simplify(df, max_samples: int = 3840, intervals=True) -> DataFrame:
     """
     Simplifies the value-column in a time-series dataframe dataframe
@@ -50,84 +53,28 @@ def simplify(df, max_samples: int = 3840, intervals=True) -> DataFrame:
         DataFrame: Sampled DataFrame
 
     """
-    print(max_samples)
-    ts_days = (df.index[-1]-df.index[0]).days
-    if (ts_days > max_samples or len(df)>max_samples):
-        round_datetime = df.reset_index().set_index("datetime", drop=False).datetime.dt.round(str(ts_days/max_samples)+"D")
-        df['round_datetime'] = round_datetime
-        df_sort = df.sort_values(['value'],ascending=False)
-        regular_max = df_sort.groupby('round_datetime').head(1).drop(columns=['round_datetime'])
-        regular_min = df_sort.groupby('round_datetime').tail(1).drop(columns=['round_datetime'])
+
+    days = (df.index[-1] - df.index[0]).days
+    if (days > max_samples) or (len(df) > max_samples):
+        df["round_datetime"] = (
+            df.reset_index()
+            .set_index("datetime", drop=False)
+            .datetime.dt.round(str(days / max_samples) + "D")
+        )
+        df_sort = df.sort_values(["value"], ascending=False)
+        regular_max = (
+            df_sort.groupby("round_datetime").head(1).drop(columns=["round_datetime"])
+        )
+        regular_min = (
+            df_sort.groupby("round_datetime").tail(1).drop(columns=["round_datetime"])
+        )
         df_simplified = (
-              pd.concat(
-              [regular_max, regular_min])
-              .reset_index()
-              .drop_duplicates(subset="datetime", keep="last")
-              .set_index("datetime")
-              .sort_index()   
-          )
+            pd.concat([regular_max, regular_min])
+            .reset_index()
+            .drop_duplicates(subset="datetime", keep="last")
+            .set_index("datetime")
+            .sort_index()
+        )
         return df_simplified
-    # if (len(df)>10000):
-    #     if intervals:
-    #         if (len(df) > 1000000):
-    #           round_datetime = df.reset_index().set_index("datetime", drop=False).datetime.dt.round('240min')
-    #           df['round_datetime'] = round_datetime
-    #           df_sort = df.sort_values(['value'],ascending=False)
-    #           regular_max = df_sort.groupby('round_datetime').head(1).drop(columns=['round_datetime'])
-    #           regular_min = df_sort.groupby('round_datetime').tail(1).drop(columns=['round_datetime'])
-    #           df_simplified = (
-    #                 pd.concat(
-    #                 [regular_max, regular_min])
-    #                 .reset_index()
-    #                 .drop_duplicates(subset="datetime", keep="last")
-    #                 .set_index("datetime")
-    #                 .sort_index()   
-    #             )
-    #           return df_simplified
-    #         if (len(df) > 500000 and len(df) <= 1000000):
-    #           round_datetime = df.reset_index().set_index("datetime", drop=False).datetime.dt.round('120min')
-    #           df['round_datetime'] = round_datetime
-    #           df_sort = df.sort_values(['value'],ascending=False)
-    #           regular_max = df_sort.groupby('round_datetime').head(1).drop(columns=['round_datetime'])
-    #           regular_min = df_sort.groupby('round_datetime').tail(1).drop(columns=['round_datetime'])
-    #           df_simplified = (
-    #                 pd.concat(
-    #                 [regular_max, regular_min])
-    #                 .reset_index()
-    #                 .drop_duplicates(subset="datetime", keep="last")
-    #                 .set_index("datetime")
-    #                 .sort_index()   
-    #             )
-    #           return df_simplified
-    #         if (len(df) > 100000 and len(df) <= 500000):
-    #           round_datetime = df.reset_index().set_index("datetime", drop=False).datetime.dt.round('5min')
-    #           df['round_datetime'] = round_datetime
-    #           df_sort = df.sort_values(['value'],ascending=False)
-    #           regular_max = df_sort.groupby('round_datetime').head(1).drop(columns=['round_datetime'])
-    #           regular_min = df_sort.groupby('round_datetime').tail(1).drop(columns=['round_datetime'])
-    #           df_simplified = (
-    #                 pd.concat(
-    #                 [regular_max, regular_min])
-    #                 .reset_index()
-    #                 .drop_duplicates(subset="datetime", keep="last")
-    #                 .set_index("datetime")
-    #                 .sort_index()   
-    #             )
-    #           return df_simplified 
-    #         if (len(df) > 10000 and len(df) <= 100000): 
-    #           round_datetime = df.reset_index().set_index("datetime", drop=False).datetime.dt.round('1min')
-    #           df['round_datetime'] = round_datetime
-    #           df_sort = df.sort_values(['value'],ascending=False)
-    #           regular_max = df_sort.groupby('round_datetime').head(1).drop(columns=['round_datetime'])
-    #           regular_min = df_sort.groupby('round_datetime').tail(1).drop(columns=['round_datetime'])
-    #           df_simplified = (
-    #                 pd.concat(
-    #                 [regular_max, regular_min])
-    #                 .reset_index()
-    #                 .drop_duplicates(subset="datetime", keep="last")
-    #                 .set_index("datetime")
-    #                 .sort_index()   
-    #             )
-    #           return df_simplified
     else:
         return df
