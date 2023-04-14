@@ -485,9 +485,7 @@ def update_time_series_view():
             sample_config=config.time_series_sampling
         )
 
-        # go to the next callback
         _scale_graphs.disabled = True
-        #curdoc().add_next_tick_callback(update_time_series_search)
 
         # enable view_timeseries_controls
         toggle_view_time_series_controls(value=False)
@@ -506,28 +504,6 @@ def update_time_series_view():
 
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
-
-
-# def update_time_series_search():
-
-#     logger.debug(inspect.stack()[0][3])
-#     # update full history of all non-complete time-series
-#     data.update_time_series_search()
-#     # updating the sources in the used as glyph data_sources
-#     update_time_series_sources()
-#     update_search_time_series_source()
-#     # updating the figure_layout y_ranges
-#     time_figure_widget.update_time_series_y_ranges(time_figure_layout)
-#     time_figure_widget.update_search_time_series_y_ranges(search_time_figure_layout)
-#     # enable view_timeseries_controls
-#     toggle_view_time_series_controls(value=False)
-#     sources = [i["source"] for i in time_series_sources.values()]
-#     toggle_download_button_on_sources(sources)
-#     # update app status
-#     app_status.text = data.app_status(html_type=HTML_TYPE)
-#     # stop loader and disable update_graph
-#     update_graph.css_classes = ["stoploading_time_fig"]
-#     update_graph.disabled = True
 
 
 def update_on_search_time_series_value(attrname, old, new):
@@ -760,8 +736,8 @@ history_search_time_series = search_period_widget.make_button(
     on_click=update_on_history_search_time_series
 )
 
-# add
 
+# button to scale top-figs to graph_count
 _scale_graphs = ghost_buttons.make_button(
     time_figure_layout=time_figure_layout, graph_count=config.graph_count
 )

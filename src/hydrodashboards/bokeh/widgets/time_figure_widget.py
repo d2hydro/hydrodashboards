@@ -419,6 +419,9 @@ def create_time_figures(
     top_figs[-1].xaxis.visible = True
     time_figure_layout.children.append(column(*top_figs, sizing_mode="stretch_width"))
 
+    # updating the figure_layout y_ranges
+    update_time_series_y_ranges(time_figure_layout, fit_y_axis=True)
+
     time_series_sources = {}
     for i in top_figs:
         for j in i.renderers:
