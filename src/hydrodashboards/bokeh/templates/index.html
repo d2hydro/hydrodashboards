@@ -140,35 +140,30 @@
 
         <!-- Page Content Holder -->
         <div id="content">    
-            <nav class="navbar navbar-expand-lg">
-               
+            <nav class="navbar navbar-expand-lg">              
 				   <div class="row" style="width:100%;margin-bottom: -10px">
-					<div class="col-9">
-					
-					<button class="btn btn-dark"style="border:none;cursor:pointer;padding-top:0px;padding-right:4px;background: rgba(0,0,0,0);color:white" type="button" onclick="window.open('https://d2hydro.github.io/hydrodashboards/user_manuals/user_nl/','_blank')">
-							<i class='fas fa-info-circle ' style="font-size: 24px"></i>
-							<span class="tooltiptext">Open user manual</span>
-						</button>
+					<div class="col-9">				
 						 <button class="refresh" onclick="refresh_app()" id="refresh_app">
 						 <span class="tooltiptext">Ververs WIK dashboard</span>
 						 </button>
-				  </button>
-                <!--    <div class="collapse navbar-collapse" id="navbarSupportedContent">-->
-				<!--	<button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="False" aria-label="Toggle navigation">
-                        <i class="fas fa-align-justify"></i>
-				</button>-->
-					
-                      
+						 <button class="info_app" type="button" onclick="window.open('https://d2hydro.github.io/hydrodashboards/user_manuals/user_nl/','_blank')">
+							<span class="tooltiptext">Open user manual</span>
+						</button>
+				  </button>                 
 					</div>
 					<div class="col-3" style="bottom:-1px">	
 						  <ul class="nav navbar-nav">
                             <ul class="nav nav-tabs" id="nav-tab" role="tablist">
                             <li class="nav-item">
-                                <button class="nav-item nav-link active" id="kaart-tab" data-toggle="tab" data-target="#kaart" role="tab" aria-controls="nav-kaart" aria-selected="true">Kaart</button>
-                            </li>
+                                <button class="nav-item nav-link active" id="kaart-tab" data-toggle="tab" data-target="#kaart" role="tab" aria-controls="nav-kaart" aria-selected="true">
+								<span class="tooltiptext">Toon kaart</span>
+								Kaart</button>
+							</li>
                             <li class="nav-item">
-                                <button class="nav-item nav-link" id="grafiek-tab" data-toggle="tab" data-target="#grafiek" role="tab" aria-controls="nav-grafiek" aria-selected="false">Grafiek</button>
-                            </li>
+                                <button class="nav-item nav-link" id="grafiek-tab" data-toggle="tab" data-target="#grafiek" role="tab" aria-controls="nav-grafiek" aria-selected="false">
+								<span class="tooltiptext">Toon grafiek</span>
+								Grafiek</button>
+						   </li>
                             </ul>
                         </ul>						
 					</div>
@@ -182,7 +177,9 @@
                                 {{ embed(roots.map_figure)}}
                     </div>
                     <div class="test" id ="button_leg_bar" >
-                                <button onclick="popMapLegend()" class="maplayer_icon" id="maplayer_icon" aria-hidden="true"></button>
+                                <button onclick="popMapLegend()" class="maplayer_icon" id="maplayer_icon" aria-hidden="true">
+								<span class="tooltiptext">Toon achtergrondkaarten</span>
+								</button>
                      </div>
                             <div class="map_opt" id="map_opt">
                                  {{ embed(roots.map_options) }}
@@ -204,6 +201,7 @@
                         <div class="row" id="zoekgrafiek-bar">    
 							<div class="col-1" id="history">
 									{{ embed(roots.history_search_time_series) }}
+									<span class="tooltiptext">Toon historie</span>
 							</div>
 							<div class="col-6">
                                 {{ embed(roots.select_search_time_series) }}							 

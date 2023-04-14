@@ -91,7 +91,6 @@ a, a:hover, a:focus {
     position: relative;
 	height: 10px;
 	border-left: 1px solid white;
-	border-right: 1px solid white;
 	z-index:1;
 }
 
@@ -131,10 +130,11 @@ a[data-toggle="collapse"] {
 	background-color:white;
 	color: #363f4d;
 	border-width:1px;
+	border-bottom-width:0px!important;
 }
 
 .nav-link{
-		padding: 0.2rem 0.2rem!important;
+	padding: 0.2rem 0.2rem!important;
 	}
 
 .navbar-nav > ul{
@@ -158,6 +158,7 @@ a[data-toggle="collapse"] {
 	border-right-color:white;
 	border-left-color:white;
 	border-bottom-width:0px;
+	margin-bottom:0.5px;
 }
 
 
@@ -550,7 +551,7 @@ input[type=checkbox]{
 }
 .bk.bk-btn.bk-btn-primary{
 	background: #F16996;
-	border:0px solid black;
+	border:none;
 	height: 30px;
 	width: 100px;	
 	min-height:30px;
@@ -571,20 +572,20 @@ input[type=checkbox]{
 
 .update .tooltiptext {
   visibility: hidden;
-  width: 160px;
+  width: 180px;
   background-color: white;
   color: black;
   font-size: 12px;
   text-align: center;
-  border-radius: 4px;
-  padding: 2px 0;
+  border-radius: 6px;
+  padding: 2px 5px;
   border: 1px solid ;
   
   /* Position the tooltip */
   position: absolute;
   z-index: 1;
   top: 100%;
-  left: 48%;
+  left: 8%;
 }
 
 
@@ -620,25 +621,22 @@ input[type=checkbox]{
   color: black;
   font-size: 12px;
   text-align: center;
-  border-radius: 4px;
-  padding: 4px 0;
+  border-radius: 6px;
+  padding: 2px 5px;
   border: 1px solid ;
   
   /* Position the tooltip */
   position: absolute;
   z-index: 1;
   top: 100%;
-  left: 75%;
+  left: 70%;
 }
-
 
 .download:hover .tooltiptext {
   visibility: visible;
   animation: tooltipkeys 1s 1 ;
   opacity: 1;
 }
-
-
 
 /*---------------------------------------------------------
 	Save button styling
@@ -666,15 +664,16 @@ input[type=checkbox]{
   color: black;
   font-size: 12px; 
   text-align: center;
-  border-radius: 4px;
-  padding: 4px 0;
   border: 1px solid ;
+  border-radius: 6px;
+  padding: 2px 5px;
+
   
   /* Position the tooltip */
   position: absolute;
   z-index: 1;
   top: 100%;
-  left: 96%;
+  left: 88%;
 }
 
 
@@ -684,9 +683,6 @@ input[type=checkbox]{
   opacity: 1;
 
 }
-
-
-
 
 /*-----------------------------------------------------------
 	Sidemenu spinners
@@ -769,7 +765,7 @@ input[type=checkbox]{
     background: rgba(0,0,0,0);
     cursor: pointer;
     right: 12px;
-    top: 9px;
+    top: 10px;
 }
 
 #sidebarCollapse.active {
@@ -787,7 +783,7 @@ input[type=checkbox]{
 }
 
 #sidebarCollapse.navbar-btn.active{
-	right: -24px;
+	right: -28px;
     width: 36px;
 }
 
@@ -816,54 +812,30 @@ input[type=checkbox]{
     background-image: url(/wik/static/icons/refresh.png);
     background-repeat: no-repeat;
     background-position: center;
-    height: 28px;
-    border: 0;
-    min-width: 26px;
-    margin-left: 1px;
+    height: 24px;
+    border-width: 0px!important;
+    min-width: 24px;
+    margin-left: 20px!important;
     padding-top: 18px!important;
     cursor: pointer;
 }
 
 #refresh_app:active {
-  background-color:#f16996;
+  background-color:#FE6F9E!important;
+  border-width:0px!important;
 }
 
-.refresh .tooltiptext {
+#refresh_app .tooltiptext {
   visibility: hidden;
-  width: 150px;
+  width: 160px;
   background-color: white;
   color: black;
   font-size: 12px;
   text-align: center;
-  border-radius: 4px;
-  padding: 4px 0;
+  border-radius: 6px;
+  padding: 2px 5px;
   border: 1px solid ;
-  
-  /* Position the tooltip */
-  position: absolute;
-  z-index: 1;
-  top: 100%;
-  left: 6%;
-}
-
-
-.refresh:hover .tooltiptext {
-  visibility: visible;
-  animation: tooltipkeys 1s 1 ;
-  opacity: 1;
-}
-
-
-.btn.btn-dark .tooltiptext {
-  visibility: hidden;
-  width: 120px;
-  background-color: white;
-  color: black;
-  font-size: 12px; 
-  text-align: center;
-  border-radius: 4px;
-  padding: 4px 0;
-  border: 1px solid ;
+  margin-top:4px;
   
   /* Position the tooltip */
   position: absolute;
@@ -873,7 +845,122 @@ input[type=checkbox]{
 }
 
 
-.btn.btn-dark:hover .tooltiptext {
+#refresh_app:hover .tooltiptext {
+  visibility: visible;
+  animation: tooltipkeys 1s 1 ;
+  opacity: 1;
+}
+
+/* ---------------------------------------------------
+    info tab
+----------------------------------------------------- */
+.info_app{
+    background-color: #363F4D!important;
+    background-image: url(/wik/static/icons/icons8-info-24.png)!important;
+    background-repeat: no-repeat!important;
+    background-position: center!important;
+    height: 24px;
+    border-width: 0px;
+    min-width: 24px;
+    margin-left: 8px!important;
+    padding-top: 18px!important;
+    cursor: pointer;
+	-webkit-font-smoothing: antialiased;
+}
+
+.info_app:active {
+  background-color:#FE6F9E!important;
+  border-width:0px!important;
+}
+
+.info_app .tooltiptext {
+  visibility: hidden;
+  width: 130px;
+  background-color: white;
+  color: black;
+  font-size: 12px; 
+  text-align: center;
+  border-radius: 6px;
+  padding: 2px 5px;
+  border: 1px solid ;
+  margin-top:4px;
+  
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  top: 100%;
+  left: 8%;
+}
+
+
+.info_app:hover .tooltiptext {
+  visibility: visible !important;
+  animation: tooltipkeys 1s 1;
+  opacity: 1;
+
+}
+
+/* ---------------------------------------------------
+    kaart-tab
+----------------------------------------------------- */
+#kaart-tab{
+	cursor:pointer;
+}
+
+#kaart-tab .tooltiptext {
+  visibility: hidden!important;
+  width: 100px;
+  background-color: white;
+  color: black;
+  font-size: 12px; 
+  text-align: center;
+  border-radius: 6px;
+  padding: 2px 5px;
+  border: 1px solid ;
+  margin-top:4px;
+  margin-left:4px;
+  
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  top: 100%;
+}
+
+#kaart-tab:hover .tooltiptext {
+  visibility: visible !important;
+  animation: tooltipkeys 1s 1;
+  opacity: 1;
+
+}
+
+/* ---------------------------------------------------
+    grafiek-tab
+----------------------------------------------------- */
+
+#grafiek-tab{
+	cursor:pointer;
+}
+
+#grafiek-tab .tooltiptext {
+  visibility: hidden!important;
+  width: 100px;
+  background-color: white;
+  color: black;
+  font-size: 12px; 
+  text-align: center;
+  border-radius: 6px;
+  padding: 2px 5px;
+  border: 1px solid ;
+  margin-top:4px;
+  margin-left:4px;
+  
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  top: 100%;
+}
+
+#grafiek-tab:hover .tooltiptext {
   visibility: visible !important;
   animation: tooltipkeys 1s 1;
   opacity: 1;
@@ -1017,9 +1104,36 @@ input[type=checkbox]{
   border-color: transparent;
   background-color: transparent;
   border-width: 0px;
-
   outline: none;
 }
+
+#maplayer_icon .tooltiptext {
+  visibility: hidden;
+  width: 140px;
+  background-color: white;
+  color: black;
+  font-size: 12px; 
+  text-align: center;
+  border: 1px solid ;
+  border-radius: 6px;
+  padding: 2px 5px;
+
+  
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  bottom: 122%;
+  right:50%;
+}
+
+
+#maplayer_icon:hover .tooltiptext {
+  visibility: visible !important;
+  animation: tooltipkeys 1s 1;
+  opacity: 1;
+
+}
+
 
 #button_legend {
   cursor: pointer; 
@@ -1061,9 +1175,9 @@ input[type=checkbox]{
 }
 .bk.threshold > .bk.bk-btn-group >.bk.bk-btn.bk-btn-default:hover:after{
 	content:"Drempelhoogte";
-	margin-top:18px;
-	background-color: black;
-	color: #fff;
+	margin-top:24px;
+	background-color: white;
+	color: black;
 	border-radius: 6px;
 	padding: 2px 5px;
 }
@@ -1141,6 +1255,32 @@ input[type=checkbox]{
     min-width:32px;
 	max-width:32px;
 	width:32px;	
+}
+
+#history .tooltiptext {
+  visibility: hidden;
+  width: 80px;
+  background-color: white;
+  color: black;
+  font-size: 12px; 
+  text-align: center;
+  border: 1px solid ;
+  border-radius: 6px;
+  padding: 2px 5px;
+
+  
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  bottom: 100%;
+}
+
+
+#history:hover .tooltiptext {
+  visibility: visible !important;
+  animation: tooltipkeys 1s 1;
+  opacity: 1;
+
 }
 
 .bk-root select:not([multiple]).bk-input, .bk-root select:not([size]).bk-input {
@@ -1229,6 +1369,8 @@ input[type=checkbox]{
 #button_lower:active {
   transform: translateY(4px);
 }
+
+
 
 /* ---------------------------------------------------
     styles on menu animation 
