@@ -26,7 +26,7 @@ import itertools
 from operator import itemgetter
 import pandas as pd
 
-from hydrodashboards.datamodel.cache import Cache
+from hydrodashboards.datamodel.cache import Cache, delete_all_cache
 from hydrodashboards.datamodel.time_series import KEY
 
 FEWS_BUGS = dict(qualifier_ids=True)
@@ -335,14 +335,16 @@ class Data:
     """
 
     def delete_cache(self):
+        self.logger.info("deleting cache")
         for i in self.filters.filters:
             i.cache.delete_cache()
         self.locations.sets.delete_cache()
         self._root_cache.delete_cache()
+        delete_all_cache()
 
     def build_cache(self):
         self.logger.info("building cache")
-
+        self._init_fews_api()
         filter_ids = self.filters.values
         for filter_id in filter_ids:
             filter_data = self.filters.get_filter(filter_id)

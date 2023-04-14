@@ -101,10 +101,14 @@ class Locations(Filter):
         return cls(language=language, locations=df)
 
     def parent_id_from_ts_header(self, header):
-        return self.locations.loc[header.location_id]["parent_id"]
+        if header.location_id in self.locations.index:
+            parent_id = self.locations.at[header.location_id, "parent_id"]
+        else:
+            parent_id = pd.NA
+        return parent_id
 
     def name_from_ts_header(self, header):
-        return self.locations.loc[header.location_id]["name"]
+        return self.locations.at[header.location_id, "name"]
 
     def get_parent_name(self, location_id):
         if not pd.isna(self.locations.at[location_id, "parent_id"]):

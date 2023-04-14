@@ -9,6 +9,19 @@ import _pickle as cPickle
 CACHE_DIR = Path(__file__).parent.joinpath("../../../cache").absolute().resolve()
 
 
+def set_cache_dir(cache_dir):
+    global CACHE_DIR
+    cache_dir = Path(cache_dir)
+    cache_dir.mkdir(exist_ok=True, parents=True)
+    CACHE_DIR = Path(cache_dir)
+
+
+def delete_all_cache():
+    if CACHE_DIR.exists():
+        shutil.rmtree(CACHE_DIR)
+    CACHE_DIR.mkdir(exist_ok=True, parents=True)
+
+
 @dataclass
 class Cache:
     sub_dir: str

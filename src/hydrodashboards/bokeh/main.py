@@ -7,10 +7,12 @@ try:
     from data import Data
     from config import Config
     from pathlib import Path
+    from log_utils import import_logger
     CONFIG_JSON = Path(__file__).parent.joinpath("config.json")
 except ImportError:
     from hydrodashboards.bokeh.data import Data
     from hydrodashboards.bokeh.config import Config
+    from hydrodashboards.bokeh.log_utils import import_logger
     from hydrodashboards.bokeh import CONFIG_JSON
 
 # import bokeh sources
@@ -29,7 +31,7 @@ from hydrodashboards.bokeh.widgets import (
 )
 
 from bokeh.models.widgets import Div, Select
-from hydrodashboards.bokeh.log_utils import import_logger
+
 import inspect
 
 

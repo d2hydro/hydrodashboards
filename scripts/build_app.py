@@ -182,7 +182,15 @@ def bokeh(
     # copy contents of datamodel folder to correct location
     for src in list(bokeh_src.glob("*.*")):
         dst = None
-        if src.name in ["data.py", "main.py", "theme.yaml", "config.py", "build_cache.py", "__init__.py"]:
+        if src.name in [
+                "data.py",
+                "main.py",
+                "theme.yaml",
+                "config.py",
+                "build_cache.py",
+                "time_series_cache.py",
+                "log_utils.py",
+                "__init__.py"]:
             dst = app_dir.joinpath(src.name)
         else:
             dst = bokeh_dir.joinpath(src.name)
@@ -209,6 +217,15 @@ bokeh serve {app_dir.name} --port {app_port}
 rem build cache
 chdir ./{app_dir.name}
 python build_cache.py
+chdir ../
+""")
+
+    app_dir.parent.joinpath("build_timeseries_cache.bat").write_text(f"""{activate_env}
+
+rem build time series cache
+chdir ./{app_dir.name}
+python time_series_cache.py
+chdir ../
 """)
 
 
