@@ -30,9 +30,8 @@ def df_to_source(
     end_date_time=None,
     excluded_date_times=None,
     unreliables=False,
-    sample_config=None
+    sample_config=None,
 ):
-
     if (start_date_time is not None) and (end_date_time is not None):
         df = df.loc[_index_mask(df.index, start_date_time, end_date_time)]
     if excluded_date_times is not None:
@@ -54,16 +53,15 @@ def time_series_to_source(
     end_date_time=None,
     unreliables=False,
     excluded_date_times=None,
-    sample_config=None
+    sample_config=None,
 ):
-
     source = df_to_source(
         time_series.df,
         start_date_time=start_date_time,
         end_date_time=end_date_time,
         unreliables=unreliables,
         excluded_date_times=excluded_date_times,
-        sample_config=sample_config
+        sample_config=sample_config,
     )
     source.name = time_series.label
     source.tags = time_series.tags
@@ -104,7 +102,9 @@ def view_period_patch_source(data):
     )
 
 
-def time_series_sources(time_series=[], unreliables=False, active_only=False, sample_config=None):
+def time_series_sources(
+    time_series=[], unreliables=False, active_only=False, sample_config=None
+):
     def _active(i, active_only=active_only):
         if active_only:
             return i.active
@@ -118,7 +118,9 @@ def time_series_sources(time_series=[], unreliables=False, active_only=False, sa
     }
 
 
-def update_time_series_sources(sources, time_series=[], unreliables=False, sample_config=None):
+def update_time_series_sources(
+    sources, time_series=[], unreliables=False, sample_config=None
+):
     for i in time_series:
         source = time_series_to_source(i, unreliables, sample_config=None)
         sources[i.label].data.update(source.data)

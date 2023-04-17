@@ -250,7 +250,7 @@ def toggle_threshold_graphs(time_figure_layout, active):
 def get_legend(time_fig):
     """Get the legend of a figure (add one if not initiated)."""
     if not time_fig.legend:
-        legend = Legend(name=time_fig.name, location=(1,1))
+        legend = Legend(name=time_fig.name, location=(1, 1))
         legend.visible = True
         legend.click_policy = "hide"
         legend.label_text_font_size = "9pt"
@@ -268,16 +268,14 @@ def append_to_legend(renderer, legend):
     """Append a renderer to the legend."""
     legend.items.append(
         LegendItem(
-            label=trucate_label(renderer.name),
-            name=renderer.name,
-            renderers=[renderer]
-            )
+            label=trucate_label(renderer.name), name=renderer.name, renderers=[renderer]
         )
+    )
 
 
 def time_series_to_fig(
     time_series, time_fig, colors, sample_config, renderers_on_change
-    ):
+):
     """Add a time_series to the figure."""
     legend = get_legend(time_fig)
 
@@ -401,7 +399,7 @@ def create_top_fig(
     threshold_visible=False,
     press_up_event=None,
     renderers_on_change=[],
-    sample_config=None
+    sample_config=None,
 ):
     """Generate a time-figure from supplied bokeh input parameters."""
 
@@ -507,9 +505,7 @@ def create_time_figures(
                         renderers.append(renderer)
 
                         # add the color, so we know it's used
-                        colors.add(
-                            renderer.glyph.line_color
-                        )
+                        colors.add(renderer.glyph.line_color)
 
                 # need to re-add all renderers and legends to figure (pop/remove doesn't work properly) # noqa
                 legend = time_fig.legend[0]
@@ -522,9 +518,7 @@ def create_time_figures(
                     renderer_names.append(renderer.name)
 
                 # add missing time_series to time_fig
-                time_series = (
-                    i for i in time_series if i.label not in renderer_names
-                    )
+                time_series = (i for i in time_series if i.label not in renderer_names)
                 time_series_to_fig(
                     time_series, time_fig, colors, sample_config, renderers_on_change
                 )
@@ -556,7 +550,7 @@ def create_time_figures(
                 threshold_visible=threshold_visible,
                 renderers_on_change=renderers_on_change,
                 press_up_event=press_up_event,
-                sample_config=sample_config
+                sample_config=sample_config,
             )
         ]
 

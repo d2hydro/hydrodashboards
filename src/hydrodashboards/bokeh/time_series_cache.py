@@ -7,8 +7,8 @@ except ImportError:
         filters,
         locations,
         parameters,
-        search_period
-        )
+        search_period,
+    )
     from hydrodashboards.bokeh.log_utils import import_logger
 
 logger = import_logger(log_file="time_series_cache.log")
@@ -27,14 +27,13 @@ for filter_id in data.config.cache_filters:
     main_filter_index = data.filters.get_filter_index(filter_id)
     main_filter = data.filters.get_filter(filter_id)
     sub_filter_index = next(
-        (idx for idx, i in enumerate(main_filter.options) if i[0] == filter_id),
-        None
-        )
+        (idx for idx, i in enumerate(main_filter.options) if i[0] == filter_id), None
+    )
     filters[main_filter_index].active = [sub_filter_index]
     for location_idx, location_name in enumerate(locations.labels):
         logger.info(
             f"caching location: {location_name} ({location_idx +1}/{len(locations.labels)})"
-            )
+        )
         locations.active = [location_idx]
         parameters.active = [i for i, _ in enumerate(parameters.labels)]
         load_time_series()

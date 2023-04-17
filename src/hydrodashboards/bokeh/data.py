@@ -102,7 +102,9 @@ class Data:
 
     def _init_fews_api(self):
         self._fews_api = Api(
-            url=self.config.fews_url, ssl_verify=self.config.ssl_verify, logger=self.logger
+            url=self.config.fews_url,
+            ssl_verify=self.config.ssl_verify,
+            logger=self.logger,
         )
 
         # get root qualifiers
@@ -120,8 +122,10 @@ class Data:
         else:
             self._fews_root_parameters = self._fews_api.get_parameters(
                 filter_id=self.config.root_filter
-                )
-            self._root_cache.set_data(self._fews_root_parameters, "_fews_root_parameters")
+            )
+            self._root_cache.set_data(
+                self._fews_root_parameters, "_fews_root_parameters"
+            )
 
         # get root locations
         if self._root_cache.exists("_fews_root_locations"):
@@ -143,7 +147,6 @@ class Data:
                 filter_id=self.config.root_filter
             )
             self._root_cache.set_data(self._fews_filters, "_fews_filters")
-        
 
     def _fews_locators_from_generator(self, generator):
         """Returns location_ids, parameter_ids and qualifier_ids from list"""
@@ -173,7 +176,6 @@ class Data:
         return int(period.total_seconds() * 1000 / width)
 
     def _get_fews_ts(self, indices=None, request_type="headers"):
-
         ## function used to bypass FEWS_BUGS["qualifier_ids"]
         def include_header(i):
             parameter_id = concat_fews_parameter_ids(
@@ -362,7 +364,6 @@ class Data:
                 location_id = i.location_id
 
             if location_id in self.locations.locations.index:
-
                 child_id = i.location_id
                 location_name = self.locations.locations.at[location_id, "name"]
                 parameter_id = self.parameters.id_from_ts_header(i)
@@ -379,7 +380,6 @@ class Data:
                 return [None for i in range(5)]
 
         def _pi_headers_to_df(pi_headers):
-
             data = [_get_from_header(i.header) for i in pi_headers.time_series]
 
             df = pd.DataFrame.from_records(
@@ -540,16 +540,14 @@ class Data:
         self.parameters.clean_value()
 
     def update_history_time_series_search(self, search_time_series_label):
-
         search_time_series = self.time_series_sets.get_by_label(
             search_time_series_label
         )
 
         # try to get the time-series from cache
         cache_key = KEY.format(
-            location=search_time_series.location,
-            parameter=search_time_series.parameter
-            )
+            location=search_time_series.location, parameter=search_time_series.parameter
+        )
         if self.time_series_sets.cache.exists(cache_key):
             time_series = self.time_series_sets.cache.get_data(cache_key)
             df = time_series.df
@@ -557,8 +555,8 @@ class Data:
         else:
             time_series_index = (
                 search_time_series.location,
-                search_time_series.parameter
-                )
+                search_time_series.parameter,
+            )
             fews_ts_set = self._get_fews_ts(
                 indices=[time_series_index], request_type="full_history"
             )
@@ -583,36 +581,31 @@ class Data:
                 self.time_series_sets.remove(index)
             self.logger.info(f"cache file found for {index[0]}, {index[1]}")
             self.time_series_sets.append_from_cache(
-                *index,
-                self.periods.search_start,
-                self.periods.search_end
-                )
-            self.logger.info(
-                f"new cache length: {len(self.time_series_sets)}"
-                )
+                *index, self.periods.search_start, self.periods.search_end
+            )
+            self.logger.info(f"new cache length: {len(self.time_series_sets)}")
 
     def clean_time_series_within_period(self, period, selection="search"):
         self.time_series_sets.time_series = [
-            i for i in self.time_series_sets.time_series if i.within_period(
-                period,
-                selection=selection
-                )
-            ]
+            i
+            for i in self.time_series_sets.time_series
+            if i.within_period(period, selection=selection)
+        ]
 
     # def update_time_series_search(self):
     #     if self.time_series_sets.select_incomplete():
     #         fews_ts_set = self._get_fews_ts(request_type="history")
     #         self._update_ts_from_fews_ts_set(fews_ts_set, complete=True)
-    
+
     def get_time_series_headers(self, indices=None):
         # get headers and initalize time series
         if indices is None:
-            indices = self.locations.max_time_series_indices(
-                self.parameters.value
-                )
+            indices = self.locations.max_time_series_indices(self.parameters.value)
         self.update_time_series_from_cache(indices)
         self.clean_time_series_within_period(self.periods, selection="search")
-        self.logger.info(f"amount of time-series in memory {len(self.time_series_sets)}")
+        self.logger.info(
+            f"amount of time-series in memory {len(self.time_series_sets)}"
+        )
 
         # indices should not exist in memory
         fews_indices = [i for i in indices if not self.time_series_sets.exists(i)]
@@ -620,10 +613,11 @@ class Data:
         # we try to append new time-series from FEWS
         if fews_indices:
             self.logger.info(f"indices in fews requrest {fews_indices}")
-            fews_ts_set = self._get_fews_ts(indices=fews_indices, request_type="headers")
+            fews_ts_set = self._get_fews_ts(
+                indices=fews_indices, request_type="headers"
+            )
             properties = self._properties_from_fews_ts_headers(fews_ts_set.time_series)
             self.time_series_sets.append_from_dict(properties)
-        
 
     def update_time_series(self):
         """Updates time_series when button is clicked."""
@@ -653,7 +647,7 @@ class Data:
         #     fews_ts_set = self._get_fews_ts(request_type="view")
 
         #     self._update_ts_from_fews_ts_set(fews_ts_set)
-    
+
         # finalize time_series_sets with search_start and search_end
         self.time_series_sets.set_search_period(*self.periods.search_dates)
 

@@ -4,6 +4,8 @@ import json
 
 MAX_GRAPH_COUNT = 4
 
+DEFAULT_SAMPLE_CONFIG = {"method": "random_sample", "max_samples": 20000}
+
 
 @dataclass
 class Config:
@@ -26,7 +28,7 @@ class Config:
     ssl_verify: bool = False
     thematic_view: bool = False
     thresholds: list = field(default_factory=list)
-    time_series_sampling: dict = None
+    time_series_sampling: dict = field(default_factory=None)
     vertical_datum: str = "NAP"
 
     def __post_init__(self):
@@ -40,9 +42,7 @@ class Config:
                     .resolve()
                 )
             if not self.disclaimer_file.exists():
-                raise FileNotFoundError(
-                    f"{self.disclaimer_file} does not exist"
-                    )
+                raise FileNotFoundError(f"{self.disclaimer_file} does not exist")
         self.graph_count = min(self.graph_count, MAX_GRAPH_COUNT)
 
     @classmethod

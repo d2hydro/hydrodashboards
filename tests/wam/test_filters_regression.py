@@ -1,10 +1,14 @@
+from config import wam_config
+
+wam_config()
+
 from hydrodashboards.bokeh.main import (
     filters,
     parameters,
     locations,
     data,
     sync_locations_active_with_data,
-)
+)  # noqa
 
 theme_ids = [i[0] for i in data.filters.thematic_filters[0].options]
 filter_ids_gen = ([j[0] for j in i.options] for i in data.filters.filters)

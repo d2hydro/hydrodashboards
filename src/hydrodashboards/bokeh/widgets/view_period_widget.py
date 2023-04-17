@@ -11,6 +11,7 @@ source.data = {
 }
 """
 
+
 def make_view_period(data, patch_source, disabled=True, show_value=False):
     value = (data.view_start, data.view_end)
     start = data.search_start
@@ -22,9 +23,7 @@ def make_view_period(data, patch_source, disabled=True, show_value=False):
     period_slider.js_on_change(
         "value",
         CustomJS(
-            args=dict(
-                period_slider=period_slider, source=patch_source
-            ),
+            args=dict(period_slider=period_slider, source=patch_source),
             code=update_source_js,
         ),
     )

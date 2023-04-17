@@ -2,15 +2,13 @@ from hydrodashboards import bokeh
 from datetime import datetime
 from bokeh.plotting import figure
 from bokeh.io import show
-from bokeh.models import ColumnDataSource,FuncTickFormatter
+from bokeh.models import ColumnDataSource, FuncTickFormatter
 
 from hydrodashboards.bokeh.widgets.time_figure_widget import DT_JS_FORMAT
-
+from config import wik_config
 
 # %% here we overwrite the default (WAM) config with WIK
-AAM_CONFIG_JSON = r"data\wik_config.json"
-bokeh.set_config_json(AAM_CONFIG_JSON)
-bokeh.delete_cache()
+wik_config()
 
 # %% now we import main (will be initialized for WIK)
 from hydrodashboards.bokeh.main import data
@@ -37,4 +35,3 @@ from hydrodashboards.bokeh.main import data
 # #%% example plot
 
 # plot_fig(df.sample(min(len(df), 10000)).sort_index())
-

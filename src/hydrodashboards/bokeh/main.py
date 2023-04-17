@@ -8,6 +8,7 @@ try:
     from config import Config
     from pathlib import Path
     from log_utils import import_logger
+
     CONFIG_JSON = Path(__file__).parent.joinpath("config.json")
 except ImportError:
     from hydrodashboards.bokeh.data import Data
@@ -107,7 +108,7 @@ def update_time_series_sources():
             start_date_time=start,
             end_date_time=end,
             unreliables=False,
-            sample_config=config.time_series_sampling
+            sample_config=config.time_series_sampling,
         )
         v["source"].data.update(_source.data)
 
@@ -115,8 +116,10 @@ def update_time_series_sources():
 def update_search_time_series_source():
     """Update search source assigned to search_fig"""
     time_series = data.time_series_sets.get_by_label(search_time_series.value)
-    
-    _source = sources.time_series_to_source(time_series, sample_config=search_sample_config)
+
+    _source = sources.time_series_to_source(
+        time_series, sample_config=search_sample_config
+    )
     search_source.data.update(_source.data)
 
 
@@ -125,6 +128,7 @@ def _to_timestamp(i):
         return pd.Timestamp(i * 10**6)
     else:
         return i
+
 
 def view_x_range_as_datetime():
     """Get the view_x_range start and end as datetime."""
@@ -380,7 +384,9 @@ def update_on_history_search_time_series():
     df = data.update_history_time_series_search(search_time_series.value)
 
     # update search_source
-    search_source.data.update(sources.df_to_source(df, sample_config=search_sample_config).data)
+    search_source.data.update(
+        sources.df_to_source(df, sample_config=search_sample_config).data
+    )
 
     # update search_period
     search_start, search_end = data.get_history_period(search_source.data["datetime"])
@@ -464,7 +470,7 @@ def update_time_series_view():
             x_range=view_x_range,
             press_up_event=press_up_event,
             renderers_on_change=[("visible", set_visible_labels)],
-            sample_config=config.time_series_sampling
+            sample_config=config.time_series_sampling,
         )
 
         # update search_time_series
@@ -482,7 +488,7 @@ def update_time_series_view():
             patch_source=patch_source,
             color=time_series_sources[search_time_series.value]["color"],
             search_source=search_source,
-            sample_config=config.time_series_sampling
+            sample_config=config.time_series_sampling,
         )
 
         _scale_graphs.disabled = True
@@ -519,7 +525,7 @@ def update_on_search_time_series_value(attrname, old, new):
         patch_source=patch_source,
         color=time_series_sources[search_time_series.value]["color"],
         search_source=search_source,
-        sample_config=config.time_series_sampling
+        sample_config=config.time_series_sampling,
     )
 
 
@@ -552,7 +558,7 @@ def update_on_view_period_value_throttled(attrname, old, new):
 
 def update_on_view_x_range_start_change(attrname, old, new):
     """Update view_period widget when view_x_range changes."""
-    #logger.debug(inspect.stack()[0][3])
+    # logger.debug(inspect.stack()[0][3])
 
     if old != new:
         start = _to_timestamp(new)
@@ -562,7 +568,7 @@ def update_on_view_x_range_start_change(attrname, old, new):
 
 def update_on_view_x_range_end_change(attrname, old, new):
     """Update view_period widget when view_x_range changes."""
-    #logger.debug(inspect.stack()[0][3])
+    # logger.debug(inspect.stack()[0][3])
 
     if old != new:
         end = _to_timestamp(new)
@@ -571,7 +577,7 @@ def update_on_view_x_range_end_change(attrname, old, new):
 
 
 def press_up_event(event=None):
-    # logger.debug(inspect.stack()[0][3])
+    logger.debug(inspect.stack()[0][3])
     update_time_series_sources()
 
     # updating the figure_layout y_ranges
@@ -611,12 +617,13 @@ def start_timeseries_downloader():
     # trigger jscript downloading process
     _download_time_series.disabled = not _download_time_series.disabled
 
+
 """
 We read the config
 """
 
 config = Config.from_json(CONFIG_JSON)
-search_sample_config = {k:v for k,v in config.time_series_sampling.items()}
+search_sample_config = {k: v for k, v in config.time_series_sampling.items()}
 search_sample_config["max_samples"] = 40000
 
 """
@@ -718,9 +725,7 @@ search_time_figure_layout = time_figure_widget.empty_layout(name="search_time_fi
 # all buttons
 
 #  download data
-download_time_series = download_widget.make_button(
-    on_click=start_timeseries_downloader
-    )
+download_time_series = download_widget.make_button(on_click=start_timeseries_downloader)
 
 _download_time_series = download_widget.make_ghost_button(
     time_figure_layout=time_figure_layout,
@@ -833,7 +838,11 @@ curdoc().add_root(
 )
 
 curdoc().add_root(
-    column(_download_time_series, name="download_time_series_dummy", sizing_mode="stretch_width")
+    column(
+        _download_time_series,
+        name="download_time_series_dummy",
+        sizing_mode="stretch_width",
+    )
 )
 
 curdoc().title = config.title

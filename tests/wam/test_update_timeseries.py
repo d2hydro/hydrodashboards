@@ -16,7 +16,6 @@ from hydrodashboards.bokeh.main import (
     update_on_history_search_time_series,
     update_on_view_period_value_throttled,
     update_time_series_view,
-    update_time_series_search,
     view_period,
     view_x_range,
 )
@@ -34,7 +33,6 @@ EMPTY_WARNING = "no time series for selected locations and parameters"
 def load_time_series():
     start_time_series_loader()
     update_time_series_view()
-    update_time_series_search()
 
 
 def toggle_renderers_visibility(figs, visible=False):

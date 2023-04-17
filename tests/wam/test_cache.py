@@ -16,6 +16,7 @@ def test_filters_exist_in_memory():
 def test_filters_exist_as_file():
     data.filters.filters[0].cache.data = {}
     data.locations.sets.data = {}
+    print(data.filters.filters[0].cache)
     assert data.filters.filters[0].cache.exists(filter_id)
     assert data.locations.sets.exists(filter_id)
 

@@ -49,7 +49,6 @@ class Periods:
         return self.search_start, self.search_end
 
     def set_search_period(self, search_start, search_end):
-
         # check if new search period isn't smaller than current view_period
         nw_search_period = search_end - search_start
         period = min(self.view_period, nw_search_period)

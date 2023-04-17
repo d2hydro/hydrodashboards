@@ -8,6 +8,7 @@ COLUMNS = {"datetime": "datetime64", "value": float}
 KEY = "__{location}__{parameter}__"
 CACHE = Cache("time_series", data_frame=False, compression=False, load_data=False)
 
+
 @dataclass
 class TimeSeries:
     parameter: str
@@ -104,7 +105,7 @@ class TimeSeriesSets:
 
     @property
     def any_active(self):
-        return any([i.active for i in self.time_series])       
+        return any([i.active for i in self.time_series])
 
     @property
     def max_events_loaded(self):
@@ -177,7 +178,7 @@ class TimeSeriesSets:
             time_series.complete = True
             time_series.df = time_series.df.loc[
                 (time_series.df.index >= start) & (time_series.df.index <= end)
-                ]
+            ]
             self.time_series += [time_series]
 
     def append_from_dict(self, properties: List[dict]):

@@ -61,9 +61,7 @@ class Cache:
         if self.data_frame:
             data = pd.read_pickle(self.cache_file(key))
         elif self.compression:
-            data = cPickle.load(
-                bz2.BZ2File(self.cache_file(key), "rb")
-                )
+            data = cPickle.load(bz2.BZ2File(self.cache_file(key), "rb"))
         else:
             with open(self.cache_file(key), "rb") as src:
                 data = pickle.load(src)
