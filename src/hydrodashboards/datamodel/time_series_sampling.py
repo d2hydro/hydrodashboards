@@ -54,7 +54,7 @@ def simplify(df, max_samples: int = 3840, intervals=True) -> DataFrame:
 
     """
 
-    days = (df.index[-1] - df.index[0]).days
+    days = max((df.index[-1] - df.index[0]).days,1)
     if (days > max_samples) or (len(df) > max_samples):
         df["round_datetime"] = (
             df.reset_index()
