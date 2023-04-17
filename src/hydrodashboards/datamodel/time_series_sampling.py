@@ -59,7 +59,7 @@ def simplify(df, max_samples: int = 3840, intervals=True) -> DataFrame:
         df["round_datetime"] = (
             df.reset_index()
             .set_index("datetime", drop=False)
-            .datetime.dt.round(str(days / max_samples) + "D")
+            .datetime.dt.round(str(days*24*60 / max_samples) + "min")
         )
         df_sort = df.sort_values(["value"], ascending=False)
         regular_max = (
