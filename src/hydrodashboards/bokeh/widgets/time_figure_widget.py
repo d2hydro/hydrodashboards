@@ -256,7 +256,7 @@ def get_legend(time_fig):
         legend.label_text_font_size = "9pt"
         legend.border_line_width = 0
         legend.spacing = -2
-        legend.padding = -5
+        legend.padding = -2
         legend.label_height = 5
         legend.margin = 5
         time_fig.add_layout(legend, "right")

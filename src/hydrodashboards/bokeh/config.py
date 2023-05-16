@@ -20,7 +20,7 @@ class Config:
     exclude_pars: list = field(default_factory=list)
     fews_parallel: bool = False
     filter_colors: dict = field(default_factory=dict)
-    graph_count: int = 3
+    graph_count: int = 2
     headers_full_history: list = field(default_factory=list)
     history_period: int = 3650
     language: str = "dutch"
