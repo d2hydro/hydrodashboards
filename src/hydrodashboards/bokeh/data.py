@@ -592,16 +592,13 @@ class Data:
             if i.within_period(period, selection=selection)
         ]
 
-    # def update_time_series_search(self):
-    #     if self.time_series_sets.select_incomplete():
-    #         fews_ts_set = self._get_fews_ts(request_type="history")
-    #         self._update_ts_from_fews_ts_set(fews_ts_set, complete=True)
-
-    def get_time_series_headers(self, indices=None):
+    def get_time_series_headers(self, indices=None, ignore_cache=False):
         # get headers and initalize time series
         if indices is None:
             indices = self.locations.max_time_series_indices(self.parameters.value)
-        self.update_time_series_from_cache(indices)
+        if not ignore_cache:
+            self.update_time_series_from_cache(indices)
+
         self.clean_time_series_within_period(self.periods, selection="search")
         self.logger.info(
             f"amount of time-series in memory {len(self.time_series_sets)}"
@@ -632,23 +629,6 @@ class Data:
             fews_ts_set = self._get_fews_ts(request_type="history")
             self._update_ts_from_fews_ts_set(fews_ts_set, complete=True)
 
-        # # set data for search time_series
-        # if self.time_series_sets.any_active:
-        #     first_active = self.time_series_sets.first_active
-        #     if not first_active.within_period(period=self.periods, selection="search"):
-        #         fews_ts_set = self._get_fews_ts(
-        #             indices=[first_active.index], request_type="search"
-        #         )
-
-        #         self._update_ts_from_fews_ts_set(fews_ts_set)
-
-        # # set data for view time_series
-        # if self.time_series_sets.select_view(self.periods):
-        #     fews_ts_set = self._get_fews_ts(request_type="view")
-
-        #     self._update_ts_from_fews_ts_set(fews_ts_set)
-
-        # finalize time_series_sets with search_start and search_end
         self.time_series_sets.set_search_period(*self.periods.search_dates)
 
     def threshold_groups(self, time_series_groups):
