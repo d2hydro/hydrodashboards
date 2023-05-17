@@ -18,9 +18,11 @@ logger = import_logger(log_file="time_series_cache.log")
 
 
 def load_time_series():
+    """Support function for downloading time-series."""
     data.get_time_series_headers(ignore_cache=True)
     data.update_time_series()
 
+# get search_start used as startTime in FEWS-API-call
 if any(data.time_series_sets.cache.cache_dir.iterdir()):
     search_start = datetime.now().strftime("%Y-%m-%d")
 else:
