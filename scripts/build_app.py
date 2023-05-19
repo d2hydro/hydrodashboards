@@ -4,11 +4,10 @@ import shutil
 import fewspy
 import hydrodashboards
 from hydrodashboards.bokeh.config import Config
-from hydrodashboards.build_css_templates import map_opt, checkbox_filters
+from hydrodashboards.build_css_templates import map_opt
 from hydrodashboards.build_html_templates import thresholds_button
 import argparse
 import sys
-import json
 from typing import Union
 
 VIRTUAL_ENV = Path(sys.executable).parent.as_posix()
@@ -190,6 +189,7 @@ def bokeh(
                 "build_cache.py",
                 "time_series_cache.py",
                 "log_utils.py",
+                "pid_utils.py",
                 "__init__.py"]:
             dst = app_dir.joinpath(src.name)
         else:
@@ -220,9 +220,9 @@ python build_cache.py
 chdir ../
 """)
 
-    app_dir.parent.joinpath("build_timeseries_cache.bat").write_text(f"""{activate_env}
+    app_dir.parent.joinpath("update_timeseries_cache.bat").write_text(f"""{activate_env}
 
-rem build time series cache
+rem update time series cache
 chdir ./{app_dir.name}
 python time_series_cache.py
 chdir ../
