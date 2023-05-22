@@ -342,7 +342,7 @@ class Data:
             i.cache.delete_cache()
         self.locations.sets.delete_cache()
         self._root_cache.delete_cache()
-        delete_all_cache()
+        #delete_all_cache()
 
     def build_cache(self):
         self.logger.info("building cache")

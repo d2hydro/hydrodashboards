@@ -154,14 +154,19 @@ def order_filter(bokeh_filter, filter_cls, active=None):
         active = list(bokeh_filter.active)
     ordered = False
 
+    # case when no filter-values are active
     if len(active) == 0:
         filter_cls.order_options([])
         bokeh_filter.labels = filter_cls.labels
+    # case when all are active
     elif not (max(active) == len(active) - 1):
         ordered = True
         filter_cls.order_options(active)
         bokeh_filter.labels = filter_cls.labels
         bokeh_filter.active = filter_cls.active
+    # case where we miss labels
+    elif len(bokeh_filter.labels) != len(filter_cls.labels):
+        bokeh_filter.labels = filter_cls.labels
     return ordered
 
 
