@@ -206,10 +206,10 @@ def bokeh(
         virtual_env = VIRTUAL_ENV
 
     activate_env = cmd_activate.format(virtual_env=virtual_env)
-    app_dir.parent.joinpath("serve_bokeh.bat").write_text(f"""{activate_env}
+    app_dir.parent.joinpath("serve_hydrodashboard.bat").write_text(f"""{activate_env}
 
 rem serve {app_dir.name}
-bokeh serve {app_dir.name} --port {app_port}
+serve_hydrodashboard.py -app_dir {app_dir.name}
 """)
 
     app_dir.parent.joinpath("build_cache.bat").write_text(f"""{activate_env}

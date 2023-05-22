@@ -2,16 +2,21 @@ import psutil
 import json
 from pathlib import Path
 
+def _result(pid, create_timestamp=None):
+    result = {"pid": pid}
+    if create_timestamp is not None:
+        result["create_timestamp"] = create_timestamp
+    return result
+
 def get() -> dict:
     """Get the pid and time-stamp of the current process."""
     pid = psutil.Process().pid
     create_timestamp = psutil.Process(pid).create_time()
     return {"pid": pid, "create_timestamp": create_timestamp}
 
-def write(file_path: str) -> dict:
-    """Write and return pid of current python process."""
-    result = get()
-
+def write_pid_file(file_path: str, pid: int, create_timestamp=None):
+    
+    result = _result(pid, create_timestamp)
     # write result
     path = Path(file_path)
     if not path.parent.exists():
@@ -20,6 +25,12 @@ def write(file_path: str) -> dict:
         if path.exists():
             path.unlink(missing_ok=True)
     path.write_text(f"{json.dumps(result)}")
+    
+
+def write(file_path: str) -> dict:
+    """Write and return pid of current python process."""
+    result = get()
+    write_pid_file(file_path, **result)
 
     return result
 
@@ -62,3 +73,11 @@ def terminate(pid: int, create_timestamp=None) -> bool:
             pass
 
     return terminated
+
+def terminate_bokeh() -> bool:
+    pids = []
+    for process in psutil.process_iter():
+        if process.name() == "bokeh.exe":
+            pids += [process.pid]
+            process.terminate()
+    return all((not running(i) for i in pids))
