@@ -616,11 +616,11 @@ class Data:
             properties = self._properties_from_fews_ts_headers(fews_ts_set.time_series)
             self.time_series_sets.append_from_dict(properties)
 
-    def update_time_series(self):
+    def update_time_series(self, ignore_cache=False):
         """Updates time_series when button is clicked."""
 
         indices = self.locations.max_time_series_indices(self.parameters.value)
-        self.get_time_series_headers(indices=indices)
+        self.get_time_series_headers(indices=indices, ignore_cache=ignore_cache)
 
         self.time_series_sets.set_active(indices)
         self.time_series_sets.set_visible(indices=indices)

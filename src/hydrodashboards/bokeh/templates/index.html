@@ -8,8 +8,9 @@
 
     <!-- Bootstrap CSS CDN -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
-    <!-- Our Custom CSS -->
-    <link rel="stylesheet" href="/wik/static/css/styles.css">
+    <!-- Hydrodashboards CSS -->
+	<link rel="stylesheet" href="/{{app}}/static/css/base.css">
+    <link rel="stylesheet" href="/{{app}}/static/css/custom.css">
 
     <!-- Font Awesome JS -->
     <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
@@ -22,7 +23,7 @@
     <!-- Bootstrap JS -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
     <!-- Our Custom JS -->
-    <script src="/wik/static/js/main.js"></script>
+    <script src="/{{app}}/static/js/main.js"></script>
 	<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 	<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
@@ -144,7 +145,7 @@
 				   <div class="row" style="width:100%;margin-bottom: -10px">
 					<div class="col-9">				
 						 <button class="refresh" onclick="refresh_app()" id="refresh_app">
-						 <span class="tooltiptext">Ververs WIK dashboard</span>
+						 <span class="tooltiptext">Ververs dashboard</span>
 						 </button>
 						 <button class="info_app" type="button" onclick="window.open('https://d2hydro.github.io/hydrodashboards/user_manuals/user_nl/','_blank')">
 							<span class="tooltiptext">Open user manual</span>
@@ -194,9 +195,7 @@
                             <div class="col-12" id="grafiek_upper">
                                 {{ embed(roots.time_figure) }}
                             </div>   
-                            <div class="col-1" id="threshold">
-                                {{ embed(roots.thresholds_button) }}
-                            </div>
+                            {{thresholds_button}}
                         </div>
                         <div class="row" id="zoekgrafiek-bar">    
 							<div class="col-1" id="history">

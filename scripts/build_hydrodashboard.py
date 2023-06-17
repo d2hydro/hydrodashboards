@@ -26,8 +26,10 @@ def main():
     bokeh(
         app_dir=args.app_dir,
         config_file=args.config_file,
+        css_file=args.css_file,
         virtual_env=args.virtual_env,
         app_port=args.app_port,
+        bokeh_secret_key=args.bokeh_secret_key
     )
 
 
@@ -66,8 +68,10 @@ def copy_environment(virtual_env: Union[str, Path], reverse_bokeh_select=True):
 def bokeh(
     app_dir: Union[str, Path],
     config_file: Union[str, Path] = None,
+    css_file: Union[str, Path] = None,
     virtual_env: Union[str, Path] = None,
     app_port: int = 5003,
+    bokeh_secret_key: str = None
 ):
     """
     Build a Bokeh dashboard
@@ -77,6 +81,8 @@ def bokeh(
         config_file (Union[str, Path], optional): config.json with app-configuration that
             will be copied to app_dir/config.json. If None the default-file will be
             copied. Defaults to None.
+        css_file (Union[str, Path], optional): css-file with app-specific CSS.
+            If None the default-file will be copied. Defaults to None.
         virtual_env (Union[str, Path], optional): Specification of the
             Python-environment in which the app will be launched. If None, the app will
             use the environment where this function is running. Defaults to None.
@@ -105,6 +111,15 @@ def bokeh(
     config_json.write_text(config_file.read_text())
 
     config = Config.from_json(config_json)
+    
+    # %% copy config-file
+    if config_file is None:
+        config_file = CONFIG_FILE
+    else:
+        config_file = Path(config_file)
+
+    config_json = app_dir.joinpath("config.json")
+    config_json.write_text(config_file.read_text())
     # %% provide template
     templates_dir = app_dir / "templates"
     templates_dir.mkdir()
@@ -114,11 +129,11 @@ def bokeh(
     )
 
     html = template_html.read_text()
-    html = html.replace("/bokeh/", f"/{app_dir.name}/")
+    html = html.replace("{{app}}", f"{app_dir.name}")
     if config.thresholds:
-        html = html.replace("/thresholds/", thresholds_button)
+        html = html.replace("{{thresholds_button}}", thresholds_button)
     else:
-        html = html.replace("/thresholds/", "")
+        html = html.replace("{{thresholds_button}}", "")
 
     index_html = templates_dir / "index.html"
     index_html.write_text(html)
@@ -128,44 +143,64 @@ def bokeh(
 
     css_dir = static_dir / "css"
     css_dir.mkdir(parents=True)
-    template_css = HYDRODASHBOARDS_DIR.joinpath(
-        "bokeh", "static", "css", "styles.css"
-    )
-    styles_css = css_dir / "styles.css"
+    templates_css_dir = HYDRODASHBOARDS_DIR.joinpath("bokeh", "static", "css")
+    template_css = templates_css_dir / "base.css"
+    base_css = css_dir / "base.css"
 
     map_options_height = int(200 + 18 * len(config.map_overlays))
     map_options_left = int(55 + 6.5 * max([len(i) for i in config.map_overlays.keys()]))
     map_options_width = int(map_options_left - 10)
-    styles_css.write_text(
+    base_css.write_text(
         template_css.read_text()
-        .replace("/bokeh/", f"/{app_dir.name}/")
-        .replace(
-            "/*.map_opt*/",
-            map_opt.format(
-                map_options_height=map_options_height,
-                map_options_left=map_options_left,
-                map_options_width=map_options_width,
-            ),
-        )
-#        .replace(
-#            ".bk.filter_checkboxgroup", checkbox_filters(config.filter_css_heights)
-#        )
-    )
+        .replace("{{app}}", f"{app_dir.name}")
+        # .replace(
+        #     "/*.map_opt*/",
+        #     map_opt.format(
+        #         map_options_height=map_options_height,
+        #         map_options_left=map_options_left,
+        #         map_options_width=map_options_width,
+        #     )
+            )
 
+    
+    app_css_str = None
+
+    # read from supplied css-file
+    if css_file is not None:
+        css_file = Path(css_file)
+        if css_file.exists():
+            app_css_str = css_file.read_text()
+        else:
+            print(f"css_file {css_file} does not exists (ignored)")
+    
+    # read from default in repos
+    css_file = templates_css_dir / f"{app_dir.name}.css"
+    if css_file.exists():
+        app_css_str = css_file.read_text()
+    else:
+        css_file = templates_css_dir / f"{app_dir.name}.css"
+        app_css_str = css_file.read_text()
+
+    # write app-css to app directory
+    app_css = css_dir / "custom.css"
+    app_css.write_text(app_css_str)
+
+    # write icons
     icons_dir = static_dir / "icons"
     icons_src_dir = HYDRODASHBOARDS_DIR.joinpath("bokeh", "static", "icons")
     shutil.copytree(icons_src_dir, icons_dir)
 
+    # write js-directory
     js_dir = static_dir / "js"
     js_src_dir = HYDRODASHBOARDS_DIR.joinpath("bokeh", "static", "js")
     shutil.copytree(js_src_dir, js_dir)
 
-    # %% provide fewspy folder
+    # %% copy fewspy to local-folder
     fewspy_src = Path(fewspy.__file__).parent
     fewspy_dir = app_dir / "fewspy"
     shutil.copytree(fewspy_src, fewspy_dir)
 
-    # %% provide hydrodashboards folder
+    # %% copy hydrodashboards to local-folder
     datamodel_src = HYDRODASHBOARDS_DIR.joinpath("datamodel")
     datamodel_dir = app_dir.joinpath("hydrodashboards", "datamodel")
     shutil.copytree(datamodel_src, datamodel_dir)
@@ -201,15 +236,23 @@ def bokeh(
     # copy __init__.py
     hydrodashboards_dir.joinpath("__init__.py").write_text(f'__version__ = "{VERSION}"')
 
+
     # %% write serve_bokeh.bat
     if virtual_env is None:
         virtual_env = VIRTUAL_ENV
 
     activate_env = cmd_activate.format(virtual_env=virtual_env)
+    
+    if bokeh_secret_key is not None:
+        activate_env += f"""
+rem set bokeh secret key
+set BOKEH_SECRET_KEY="{bokeh_secret_key}"
+set BOKEH_SIGN_SESSIONS=true"""
+
     app_dir.parent.joinpath("serve_hydrodashboard.bat").write_text(f"""{activate_env}
 
 rem serve {app_dir.name}
-serve_hydrodashboard.py -app_dir {app_dir.name}
+python.exe serve_hydrodashboard.py -app_dir {app_dir.name}
 """)
 
     app_dir.parent.joinpath("build_cache.bat").write_text(f"""{activate_env}
@@ -227,7 +270,15 @@ chdir ./{app_dir.name}
 python time_series_cache.py
 chdir ../
 """)
-
+# %% serve_hydrodashboard.py
+    scripts_dir = Path(virtual_env) / "scripts"
+    import sys
+    sys.path.append(str(scripts_dir))    
+    import serve_hydrodashboard
+    serve_hydrodashboard_py = Path(serve_hydrodashboard.__file__)
+    app_dir.parent.joinpath("serve_hydrodashboard.py").write_text(
+        serve_hydrodashboard_py.read_text()
+        )
 
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -244,6 +295,16 @@ def get_args() -> argparse.Namespace:
     parser.add_argument(
         "-config_file",
         help="config.json with app configuration. If not supplied, it will be taken from the repository",
+        default=None,
+    )
+    parser.add_argument(
+        "-css_file",
+        help="custom css-file for your application",
+        default=None,
+    )
+    parser.add_argument(
+        "-bokeh_secret_key",
+        help="bokeh-secret-key. If provided all sessions will be externally signed",
         default=None,
     )
     parser.add_argument(

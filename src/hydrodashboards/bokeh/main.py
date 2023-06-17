@@ -628,8 +628,11 @@ We read the config
 """
 
 config = Config.from_json(CONFIG_JSON)
-search_sample_config = {k: v for k, v in config.time_series_sampling.items()}
-search_sample_config["max_samples"] = 40000
+if config.time_series_sampling is not None:
+    search_sample_config = {k: v for k, v in config.time_series_sampling.items()}
+    search_sample_config["max_samples"] = 40000
+else:
+    search_sample_config = None
 
 """
 We initialize the dataclass

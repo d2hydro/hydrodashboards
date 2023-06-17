@@ -21,8 +21,8 @@ pid_file_path = LOG_DIR / "time_series_cache.pid"
 
 def load_time_series():
     """Support function for downloading time-series."""
-    data.get_time_series_headers(ignore_cache=True)
-    data.update_time_series()
+    #data.get_time_series_headers(ignore_cache=True)
+    data.update_time_series(ignore_cache=True)
 
 def update_idle():
     """Check if update process is not still running."""

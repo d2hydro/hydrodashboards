@@ -33,14 +33,20 @@ def start_applications(config):
     """Start bokeh applications at given ports."""
     from log_utils import LOG_DIR
     from pid_utils import write_pid_file
+    
     for port in config.ports:
-        process = subprocess.Popen([
+        cmd = [
             "bokeh",
             "serve",
             config.app_name,
             "--port",
-            str(port)
-            ])  
+            str(port),
+            "--allow-websocket-origin=*"
+            ]
+        if "BOKEH_SIGN_SESSIONS" in os.environ:
+            if bool(os.environ["BOKEH_SIGN_SESSIONS"]):
+                cmd += ["--session-ids=external-signed"]
+        process = subprocess.Popen(cmd)  
         write_pid_file(LOG_DIR / f"bokeh_{port}.pid", pid=process.pid)
 
 def restart_applications(config, rebuild_time_series=True):
