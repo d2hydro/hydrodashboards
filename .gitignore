@@ -142,9 +142,6 @@ dmypy.json
 src/hydrodashboards/bokeh/bootstrap/*
 *.bak
 
-# test_data dir
-tests/data/*
-
 # cache dir
 cache/*
 src/hydrodashboards/bokeh/static/css/styles.css

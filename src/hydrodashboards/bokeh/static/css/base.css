@@ -7,29 +7,11 @@
   position: fixed;
   background: white;
   width: 165px;
-  top: calc(100% - 400px);
-  left: calc(100% - 185px);
+  left: calc(100% - 175px);
   background-color: white;
   padding: 2px;
   border: 1px solid #F1F2F3;
   border-radius:6px;
-  opacity:0;
-  box-shadow: rgba(0, 0, 0, 0.2) 0px 20px 30px;
-}
-
-
-.map_opt
-{
-  display:block;
-  position: fixed;
-  background: white;
-  width: 175px;
-  top: calc(100% - 400px);
-  left: calc(100% - 185px);
-  background-color: white;
-  padding: 2px;
-  border: 1px solid #F1F2F3;
-  border-radius:4px;
   opacity:0;
   box-shadow: rgba(0, 0, 0, 0.2) 0px 20px 30px;
 }
@@ -162,7 +144,6 @@ a[data-toggle="collapse"] {
 }
 
 
-
 /* ---------------------------------------------------
     SIDEBAR STYLE
 ----------------------------------------------------- */
@@ -246,20 +227,16 @@ a[data-toggle="collapse"] {
 -----------------------------------------------------------  */
 /*all filters till locations*/
 #sidebar > .sidebar-bokeh > .bk-root:first-child {
-    min-height: 300px;
     flex-grow: 2;
-    max-height: 440px;
     flex-basis: 0;
 }
 /*locations*/
 #sidebar > .sidebar-bokeh > .bk-root:nth-child(2) {
-    min-height: 110px;
     flex-grow: 1;
     flex-basis: 0;
 }
 /*parameters*/
 #sidebar > .sidebar-bokeh > .bk-root:nth-child(3) {
-    min-height: 110px;
     flex-grow: 1;
     flex-basis: 0;
 }
@@ -277,6 +254,12 @@ a[data-toggle="collapse"] {
     justify-content: space-between;
 }
 
+#sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_5 {
+	border-bottom-left-radius: 2px!important;
+    border-bottom-right-radius: 2px!important;
+    box-shadow: 0px 4px 8px #495568;
+  }
+
 #sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_1,.bk.filter_checkboxgroup_2,.bk.filter_checkboxgroup_3,.bk.filter_checkboxgroup_4,.bk.filter_checkboxgroup_5 {
     color: white; 
     overflow-y: auto;
@@ -285,37 +268,23 @@ a[data-toggle="collapse"] {
     width: 100% !important;
 
 }
-/*filters height summed =100%, 42px is title height + margin. Locations and parameters and serach period must be set at 100% (seperate bokeh classes)*/
+/*filters*/
 #sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_1 {
-    min-height: 80px;
-    height: calc(40% - 42px) !important;
 	border-bottom-left-radius: 2px!important;
     border-bottom-right-radius: 2px!important;
 	box-shadow: 0px 4px 8px #495568;
 }
 #sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_2 {
-    min-height: 44px;
-    height: calc(30% - 42px) !important;
 	border-bottom-left-radius: 2px!important;
     border-bottom-right-radius: 2px!important;
     box-shadow: 0px 4px 8px #495568;
 }
 #sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_3 {
-    min-height: 44px;
-    height: calc(30% - 42px) !important;
 	border-bottom-left-radius: 2px!important;
     border-bottom-right-radius: 2px!important;
 	box-shadow: 0px 4px 8px #495568;
 }
 #sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_4 {
-    min-height: 68px;
-    height: calc(100% - 42px) !important;
-	border-bottom-left-radius: 2px!important;
-    border-bottom-right-radius: 2px!important;
-    box-shadow: 0px 4px 8px #495568;
-  }
-#sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_5 {
-    min-height: 68px;
     height: calc(100% - 42px) !important;
 	border-bottom-left-radius: 2px!important;
     border-bottom-right-radius: 2px!important;
@@ -394,7 +363,7 @@ input[type=checkbox]{
 }
 #sidebar > .sidebar-bokeh >  .bk-root >.bk > .bk.filter_title > .bk.filter_reset_button > .bk.bk-btn-group > .bk.bk-btn.bk-btn-default{
 	 background-color:#363F4D;;	 
-	 background-image: url(/wik/static/icons/refresh_filters.png);
+	 background-image: url(/{{app}}/static/icons/refresh_filters.png);
 	 background-repeat: no-repeat; 
 	 height:21px;
 	 max-width:21px!important;
@@ -435,7 +404,7 @@ input[type=checkbox]{
 	max-height: 24px!important;
 	min-height: 24px!important;
 	border-color:#282F3A;
-	background-image: url(/wik/static/icons/search.png);
+	background-image: url(/{{app}}/static/icons/search.png);
 	background-repeat: no-repeat;
 	background-position:left center;
 	padding-left: 24px;
@@ -600,7 +569,7 @@ input[type=checkbox]{
 -----------------------------------------------------------  */
 #sidebar > .sidebar-bokeh > .update-wrapper > .download > .bk-root > .bk > .bk >.bk.bk-btn-group > .bk.bk-btn.bk-btn-success{
 	background-color:#F16996;
-	background-image: url(/wik/static/icons/download.png);
+	background-image: url(/{{app}}/static/icons/download.png);
 	background-repeat: no-repeat;
 	background-position: center;
 	color: white;
@@ -609,7 +578,7 @@ input[type=checkbox]{
 	display:flex;
 	border-width:0px;
 	height: 30px;
-    min-width:32px;
+        min-width:32px;
 	width:32px;	
 	cursor: pointer;
 }
@@ -643,7 +612,7 @@ input[type=checkbox]{
 -----------------------------------------------------------  */
 #sidebar > .sidebar-bokeh > .update-wrapper > .save > .bk-root > .bk > .bk >.bk.bk-btn-group > .bk.bk-btn.bk-btn-success{
 	background-color:#F16996;
-	background-image: url(/wik/static/icons/save.png);
+	background-image: url(/{{app}}/static/icons/save.png);
 	background-repeat: no-repeat;
 	background-position: center;
 	color: white;
@@ -809,7 +778,7 @@ input[type=checkbox]{
 ----------------------------------------------------- */
 #refresh_app{
     background-color: #363F4D;
-    background-image: url(/wik/static/icons/refresh.png);
+    background-image: url(/{{app}}/static/icons/refresh.png);
     background-repeat: no-repeat;
     background-position: center;
     height: 24px;
@@ -856,7 +825,7 @@ input[type=checkbox]{
 ----------------------------------------------------- */
 .info_app{
     background-color: #363F4D!important;
-    background-image: url(/wik/static/icons/icons8-info-24.png)!important;
+    background-image: url(/{{app}}/static/icons/icons8-info-24.png)!important;
     background-repeat: no-repeat!important;
     background-position: center!important;
     height: 24px;
@@ -1084,7 +1053,7 @@ input[type=checkbox]{
 
 #button_leg_bar {
   background-color: transparent;
-  background-image: url(/wik/static/icons/layers.svg), linear-gradient(90deg, white 0%, white 100%) ;
+  background-image: url(/{{app}}/static/icons/layers.svg), linear-gradient(90deg, white 0%, white 100%) ;
   background-repeat: no-repeat;
   border-width: 0px;
   bottom: 10px;
@@ -1193,7 +1162,7 @@ input[type=checkbox]{
 	 width: 26px;
 	 margin-left: 68px;
 	 margin-right:200px;
-	 background-image: url(/wik/static/icons/threshold.png);
+	 background-image: url(/{{app}}/static/icons/threshold.png);
 	 background-repeat: no-repeat;
 	 background-position:center 2px center;
 	 background-color: white;
@@ -1201,7 +1170,7 @@ input[type=checkbox]{
 }
 
 .bk.threshold > .bk.bk-btn-group > .bk.bk-btn.bk-btn-default.bk-active{
-	  background-image: url(/wik/static/icons/threshold.png);
+	  background-image: url(/{{app}}/static/icons/threshold.png);
 	  background-repeat: no-repeat;
 	  background-position:center 2px center;
 	  display:flex;
@@ -1248,7 +1217,7 @@ input[type=checkbox]{
 
 #history > .bk-root > .bk > .bk > .bk.bk-btn-group > .bk.bk-btn.bk-btn-success{
 	background-color:#F16996;
-	background-image: url(/wik/static/icons/history.png);
+	background-image: url(/{{app}}/static/icons/history.png);
 	background-repeat: no-repeat;
 	background-position: center;
 	color: white;
@@ -1438,17 +1407,17 @@ input[type=checkbox]{
   width: 10px;
   -webkit-box-shadow: inset 0 0 4px rgba(0,0,0,0.5);
   background-position: center;
-  background-image: url(/wik/static/icons/arrow_up.png);
+  background-image: url(/{{app}}/static/icons/arrow_up.png);
 }
 
 
 ::-webkit-scrollbar-button:single-button:vertical:decrement:hover {
-	background-image: url(/wik/static/icons/arrow_up.png);
+	background-image: url(/{{app}}/static/icons/arrow_up.png);
     background-color:rgb(241,105,150);
 }
 
 ::-webkit-scrollbar-button:single-button:vertical:decrement:active {
-    background-image: url(/wik/static/icons/arrow_up.png);  
+    background-image: url(/{{app}}/static/icons/arrow_up.png);  
 	background-color:rgb(241,105,150);
 }
 
@@ -1458,16 +1427,16 @@ input[type=checkbox]{
   width: 10px;
   -webkit-box-shadow: inset 0 0 4px rgba(0,0,0,0.5);
   background-position: center;
-  background-image: url(/wik/static/icons/arrow_down.png);
+  background-image: url(/{{app}}/static/icons/arrow_down.png);
 }
 
 ::-webkit-scrollbar-button:single-button:vertical:increment:hover {
-  background-image: url(/wik/static/icons/arrow_down.png);
+  background-image: url(/{{app}}/static/icons/arrow_down.png);
   background-color:rgb(241,105,150);
 }
 
 ::-webkit-scrollbar-button:single-button:vertical:increment:active {
-  background-image: url(/wik/static/icons/arrow_down.png);
+  background-image: url(/{{app}}/static/icons/arrow_down.png);
   background-color:rgb(241,105,150);
 }
 
@@ -1477,16 +1446,16 @@ input[type=checkbox]{
   width: 14px;
   -webkit-box-shadow: inset 0 0 4px rgba(0,0,0,0.5);
   background-position: center center;
-  background-image: url(/wik/static/icons/arrow_left.png);
+  background-image: url(/{{app}}/static/icons/arrow_left.png);
 }
 
 ::-webkit-scrollbar-button:single-button:horizontal:decrement:hover {
-  background-image: url(/wik/static/icons/arrow_left.png);
+  background-image: url(/{{app}}/static/icons/arrow_left.png);
   background-color:rgb(241,105,150);
 }
 
 ::-webkit-scrollbar-button:single-button:horizontal:decrement:active {
-  background-image: url(/wik/static/icons/arrow_left.png);
+  background-image: url(/{{app}}/static/icons/arrow_left.png);
   background-color:rgb(241,105,150);
 }
 
@@ -1496,16 +1465,16 @@ input[type=checkbox]{
   width: 14px;
   -webkit-box-shadow: inset 0 0 4px rgba(0,0,0,0.5);
   background-position: center center;
-  background-image: url(/wik/static/icons/arrow_right.png);
+  background-image: url(/{{app}}/static/icons/arrow_right.png);
 }
 
 ::-webkit-scrollbar-button:single-button:horizontal:increment:hover {
-  background-image: url(/wik/static/icons/arrow_right.png);
+  background-image: url(/{{app}}/static/icons/arrow_right.png);
   background-color:rgb(241,105,150);
 }
 
 ::-webkit-scrollbar-button:single-button:horizontal:increment:active {
-  background-image:: url(/wik/static/icons/arrow_right.png);
+  background-image:: url(/{{app}}/static/icons/arrow_right.png);
   background-color:rgb(241,105,150);
 }
 

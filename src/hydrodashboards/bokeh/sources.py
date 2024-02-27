@@ -1,6 +1,7 @@
 from bokeh.models import ColumnDataSource, CustomJS
 import numpy as np
 import pandas as pd
+from hydrodashboards.datamodel.time_series_sampling import sample_df
 
 locations_source_js = """
 if (window.MenuEvents && typeof window.MenuEvents.onLocationsDataChanged === 'function') {
@@ -29,13 +30,20 @@ def df_to_source(
     end_date_time=None,
     excluded_date_times=None,
     unreliables=False,
+    sample_config=None,
 ):
     if (start_date_time is not None) and (end_date_time is not None):
         df = df.loc[_index_mask(df.index, start_date_time, end_date_time)]
     if excluded_date_times is not None:
         df = df.loc[~df.index.isin(excluded_date_times)]
     if (not unreliables) & ("flag" in df.columns):
+        df.loc[df.flag.isna(), "flag"] = 0
         df = pd.DataFrame(df.loc[df["flag"] < 6]["value"])
+
+    if sample_config is not None:
+        df = sample_df(df, sample_config)
+
+    # end of improvements
     return ColumnDataSource(df)
 
 
@@ -45,15 +53,15 @@ def time_series_to_source(
     end_date_time=None,
     unreliables=False,
     excluded_date_times=None,
+    sample_config=None,
 ):
-
-    df = time_series.df
     source = df_to_source(
-        df,
+        time_series.df,
         start_date_time=start_date_time,
         end_date_time=end_date_time,
         unreliables=unreliables,
         excluded_date_times=excluded_date_times,
+        sample_config=sample_config,
     )
     source.name = time_series.label
     source.tags = time_series.tags
@@ -94,7 +102,9 @@ def view_period_patch_source(data):
     )
 
 
-def time_series_sources(time_series=[], unreliables=False, active_only=False):
+def time_series_sources(
+    time_series=[], unreliables=False, active_only=False, sample_config=None
+):
     def _active(i, active_only=active_only):
         if active_only:
             return i.active
@@ -102,13 +112,15 @@ def time_series_sources(time_series=[], unreliables=False, active_only=False):
             return True
 
     return {
-        i.label: time_series_to_source(i, unreliables)
+        i.label: time_series_to_source(i, unreliables, sample_config=None)
         for i in time_series
         if _active(i)
     }
 
 
-def update_time_series_sources(sources, time_series=[], unreliables=False):
+def update_time_series_sources(
+    sources, time_series=[], unreliables=False, sample_config=None
+):
     for i in time_series:
-        source = time_series_to_source(i, unreliables)
+        source = time_series_to_source(i, unreliables, sample_config=None)
         sources[i.label].data.update(source.data)

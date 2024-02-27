@@ -1,0 +1,41 @@
+.map_opt{
+  top: calc(100% - 400px);
+}
+
+/*---------------------------------------------------------
+	Sidemenu Checkboxes positioning
+-----------------------------------------------------------  */
+/*all filters till locations*/
+#sidebar > .sidebar-bokeh > .bk-root:first-child {
+    min-height: 300px;
+    max-height: 440px;
+}
+/*locations*/
+#sidebar > .sidebar-bokeh > .bk-root:nth-child(2) {
+    min-height: 110px;
+}
+/*parameters*/
+#sidebar > .sidebar-bokeh > .bk-root:nth-child(3) {
+    min-height: 110px;
+}
+/*filters height sum=100%, 42px = title height + margin. Locations and parameters and serach period must be set at 100% (seperate bokeh classes)*/
+#sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_1 {
+    min-height: 80px;
+    height: calc(40% - 42px) !important;
+}
+#sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_2 {
+    min-height: 44px;
+    height: calc(30% - 42px) !important;
+}
+#sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_3 {
+    min-height: 44px;
+    height: calc(30% - 42px) !important;
+}
+#sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_4 {
+    min-height: 68px;
+    height: calc(100% - 42px) !important;
+  } 
+#sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_5 {
+    min-height: 68px;
+    height: calc(100% - 42px) !important;
+  }

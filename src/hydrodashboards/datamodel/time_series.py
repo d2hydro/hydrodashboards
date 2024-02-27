@@ -2,8 +2,11 @@ from dataclasses import dataclass, field
 import pandas as pd
 from typing import List
 from datetime import datetime
+from hydrodashboards.datamodel.cache import Cache
 
 COLUMNS = {"datetime": "datetime64", "value": float}
+KEY = "__{location}__{parameter}__"
+CACHE = Cache("time_series", data_frame=False, compression=False, load_data=False)
 
 
 @dataclass
@@ -17,6 +20,7 @@ class TimeSeries:
     visible: bool = False
     empty: bool = True
     complete: bool = False
+    cache: Cache = CACHE
     datetime_created: datetime = datetime.now()
     start_datetime: datetime = None
     end_datetime: datetime = None
@@ -35,6 +39,10 @@ class TimeSeries:
         return (self.location, self.parameter)
 
     @property
+    def key(self):
+        return KEY.format(location=self.location, parameter=self.parameter)
+
+    @property
     def data_start(self):
         if not self.df.empty:
             return pd.to_datetime(self.df.index.min())
@@ -44,17 +52,24 @@ class TimeSeries:
         if not self.df.empty:
             return pd.to_datetime(self.df.index.max())
 
+    def to_cache(self):
+        self.complete = True
+        self.cache.set_data(self, self.key)
+
     def within_period(self, period, selection="view"):
         within_period = False
-        if selection == "view":
-            ref_start = period.view_start
-            ref_end = period.view_end
-        elif selection == "search":
-            ref_start = period.search_start
-            ref_end = period.search_end
-        if (self.start_datetime is not None) & (self.end_datetime is not None):
-            if (self.start_datetime <= ref_start) & (self.end_datetime >= ref_end):
-                within_period = True
+        if self.cache.exists(self.key):
+            within_period = True
+        else:
+            if selection == "view":
+                ref_start = period.view_start
+                ref_end = period.view_end
+            elif selection == "search":
+                ref_start = period.search_start
+                ref_end = period.search_end
+            if (self.start_datetime is not None) & (self.end_datetime is not None):
+                if (self.start_datetime <= ref_start) & (self.end_datetime >= ref_end):
+                    within_period = True
         return within_period
 
 
@@ -63,10 +78,14 @@ class TimeSeriesSets:
     time_series: List[TimeSeries] = field(default_factory=list)
     search_start: datetime = None
     search_end: datetime = None
+    cache: Cache = CACHE
     max_events_visible: int = 0
 
     def __len__(self):
         return len(self.time_series)
+
+    def __post_init__(self):
+        self.cache.mkdir()
 
     @property
     def active_length(self):
@@ -97,8 +116,14 @@ class TimeSeriesSets:
             length = 0
         return length
 
+    def exists(self, index):
+        return next((True for i in self.time_series if i.index == index), False)
+
     def remove_inactive(self):
         self.time_series = [i for i in self.time_series if i.active]
+
+    def remove(self, index):
+        self.time_series = [i for i in self.time_series if i.index != index]
 
     def within_period(self, start_datetime: datetime, end_datetime: datetime):
         if (self.search_start is not None) | (self.search_end is not None):
@@ -145,6 +170,16 @@ class TimeSeriesSets:
                 i.visible = i.label in labels
             else:
                 i.visible = False
+
+    def append_from_cache(self, location, parameter, start, end):
+        key = KEY.format(location=location, parameter=parameter)
+        if self.cache.exists(key):
+            time_series = self.cache.get_data(key)
+            time_series.complete = True
+            time_series.df = time_series.df.loc[
+                (time_series.df.index >= start) & (time_series.df.index <= end)
+            ]
+            self.time_series += [time_series]
 
     def append_from_dict(self, properties: List[dict]):
         properties = [

@@ -5,17 +5,18 @@ channels:
   - defaults
 
 dependencies:
+  - python=3.10.5
   - aiohttp
   - nest-asyncio
   - black
   - jupyter
-  - pandas
-  - bokeh
+  - pandas=1.5.3
+  - bokeh=2.4.3
   - mkdocs
   - mkdocstrings
   - mkdocstrings-python
   - mkdocs-material
-  - geopandas
+  - geopandas=0.12.2
   - requests
   - pytest
   - pytest-cov

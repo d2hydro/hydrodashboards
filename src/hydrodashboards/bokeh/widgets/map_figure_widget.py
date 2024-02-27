@@ -75,7 +75,6 @@ def make_map(
     map_overlays: dict = {},
     settings=BOKEH_SETTINGS,
 ) -> row:
-
     # figure ranges
     x_range = Range1d(start=bounds[0], end=bounds[2], min_interval=100)
     y_range = Range1d(start=bounds[1], end=bounds[3], min_interval=100)
@@ -145,7 +144,6 @@ def make_options(
     background_title: str,
     background_change,
 ):
-
     # set overlay and handlers
     overlay_options = list(map_overlays.keys())
     active_overlays = [

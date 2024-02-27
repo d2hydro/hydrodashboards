@@ -26,6 +26,9 @@ import itertools
 from operator import itemgetter
 import pandas as pd
 
+from hydrodashboards.datamodel.cache import Cache, delete_all_cache
+from hydrodashboards.datamodel.time_series import KEY
+
 FEWS_BUGS = dict(qualifier_ids=True)
 COLOR_CYCLE = itertools.cycle(Category20_20)
 
@@ -63,21 +66,15 @@ class Data:
     def __init__(self, config, logger=None, now: datetime = datetime.now()):
         self.config = config
         self.logger = logger
+
         # fews properties
-        self._fews_api = Api(
-            url=self.config.fews_url, ssl_verify=self.config.ssl_verify, logger=logger
-        )
-        self._fews_qualifiers = self._fews_api.get_qualifiers()
-        self._fews_root_parameters = self._fews_api.get_parameters(
-            filter_id=self.config.root_filter
-        )
-        self._fews_root_locations = self._fews_api.get_locations(
-            filter_id=self.config.root_filter,
-            attributes=self.config.location_attributes,
-        )
-        self._fews_filters = self._fews_api.get_filters(
-            filter_id=self.config.root_filter
-        )
+        self._fews_api = None
+        self._fews_qualifiers = None
+        self._fews_root_parameters = None
+        self._fews_root_locations = None
+        self._fews_filters = None
+        self._root_cache = Cache(sub_dir="root")
+        self._init_fews_api()
 
         # time properties
         self.now = now
@@ -102,6 +99,54 @@ class Data:
     Section with FEWS API helper functions
 
     """
+
+    def _init_fews_api(self):
+        self._fews_api = Api(
+            url=self.config.fews_url,
+            ssl_verify=self.config.ssl_verify,
+            logger=self.logger,
+        )
+
+        # get root qualifiers
+        if self._root_cache.exists("_fews_qualifiers"):
+            self.logger.info("reading FEWS-qualifiers from cache")
+            self._fews_qualifiers = self._root_cache.data["_fews_qualifiers"]
+        else:
+            self._fews_qualifiers = self._fews_api.get_qualifiers()
+            self._root_cache.set_data(self._fews_qualifiers, "_fews_qualifiers")
+
+        # get root parameters
+        if self._root_cache.exists("_fews_root_parameters"):
+            self.logger.info("reading FEWS-parameters from cache")
+            self._fews_root_parameters = self._root_cache.data["_fews_root_parameters"]
+        else:
+            self._fews_root_parameters = self._fews_api.get_parameters(
+                filter_id=self.config.root_filter
+            )
+            self._root_cache.set_data(
+                self._fews_root_parameters, "_fews_root_parameters"
+            )
+
+        # get root locations
+        if self._root_cache.exists("_fews_root_locations"):
+            self.logger.info("reading FEWS-locations from cache")
+            self._fews_root_locations = self._root_cache.data["_fews_root_locations"]
+        else:
+            self._fews_root_locations = self._fews_api.get_locations(
+                filter_id=self.config.root_filter,
+                attributes=self.config.location_attributes,
+            )
+            self._root_cache.set_data(self._fews_root_locations, "_fews_root_locations")
+
+        # get root filters
+        if self._root_cache.exists("_fews_filters"):
+            self.logger.info("reading FEWS-filters from cache")
+            self._fews_filters = self._root_cache.data["_fews_filters"]
+        else:
+            self._fews_filters = self._fews_api.get_filters(
+                filter_id=self.config.root_filter
+            )
+            self._root_cache.set_data(self._fews_filters, "_fews_filters")
 
     def _fews_locators_from_generator(self, generator):
         """Returns location_ids, parameter_ids and qualifier_ids from list"""
@@ -131,7 +176,6 @@ class Data:
         return int(period.total_seconds() * 1000 / width)
 
     def _get_fews_ts(self, indices=None, request_type="headers"):
-
         ## function used to bypass FEWS_BUGS["qualifier_ids"]
         def include_header(i):
             parameter_id = concat_fews_parameter_ids(
@@ -293,14 +337,17 @@ class Data:
     """
 
     def delete_cache(self):
+        self.logger.info("deleting cache")
         for i in self.filters.filters:
             i.cache.delete_cache()
         self.locations.sets.delete_cache()
+        self._root_cache.delete_cache()
+        # delete_all_cache()
 
     def build_cache(self):
         self.logger.info("building cache")
+        self._init_fews_api()
         filter_ids = self.filters.values
-
         for filter_id in filter_ids:
             filter_data = self.filters.get_filter(filter_id)
             self.cache_filter(filter_data, filter_id)
@@ -317,7 +364,6 @@ class Data:
                 location_id = i.location_id
 
             if location_id in self.locations.locations.index:
-
                 child_id = i.location_id
                 location_name = self.locations.locations.at[location_id, "name"]
                 parameter_id = self.parameters.id_from_ts_header(i)
@@ -334,7 +380,6 @@ class Data:
                 return [None for i in range(5)]
 
         def _pi_headers_to_df(pi_headers):
-
             data = [_get_from_header(i.header) for i in pi_headers.time_series]
 
             df = pd.DataFrame.from_records(
@@ -462,6 +507,9 @@ class Data:
         # update map_locations
         self.locations.update_map_locations(values)
 
+        # limit parameters by selected location
+        self.update_on_locations_select(self.locations.value)
+
     def update_on_locations_select(self, values: list):
         """
         Update data-class on selected locations
@@ -492,18 +540,29 @@ class Data:
         self.parameters.clean_value()
 
     def update_history_time_series_search(self, search_time_series_label):
-
         search_time_series = self.time_series_sets.get_by_label(
             search_time_series_label
         )
-        time_series_index = (search_time_series.location, search_time_series.parameter)
 
-        fews_ts_set = self._get_fews_ts(
-            indices=[time_series_index], request_type="full_history"
+        # try to get the time-series from cache
+        cache_key = KEY.format(
+            location=search_time_series.location, parameter=search_time_series.parameter
         )
+        if self.time_series_sets.cache.exists(cache_key):
+            time_series = self.time_series_sets.cache.get_data(cache_key)
+            df = time_series.df
+        # if we can't, we get the full history from FEWS
+        else:
+            time_series_index = (
+                search_time_series.location,
+                search_time_series.parameter,
+            )
+            fews_ts_set = self._get_fews_ts(
+                indices=[time_series_index], request_type="full_history"
+            )
+            df = self._get_df_from_fews_ts_set(fews_ts_set, *time_series_index)
 
-        return self._get_df_from_fews_ts_set(fews_ts_set, *time_series_index)
-        # self._update_ts_from_fews_ts_set(fews_ts_set)
+        return df
 
     def get_history_period(self, datetime_array):
         if len(datetime_array) == 0:
@@ -514,45 +573,62 @@ class Data:
                 to_datetime(datetime_array.max()) + timedelta(hours=12),
             )
 
-    def update_time_series_search(self):
+    def update_time_series_from_cache(self, indices):
+        """Update the time_series_sets.time_series from cache if existing."""
+        for index in indices:
+            self.logger.info("trying to update from cache")
+            if self.time_series_sets.exists(index):
+                self.time_series_sets.remove(index)
+            self.logger.info(f"cache file found for {index[0]}, {index[1]}")
+            self.time_series_sets.append_from_cache(
+                *index, self.periods.search_start, self.periods.search_end
+            )
+            self.logger.info(f"new cache length: {len(self.time_series_sets)}")
+
+    def clean_time_series_within_period(self, period, selection="search"):
+        self.time_series_sets.time_series = [
+            i
+            for i in self.time_series_sets.time_series
+            if i.within_period(period, selection=selection)
+        ]
+
+    def get_time_series_headers(self, indices=None, ignore_cache=False):
+        # get headers and initalize time series
+        if indices is None:
+            indices = self.locations.max_time_series_indices(self.parameters.value)
+        if not ignore_cache:
+            self.update_time_series_from_cache(indices)
+
+        self.clean_time_series_within_period(self.periods, selection="search")
+        self.logger.info(
+            f"amount of time-series in memory {len(self.time_series_sets)}"
+        )
+
+        # indices should not exist in memory
+        fews_indices = [i for i in indices if not self.time_series_sets.exists(i)]
+
+        # we try to append new time-series from FEWS
+        if fews_indices:
+            self.logger.info(f"indices in fews requrest {fews_indices}")
+            fews_ts_set = self._get_fews_ts(
+                indices=fews_indices, request_type="headers"
+            )
+            properties = self._properties_from_fews_ts_headers(fews_ts_set.time_series)
+            self.time_series_sets.append_from_dict(properties)
+
+    def update_time_series(self, ignore_cache=False):
+        """Updates time_series when button is clicked."""
+
+        indices = self.locations.max_time_series_indices(self.parameters.value)
+        self.get_time_series_headers(indices=indices, ignore_cache=ignore_cache)
+
+        self.time_series_sets.set_active(indices)
+        self.time_series_sets.set_visible(indices=indices)
+
         if self.time_series_sets.select_incomplete():
             fews_ts_set = self._get_fews_ts(request_type="history")
             self._update_ts_from_fews_ts_set(fews_ts_set, complete=True)
 
-    def update_time_series(self):
-        """
-        Updates time_series when button is clicked.
-
-        Returns:
-            TYPE: DESCRIPTION.
-
-        """
-
-        # get headers and initalize time series
-        indices = self.locations.max_time_series_indices(self.parameters.value)
-        fews_ts_set = self._get_fews_ts(indices=indices, request_type="headers")
-        properties = self._properties_from_fews_ts_headers(fews_ts_set.time_series)
-        self.time_series_sets.append_from_dict(properties)
-        self.time_series_sets.set_active(indices)
-        self.time_series_sets.set_visible(indices=indices)
-
-        # set data for search time_series
-        if self.time_series_sets.any_active:
-            first_active = self.time_series_sets.first_active
-            if not first_active.within_period(period=self.periods, selection="search"):
-                fews_ts_set = self._get_fews_ts(
-                    indices=[first_active.index], request_type="search"
-                )
-
-                self._update_ts_from_fews_ts_set(fews_ts_set)
-
-        # set data for view time_series
-        if self.time_series_sets.select_view(self.periods):
-            fews_ts_set = self._get_fews_ts(request_type="view")
-
-            self._update_ts_from_fews_ts_set(fews_ts_set)
-
-        # finalize time_series_sets with search_start and search_end
         self.time_series_sets.set_search_period(*self.periods.search_dates)
 
     def threshold_groups(self, time_series_groups):

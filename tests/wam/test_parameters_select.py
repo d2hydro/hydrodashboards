@@ -1,9 +1,14 @@
+# %%
+from config import wam_config
+
+wam_config()
+
 from hydrodashboards.bokeh.main import (
     filters,
     data,
     locations,
     parameters,
-)
+)  # noqa
 
 
 # choose filter oppervlaktewater

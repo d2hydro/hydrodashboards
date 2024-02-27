@@ -8,8 +8,9 @@
 
     <!-- Bootstrap CSS CDN -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
-    <!-- Our Custom CSS -->
-    <link rel="stylesheet" href="/bokeh/static/css/styles.css">
+    <!-- Hydrodashboards CSS -->
+	<link rel="stylesheet" href="/{{app}}/static/css/base.css">
+    <link rel="stylesheet" href="/{{app}}/static/css/custom.css">
 
     <!-- Font Awesome JS -->
     <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
@@ -22,7 +23,7 @@
     <!-- Bootstrap JS -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
     <!-- Our Custom JS -->
-    <script src="/bokeh/static/js/main.js"></script>
+    <script src="/{{app}}/static/js/main.js"></script>
 	<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 	<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
@@ -31,49 +32,41 @@
             $('#sidebarCollapse').on('click', function () {
                 $('#sidebar').toggleClass('active');
                 $(this).toggleClass('active');
-
                 AnimationUtils.tagElements();
                 AnimationUtils.onResizePage();
             });
         });
         function scale_graph() {
-          var but_leg = document.getElementById("button_leg_bar");
-          var maplayer_icon=document.getElementById("maplayer_icon");
-          var map_opt = document.getElementById("map_opt");
-          var kaart = document.getElementById("kaart");
           var zoekgraf = document.getElementById("zoekgrafiek-en-slider");
           var but = document.getElementById("button_lower");
           var h = document.getElementById("grafiek_upper");
-          var download = document.getElementsByClassName("bk bk-btn bk-btn-success")[0];
           but.classList.toggle("fa-angle-double-up");
           but.classList.toggle("fa-angle-double-down");
           if (zoekgraf.style.display === "none") {
             zoekgraf.style.display = "block";
-            h.style.height = "60.5vh";
-<!--            download.style.backgroundColor = "#3681C1"; -->
-<!--            download.style.borderColor = "#495568";		-->		
+            h.style.height = "62.5vh";	
+			
           } else {
             zoekgraf.style.display = "none";
             h.style.height = "78vh";
-<!--            download.style.backgroundColor = "white";-->
-<!--            download.style.borderColor = "white";-->
-          }
-          
+			zoekgraf.style.opacity = "1";
+          }      
           AnimationUtils.dispatchResizeEvent();
         }
 	
         function popMapLegend() {
-          var but_leg = document.getElementById("button_leg_bar");
-          var maplayer_icon=document.getElementById("maplayer_icon");
           var map_opt = document.getElementById("map_opt");
           var kaart = document.getElementById("kaart");
-        if (map_opt.style.display == "none") {
-            map_opt.style.position = "fixed";
-            map_opt.style.display = "block";		
-          } else {
-            map_opt.style.display = "none";
-            dummy.style.display= "block";
-          }
+			if(map_opt.style.opacity < "0.1"){
+				map_opt.style.opacity = "1";
+				}
+			else if(map_opt.style.display == "none" ) {
+				map_opt.style.position = "fixed";
+				map_opt.style.display = "block";		
+			  } 
+			else {
+				map_opt.style.display = "none";
+			  }
           }
 		let ctrlKey = false;
 		   const keyDown = () => {
@@ -90,9 +83,6 @@
 		};
 		keyDown();
 		keyUp();
-	    
-		
-		
 		
 		function refresh_app() {
 			window.location.reload();
@@ -109,7 +99,19 @@
         <!-- Sidebar Holder -->
         <nav id="sidebar">
             <div class="sidebar-header">
-                {{ embed(roots.app_title) }}
+                 <div class="row"style="height:100%" > 
+				<div class="col-10" style="display:flex;align-items:center;height:100%">		
+				  {{ embed(roots.app_title) }}
+				</div>			 
+				<div class="col-2" style="height:100%" >			 
+					<button type="button" id="sidebarCollapse" class="navbar-btn">
+						<span></span>
+						<span></span>
+						<span></span>
+					</button>
+				
+				</div>
+			   </div>
             </div>
             <div class="sidebar-bokeh">
                 {{ embed(roots.filters) }}
@@ -119,13 +121,17 @@
                 <div class="update-wrapper" id="update_download"> 
 					<div class="update">
                         {{ embed(roots.update_graph) }}
-						{{ embed(roots.scale_graphs_dummy) }}
+						{{ embed(roots.scale_graphs_dummy)}}
+						<span class="tooltiptext">Toon grafiek (na selectie)</span>
 					</div>	
-					<div class="download">
+					<div class="download">		
                         {{ embed(roots.download_time_series)}}
+                        {{ embed(roots.download_time_series_dummy)}}						
+						<span class="tooltiptext">Download data (excel)</span>
 					</div>	
 					<div class="save">
 					    {{ embed(roots.save_time_series)}}
+						<span class="tooltiptext">Opslaan grafiek (jpg)</span>
 					</div>
                 </div>
 			</div>				
@@ -135,34 +141,36 @@
 
         <!-- Page Content Holder -->
         <div id="content">    
-            <nav class="navbar navbar-expand-lg">
-                <div class="container-fluid h-100">
-                    <button type="button" id="sidebarCollapse" class="navbar-btn">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </button>
-                    <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                        <i class="fas fa-align-justify"></i>
-                     </button>
-                    <button onclick="refresh_app()" id="refresh_app">
-					</button>
-                    <button class="btn btn-dark"style="border:none;cursor:pointer; height:35px;background: rgba(0,0,0,0);color:white" type="button" onclick="window.open('https://d2hydro.github.io/hydrodashboards/user_manuals/user_nl/','_blank')">
-                        <i class='fas fa-info-circle ' style="font-size: 24px;"></i>
-                    </button>
-                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                        <ul class="nav navbar-nav ml-auto">
+            <nav class="navbar navbar-expand-lg">              
+				   <div class="row" style="width:100%;margin-bottom: -10px">
+					<div class="col-9">				
+						 <button class="refresh" onclick="refresh_app()" id="refresh_app">
+						 <span class="tooltiptext">Ververs dashboard</span>
+						 </button>
+						 <button class="info_app" type="button" onclick="window.open('https://d2hydro.github.io/hydrodashboards/user_manuals/user_nl/','_blank')">
+							<span class="tooltiptext">Open user manual</span>
+						</button>
+				  </button>                 
+					</div>
+					<div class="col-3" style="bottom:-1px">	
+						  <ul class="nav navbar-nav">
                             <ul class="nav nav-tabs" id="nav-tab" role="tablist">
                             <li class="nav-item">
-                                <button class="nav-item nav-link active" id="kaart-tab" data-toggle="tab" data-target="#kaart" role="tab" aria-controls="nav-kaart" aria-selected="true">Kaart</button>
-                            </li>
+                                <button class="nav-item nav-link active" id="kaart-tab" data-toggle="tab" data-target="#kaart" role="tab" aria-controls="nav-kaart" aria-selected="true">
+								<span class="tooltiptext">Toon kaart</span>
+								Kaart</button>
+							</li>
                             <li class="nav-item">
-                                <button class="nav-item nav-link" id="grafiek-tab" data-toggle="tab" data-target="#grafiek" role="tab" aria-controls="nav-grafiek" aria-selected="false">Grafiek</button>
-                            </li>
+                                <button class="nav-item nav-link" id="grafiek-tab" data-toggle="tab" data-target="#grafiek" role="tab" aria-controls="nav-grafiek" aria-selected="false">
+								<span class="tooltiptext">Toon grafiek</span>
+								Grafiek</button>
+						   </li>
                             </ul>
-                        </ul>
-                    </div>
-            </div>
+                        </ul>						
+					</div>
+				</div>	
+                
+			
             </nav>
             <div class="tab-content">
                 <div class="tab-pane fade show active row" id="kaart" role="tabpanel" aria- labelledby="kaart-tab" aria-expanded="false">
@@ -170,7 +178,9 @@
                                 {{ embed(roots.map_figure)}}
                     </div>
                     <div class="test" id ="button_leg_bar" >
-                                <button onclick="popMapLegend()" class="maplayer_icon" id="maplayer_icon" aria-hidden="true"></button>
+                                <button onclick="popMapLegend()" class="maplayer_icon" id="maplayer_icon" aria-hidden="true">
+								<span class="tooltiptext">Toon achtergrondkaarten</span>
+								</button>
                      </div>
                             <div class="map_opt" id="map_opt">
                                  {{ embed(roots.map_options) }}
@@ -181,16 +191,16 @@
                 </div>
                 <div class="tab-pane fade show" id="grafiek" role="tabpanel" aria- labelledby="grafiek-tab"aria-expanded="false">
                     <div class="container-fluid h-100" >
-                        <div class="row"style="margin-left:0px;margin-right:0px" > 
+                        <div class="row"style="margin-left:10px; margin-right:10px; margin-top:10px; margin-bottom:0px" > 
                             <div class="col-12" id="grafiek_upper">
                                 {{ embed(roots.time_figure) }}
                             </div>   
-							
-/thresholds/
+                            {{thresholds_button}}
                         </div>
                         <div class="row" id="zoekgrafiek-bar">    
 							<div class="col-1" id="history">
 									{{ embed(roots.history_search_time_series) }}
+									<span class="tooltiptext">Toon historie</span>
 							</div>
 							<div class="col-6">
                                 {{ embed(roots.select_search_time_series) }}							 

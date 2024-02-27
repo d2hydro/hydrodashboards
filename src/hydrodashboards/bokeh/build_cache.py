@@ -1,18 +1,20 @@
-#!/usr/bin/env python3
 try:
     import data
     from config import Config
+    from log_utils import import_logger
 except ImportError:
     from hydrodashboards.bokeh import data
     from hydrodashboards.bokeh.config import Config
+    from hydrodashboards.bokeh.log_utils import import_logger
 
 import argparse
 from datetime import datetime
-import logging
+
 from pathlib import Path
 
+
+logger = import_logger(log_file="build_cache.log")
 CONFIG_JSON = Path(data.__file__).parent.joinpath("config.json")
-logger = logging.getLogger(__name__)
 
 
 def main():

@@ -6,9 +6,15 @@ from bokeh.layouts import column
 try:
     from data import Data
     from config import Config
-except:
+    from pathlib import Path
+    from log_utils import import_logger
+
+    CONFIG_JSON = Path(__file__).parent.joinpath("config.json")
+except ImportError:
     from hydrodashboards.bokeh.data import Data
     from hydrodashboards.bokeh.config import Config
+    from hydrodashboards.bokeh.log_utils import import_logger
+    from hydrodashboards.bokeh import CONFIG_JSON
 
 # import bokeh sources
 import hydrodashboards.bokeh.sources as sources
@@ -26,9 +32,9 @@ from hydrodashboards.bokeh.widgets import (
 )
 
 from bokeh.models.widgets import Div, Select
-from hydrodashboards.bokeh.log_utils import import_logger
+
 import inspect
-from pathlib import Path
+
 
 from hydrodashboards.bokeh.language import update_graph_title
 
@@ -37,7 +43,6 @@ import pandas as pd
 
 LANG = "dutch"
 HTML_TYPE = "table"
-CONFIG_JSON = Path(__file__).parent.joinpath("config.json")
 
 
 """
@@ -103,6 +108,7 @@ def update_time_series_sources():
             start_date_time=start,
             end_date_time=end,
             unreliables=False,
+            sample_config=config.time_series_sampling,
         )
         v["source"].data.update(_source.data)
 
@@ -110,18 +116,22 @@ def update_time_series_sources():
 def update_search_time_series_source():
     """Update search source assigned to search_fig"""
     time_series = data.time_series_sets.get_by_label(search_time_series.value)
-    _source = sources.time_series_to_source(time_series)
+
+    _source = sources.time_series_to_source(
+        time_series, sample_config=search_sample_config
+    )
     search_source.data.update(_source.data)
+
+
+def _to_timestamp(i):
+    if isinstance(i, (float, int)):
+        return pd.Timestamp(i * 10**6)
+    else:
+        return i
 
 
 def view_x_range_as_datetime():
     """Get the view_x_range start and end as datetime."""
-
-    def _to_timestamp(i):
-        if isinstance(i, (float, int)):
-            return pd.Timestamp(i * 10**6)
-        else:
-            return i
 
     start = _to_timestamp(view_x_range.start)
     end = _to_timestamp(view_x_range.end)
@@ -144,14 +154,19 @@ def order_filter(bokeh_filter, filter_cls, active=None):
         active = list(bokeh_filter.active)
     ordered = False
 
+    # case when no filter-values are active
     if len(active) == 0:
         filter_cls.order_options([])
         bokeh_filter.labels = filter_cls.labels
+    # case when all are active
     elif not (max(active) == len(active) - 1):
         ordered = True
         filter_cls.order_options(active)
         bokeh_filter.labels = filter_cls.labels
         bokeh_filter.active = filter_cls.active
+    # case where we miss labels
+    elif len(bokeh_filter.labels) != len(filter_cls.labels):
+        bokeh_filter.labels = filter_cls.labels
     return ordered
 
 
@@ -196,7 +211,6 @@ def update_on_filter_selector(attrname, old, new):
     actives = filters_widgets.get_filters_actives(filters, config.thematic_view)
     data.update_on_filter_select(actives)
     locations.labels = data.locations.labels
-    # locations.active = data.locations.active
     parameters.labels = data.parameters.labels
     parameters.active = data.parameters.active
     # update source
@@ -375,7 +389,9 @@ def update_on_history_search_time_series():
     df = data.update_history_time_series_search(search_time_series.value)
 
     # update search_source
-    search_source.data.update(sources.df_to_source(df).data)
+    search_source.data.update(
+        sources.df_to_source(df, sample_config=search_sample_config).data
+    )
 
     # update search_period
     search_start, search_end = data.get_history_period(search_source.data["datetime"])
@@ -444,7 +460,6 @@ def update_time_series_view():
         time_series_groups = data.time_series_sets.by_parameter_groups(
             parameter_groups, active_only=True
         )
-
         threshold_groups = data.threshold_groups(time_series_groups)
 
         if config.thresholds:
@@ -460,6 +475,7 @@ def update_time_series_view():
             x_range=view_x_range,
             press_up_event=press_up_event,
             renderers_on_change=[("visible", set_visible_labels)],
+            sample_config=config.time_series_sampling,
         )
 
         # update search_time_series
@@ -474,51 +490,31 @@ def update_time_series_view():
             time_series=_time_series,
             x_range=search_x_range,
             periods=data.periods,
+            patch_source=patch_source,
             color=time_series_sources[search_time_series.value]["color"],
             search_source=search_source,
+            sample_config=config.time_series_sampling,
         )
 
-        # go to the next callback
         _scale_graphs.disabled = True
-        curdoc().add_next_tick_callback(update_time_series_search)
+
+        # enable view_timeseries_controls
+        toggle_view_time_series_controls(value=False)
+        sources = [i["source"] for i in time_series_sources.values()]
+        toggle_download_button_on_sources(sources)
+        # update app status
+        app_status.text = data.app_status(html_type=HTML_TYPE)
     else:
         warning = "no time series for selected locations and parameters"
         time_figure_widget.warning_figure(time_figure_layout, warning)
         time_figure_widget.warning_figure(search_time_figure_layout, warning)
 
-        # stop loader and disable update_graph
-        update_graph.css_classes = ["stoploading_time_fig"]
-        update_graph.disabled = True
-
-    # update app status
-    app_status.text = data.app_status(html_type=HTML_TYPE)
-
-
-def update_time_series_search():
-
-    logger.debug(inspect.stack()[0][3])
-    # update full history of all non-complete time-series
-    data.update_time_series_search()
-
-    # updating the sources in the used as glyph data_sources
-    update_time_series_sources()
-    update_search_time_series_source()
-
-    # updating the figure_layout y_ranges
-    time_figure_widget.update_time_series_y_ranges(time_figure_layout)
-    time_figure_widget.update_search_time_series_y_ranges(search_time_figure_layout)
-
-    # enable view_timeseries_controls
-    toggle_view_time_series_controls(value=False)
-    sources = [i["source"] for i in time_series_sources.values()]
-    toggle_download_button_on_sources(sources)
-
-    # update app status
-    app_status.text = data.app_status(html_type=HTML_TYPE)
-
     # stop loader and disable update_graph
     update_graph.css_classes = ["stoploading_time_fig"]
     update_graph.disabled = True
+
+    # update app status
+    app_status.text = data.app_status(html_type=HTML_TYPE)
 
 
 def update_on_search_time_series_value(attrname, old, new):
@@ -531,36 +527,23 @@ def update_on_search_time_series_value(attrname, old, new):
         time_series=data.time_series_sets.get_by_label(label=search_time_series.value),
         x_range=search_x_range,
         periods=data.periods,
+        patch_source=patch_source,
         color=time_series_sources[search_time_series.value]["color"],
         search_source=search_source,
+        sample_config=config.time_series_sampling,
     )
-
-
-def update_on_view_period_value(attrname, old, new):
-    """Update periods when view_period value changes"""
-    # logger.debug(inspect.stack()[0][3])
-
-    is_moving = all((new[0] != old[0], new[1] != old[1]))
-    if is_moving:
-        force = True
-    else:
-        force = False
-    values_accepted = data.periods.set_view_period(
-        *view_period.value_as_datetime, force
-    )
-    if not values_accepted:
-        view_period.value = (data.periods.view_start, data.periods.view_end)
-
-    # update patch source
-    if type(search_time_figure_layout.children[0]) != Div:
-        search_time_figure_layout.children[0].renderers[0].data_source.data.update(
-            sources.view_period_patch_source(data.periods).data
-        )
 
 
 def update_on_view_period_value_throttled(attrname, old, new):
     """Update time_series_sources as view_x_range"""
     logger.debug(inspect.stack()[0][3])
+
+    is_moving = all((new[0] != old[0], new[1] != old[1]))
+    values_accepted = data.periods.set_view_period(
+        *view_period.value_as_datetime, is_moving
+    )
+    if not values_accepted:
+        view_period.value = (data.periods.view_start, data.periods.view_end)
 
     view_x_range.start, view_x_range.end = (
         data.periods.view_start,
@@ -574,25 +557,28 @@ def update_on_view_period_value_throttled(attrname, old, new):
     figs = time_figure_layout.children[0].children
     toggle_download_button_on_sources(get_visible_sources(figs))
 
-    # update patch source
-    if type(search_time_figure_layout.children[0]) != Div:
-        search_time_figure_layout.children[0].renderers[0].data_source.data.update(
-            sources.view_period_patch_source(data.periods).data
-        )
-
     # update app status
     app_status.text = data.app_status(html_type=HTML_TYPE)
 
 
-def update_on_view_x_range_change(attrname, old, new):
+def update_on_view_x_range_start_change(attrname, old, new):
     """Update view_period widget when view_x_range changes."""
     # logger.debug(inspect.stack()[0][3])
 
-    start, end = view_x_range_as_datetime()
-    view_x_range.reset_start = start
-    view_x_range.reset_end = end
+    if old != new:
+        start = _to_timestamp(new)
+        view_x_range.reset_start = start
+        view_period.value = (start, view_period.value[1])
 
-    view_period.value = (start, end)
+
+def update_on_view_x_range_end_change(attrname, old, new):
+    """Update view_period widget when view_x_range changes."""
+    # logger.debug(inspect.stack()[0][3])
+
+    if old != new:
+        end = _to_timestamp(new)
+        view_x_range.reset_end = end
+        view_period.value = (view_period.value[0], end)
 
 
 def press_up_event(event=None):
@@ -626,11 +612,27 @@ def set_visible_labels(attr, old, new):
     app_status.text = data.app_status(html_type=HTML_TYPE)
 
 
+def start_timeseries_downloader():
+    """Start the timeseries downloading process."""
+    logger.debug(inspect.stack()[0][3])
+
+    # get all data in sourced
+    update_time_series_sources()
+
+    # trigger jscript downloading process
+    _download_time_series.disabled = not _download_time_series.disabled
+
+
 """
 We read the config
 """
 
 config = Config.from_json(CONFIG_JSON)
+if config.time_series_sampling is not None:
+    search_sample_config = {k: v for k, v in config.time_series_sampling.items()}
+    search_sample_config["max_samples"] = 40000
+else:
+    search_sample_config = None
 
 """
 We initialize the dataclass
@@ -649,6 +651,7 @@ locations_source.selected.on_change("indices", update_on_locations_source_select
 
 time_series_sources = sources.time_series_sources()
 search_source = sources.time_series_template()
+patch_source = sources.view_period_patch_source(data.periods)
 
 """
 In this section we define all widgets. We pass callbacks and sources to every widget
@@ -705,10 +708,14 @@ app_status = Div(text=data.app_status(html_type=HTML_TYPE))
 if config.thresholds:
     thresholds_button = thresholds_widget.make_button(toggle_thresholds)
 
+# View period widget
+view_period = view_period_widget.make_view_period(data.periods, patch_source)
+view_period.on_change("value_throttled", update_on_view_period_value_throttled)
+
 # Time figure widget
 view_x_range = time_figure_widget.make_x_range(data.periods, graph="top_figs")
-view_x_range.on_change("end", update_on_view_x_range_change)
-view_x_range.on_change("start", update_on_view_x_range_change)
+view_x_range.on_change("start", update_on_view_x_range_start_change)
+view_x_range.on_change("end", update_on_view_x_range_end_change)
 
 time_figure_layout = time_figure_widget.empty_layout(name="time_figure")
 
@@ -719,11 +726,6 @@ search_time_series = Select(
 search_time_series.on_change("value", update_on_search_time_series_value)
 
 
-# View period widget
-view_period = view_period_widget.make_view_period(data.periods)
-view_period.on_change("value", update_on_view_period_value)
-view_period.on_change("value_throttled", update_on_view_period_value_throttled)
-
 # Search time figure widget
 search_x_range = time_figure_widget.make_x_range(data.periods, graph="search_fig")
 search_time_figure_layout = time_figure_widget.empty_layout(name="search_time_figure")
@@ -731,7 +733,9 @@ search_time_figure_layout = time_figure_widget.empty_layout(name="search_time_fi
 # all buttons
 
 #  download data
-download_time_series = download_widget.make_button(
+download_time_series = download_widget.make_button(on_click=start_timeseries_downloader)
+
+_download_time_series = download_widget.make_ghost_button(
     time_figure_layout=time_figure_layout,
     disclaimer_file=config.disclaimer_file,
     graph_count=config.graph_count,
@@ -745,8 +749,8 @@ history_search_time_series = search_period_widget.make_button(
     on_click=update_on_history_search_time_series
 )
 
-# add
 
+# button to scale top-figs to graph_count
 _scale_graphs = ghost_buttons.make_button(
     time_figure_layout=time_figure_layout, graph_count=config.graph_count
 )
@@ -836,8 +840,17 @@ curdoc().add_root(
 curdoc().add_root(column(view_period, name="view_period", sizing_mode="stretch_both"))
 curdoc().add_root(search_time_figure_layout)
 
+# add ghost buttons
 curdoc().add_root(
     column(_scale_graphs, name="scale_graphs_dummy", sizing_mode="stretch_width")
+)
+
+curdoc().add_root(
+    column(
+        _download_time_series,
+        name="download_time_series_dummy",
+        sizing_mode="stretch_width",
+    )
 )
 
 curdoc().title = config.title

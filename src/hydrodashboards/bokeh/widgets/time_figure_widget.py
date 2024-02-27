@@ -1,27 +1,31 @@
 from bokeh.plotting import figure
 from bokeh.layouts import column
+from bokeh.models.layouts import Column
 from bokeh.events import PanEnd, MouseWheel
 from bokeh.models.widgets import Div
 from bokeh.models import (
     HoverTool,
     FuncTickFormatter,
+    Legend,
     Range1d,
     NumeralTickFormatter,
     CustomJSHover,
+    WheelZoomTool,
 )
-from bokeh.models.glyphs import Line, Patch
+from bokeh.models.annotations import LegendItem
+from bokeh.models.glyphs import Line
 from bokeh.palettes import Category10_10 as palette
 import pandas as pd
-from itertools import cycle
 from hydrodashboards.bokeh.sources import (
-    time_series_template,
     view_period_patch_source,
     time_series_to_source,
     thresholds_to_source,
 )
 
-colors = cycle(palette)
-#%%
+from dataclasses import dataclass
+
+
+# %%
 SIZING_MODE = "stretch_both"
 DELTA = 0.1
 THRESHOLD_NAME = "threshold"
@@ -38,7 +42,38 @@ DT_JS_FORMAT = r"""
         day: 'numeric'
     }});
 """
+
 LABEL_LEN = 50
+
+
+@dataclass
+class Colors:
+    palette = palette
+    used = {}
+
+    def __post_init__(self):
+        self.reset()
+
+    @property
+    def min_used(self):
+        return min(self.used.values())
+
+    def reset(self):
+        self.used = {k: 0 for k in self.palette}
+
+    def next(self, use=True):
+        color = next(k for k, v in self.used.items() if v == self.min_used)
+        if use:
+            self.add(color)
+        return color
+
+    def add(self, color):
+        if color in palette:
+            self.used[color] += 1
+
+    def remove(self, color):
+        if color in palette:
+            self.used[color] = max(self.used[color] - 1, 0)
 
 
 def trucate_label(label, length=LABEL_LEN):
@@ -72,7 +107,6 @@ def correct_ends(start, end):
     return start, end
 
 
-# %%
 def date_time_range_as_datetime(date_time_range):
     """Get the view_x_range start and end as datetime."""
 
@@ -157,6 +191,18 @@ def _get_sources(renderers):
     ]
 
 
+def _get_renderers(top_figs):
+    renderers = (j for i in [i.renderers for i in top_figs] for j in i)
+    return [i for i in renderers if i.name != THRESHOLD_NAME]
+
+
+def _get_timeseries_sources(top_figs):
+    return {
+        i.name: dict(source=i.data_source, color=i.glyph.line_color)
+        for i in _get_renderers(top_figs)
+    }
+
+
 def _ends(renderers):
     sources = _get_sources(renderers)
     if len(sources) > 0:
@@ -201,31 +247,101 @@ def toggle_threshold_graphs(time_figure_layout, active):
                     renderer.visible = active
 
 
+def get_legend(time_fig):
+    """Get the legend of a figure (add one if not initiated)."""
+    if not time_fig.legend:
+        legend = Legend(name=time_fig.name, location=(1, 1))
+        legend.visible = True
+        legend.click_policy = "hide"
+        legend.label_text_font_size = "9pt"
+        legend.border_line_width = 0
+        legend.spacing = -2
+        legend.padding = 2
+        legend.label_height = 5
+        legend.margin = 5
+        time_fig.add_layout(legend, "right")
+
+    return time_fig.legend[0]
+
+
+def append_to_legend(renderer, legend):
+    """Append a renderer to the legend."""
+    legend.items.append(
+        LegendItem(
+            label=trucate_label(renderer.name), name=renderer.name, renderers=[renderer]
+        )
+    )
+
+
+def time_series_to_fig(
+    time_series, time_fig, colors, sample_config, renderers_on_change
+):
+    """Add a time_series to the figure."""
+    legend = get_legend(time_fig)
+
+    for i in time_series:
+        label = i.label
+        x_start, x_end = date_time_range_as_datetime(time_fig.x_range)
+        source = time_series_to_source(
+            i, start_date_time=x_start, end_date_time=x_end, sample_config=sample_config
+        )
+        renderer = time_fig.line(
+            x="datetime",
+            y="value",
+            source=source,
+            color=colors.next(),
+            name=label,
+        )
+        append_to_legend(renderer, legend)
+        for i in renderers_on_change:
+            renderer.on_change(*i)
+
+
+def thresholds_to_fig(thresholds, time_fig, threshold_visible):
+    """Append thresholds to the figure."""
+    for k, v in thresholds.items():
+        time_fig.multi_line(
+            xs="datetime",
+            ys="value",
+            source=thresholds_to_source(v),
+            name=THRESHOLD_NAME,
+            line_width=v["line_width"],
+            line_dash="dashed",
+            visible=threshold_visible,
+            color=v["color"],
+        )
+
+
 def search_fig(
     search_time_figure_layout,
     time_series,
     x_range,
     periods,
+    patch_source,
     color="#1f77b4",
     search_source=None,
+    sample_config=None,
 ):
     def _add_line():
         time_fig.line(x="datetime", y="value", source=search_source, color=color)
 
+    # get source
+    x_start, x_end = date_time_range_as_datetime(x_range)
+    source = time_series_to_source(
+        time_series,
+        start_date_time=x_start,
+        end_date_time=x_end,
+        sample_config=sample_config,
+    )
+
     # get y-axis start and end
-    values = time_series.df["value"].values
+    values = source.data["value"]
     if len(values) == 0:
         y_start, y_end = range_defaults()
     else:
         y_start = values.min()
         y_end = values.max()
         y_start, y_end = correct_ends(y_start, y_end)
-
-    # get source
-    x_start, x_end = date_time_range_as_datetime(x_range)
-    source = time_series_to_source(
-        time_series, start_date_time=x_start, end_date_time=x_end
-    )
 
     # create or update graph
     if isinstance(search_time_figure_layout.children[0], Div):
@@ -246,7 +362,7 @@ def search_fig(
         time_fig.patch(
             x="x",
             y="y",
-            source=view_period_patch_source(periods),
+            source=patch_source,
             alpha=0.5,
             line_width=2,
             fill_color=SEARCH_PATCH_COLOR,
@@ -259,9 +375,7 @@ def search_fig(
         time_fig = search_time_figure_layout.children[0]
 
         # update patch data_source
-        time_fig.renderers[0].data_source.data.update(
-            view_period_patch_source(periods).data
-        )
+        patch_source.data.update(view_period_patch_source(periods).data)
 
         # update time_series source
         time_fig.renderers[1].data_source.data.update(source.data)
@@ -277,7 +391,7 @@ def search_fig(
         # _add_line(time_fig, source, color)
 
 
-def top_fig(
+def create_top_fig(
     group: tuple,
     x_range: Range1d,
     y_axis_label: str,
@@ -285,8 +399,8 @@ def top_fig(
     threshold_visible=False,
     press_up_event=None,
     renderers_on_change=[],
+    sample_config=None,
 ):
-
     """Generate a time-figure from supplied bokeh input parameters."""
 
     parameter_group, time_series = group
@@ -299,33 +413,28 @@ def top_fig(
     )
     time_hover.toggleable = False
 
+    wheel_zoom = WheelZoomTool(speed=0.001, dimensions="width")
+
     tools = [
         "pan",
         "box_zoom",
-        "xwheel_zoom",
-        "zoom_in",
-        "zoom_out",
-        "undo",
-        "redo",
+        wheel_zoom,
         "reset",
-        #        "save",
         time_hover,
     ]
 
     y_range = make_y_range(time_series)
-    parameters = list(set([i.parameter_name for i in time_series]))
-    # y_axis_label = f"{parameter_group} [{time_series[0].units}]"
-
     time_fig = figure(
         tools=tools,
         sizing_mode="stretch_width",
         x_range=x_range,
         y_range=y_range,
         y_axis_label=y_axis_label,
-        active_scroll="xwheel_zoom",
+        active_scroll=wheel_zoom,
         active_drag="box_zoom",
         toolbar_location="above",
         css_classes=["time_figure"],
+        name=parameter_group,
     )
 
     time_fig.toolbar.logo = None
@@ -335,53 +444,19 @@ def top_fig(
 
     time_fig.xaxis.formatter = FuncTickFormatter(code=DT_JS_FORMAT.format("tick"))
     time_fig.xaxis.visible = True
+
     time_fig.yaxis[0].formatter = NumeralTickFormatter(format="0.00")
 
-    # add lines to figure
-    x_start, x_end = date_time_range_as_datetime(x_range)
-    for i in time_series:
-        label = i.label
-        legend_label = trucate_label(i.label)
-        source = time_series_to_source(i, start_date_time=x_start, end_date_time=x_end)
-        renderer = time_fig.line(
-            x="datetime",
-            y="value",
-            source=source,
-            color=next(colors),
-            legend_label=legend_label,
-            name=label,
-        )
-        for i in renderers_on_change:
-            renderer.on_change(*i)
+    # add time_series to figure
+    colors = Colors()
+    time_series_to_fig(
+        time_series, time_fig, colors, sample_config, renderers_on_change
+    )
 
     # add thresholds to figure
     thresholds = threshold_groups[parameter_group]
-    for k, v in thresholds.items():
-        source = thresholds_to_source(v)
-        renderer = time_fig.multi_line(
-            xs="datetime",
-            ys="value",
-            source=thresholds_to_source(v),
-            name=THRESHOLD_NAME,
-            line_width=v["line_width"],
-            line_dash="dashed",
-            visible=threshold_visible,
-            color=v["color"],
-        )
+    thresholds_to_fig(thresholds, time_fig, threshold_visible)
 
-    # make up legend
-    time_fig.legend.click_policy = "hide"
-    time_fig.legend.visible = True
-
-    if len(time_fig.legend) > 0:
-        time_fig.add_layout(time_fig.legend[0], "right")
-        time_fig.legend[0].label_text_font_size = "9pt"
-        time_fig.legend[0].spacing = -2
-        time_fig.legend[0].padding = -5
-        time_fig.legend[0].label_height = 5
-        time_fig.legend[0].margin = 5
-
-        time_fig.legend[0].border_line_width = 0
     if press_up_event is not None:
         time_fig.on_event(PanEnd, press_up_event)
         time_fig.on_event(MouseWheel, press_up_event)
@@ -398,29 +473,92 @@ def create_time_figures(
     x_range,
     renderers_on_change=[],
     press_up_event=None,
+    sample_config=None,
 ):
+    # we will clean all existing top-figs (if there are figures)
+    top_figs = []
+    if type(time_figure_layout.children[0]) == Column:
+        for time_fig in time_figure_layout.children[0].children:
+            # if the time_fig.name exists in parameter_groups, we keep it
+            if time_fig.name in time_series_groups.keys():
+                colors = Colors()
+                parameter_group = time_fig.name
+                time_series = time_series_groups[time_fig.name]
+
+                # delete un-used renderers and update used
+                labels = [i.label for i in time_series]
+                renderers = []
+                for renderer in time_fig.renderers:
+                    # if renderer is not in time-series or is threshold, we remove it
+                    if renderer.name in labels:
+                        single_time_series = next(
+                            i for i in time_series if i.label == renderer.name
+                        )
+                        x_start, x_end = date_time_range_as_datetime(time_fig.x_range)
+                        source = time_series_to_source(
+                            single_time_series,
+                            start_date_time=x_start,
+                            end_date_time=x_end,
+                            sample_config=sample_config,
+                        )
+                        renderer.data_source.data.update(source.data)
+                        renderers.append(renderer)
+
+                        # add the color, so we know it's used
+                        colors.add(renderer.glyph.line_color)
+
+                # need to re-add all renderers and legends to figure (pop/remove doesn't work properly) # noqa
+                legend = time_fig.legend[0]
+                legend.items = []
+                time_fig.renderers = []
+                renderer_names = []
+                for renderer in renderers:
+                    time_fig.renderers.append(renderer)
+                    append_to_legend(renderer, legend)
+                    renderer_names.append(renderer.name)
+
+                # add missing time_series to time_fig
+                time_series = (i for i in time_series if i.label not in renderer_names)
+                time_series_to_fig(
+                    time_series, time_fig, colors, sample_config, renderers_on_change
+                )
+
+                # add thresholds to time_fig
+                thresholds = threshold_groups[parameter_group]
+                thresholds_to_fig(thresholds, time_fig, threshold_visible)
+
+                # we finish the time_fig
+                time_fig.yaxis.axis_label = group_y_labels[parameter_group]
+                time_fig.xaxis.visible = False
+
+                # we add the fig to the figure-list and remove it from the group
+                top_figs += [time_fig]
+                time_series_groups.pop(time_fig.name)
+
+    # we remove the time-series column from the layout (we add it later again)
     time_figure_layout.children.pop()
-    top_figs = [
-        top_fig(
-            i,
-            x_range,
-            y_axis_label=group_y_labels[i[0]],
-            threshold_groups=threshold_groups,
-            threshold_visible=threshold_visible,
-            renderers_on_change=renderers_on_change,
-            press_up_event=press_up_event,
-        )
-        for i in time_series_groups.items()
-    ]
+
+    # if there are new groups, we add a new figure
+    for group in time_series_groups.items():
+        y_axis_label = group_y_labels[group[0]]
+        top_figs += [
+            create_top_fig(
+                group,
+                x_range,
+                y_axis_label=y_axis_label,
+                threshold_groups=threshold_groups,
+                threshold_visible=threshold_visible,
+                renderers_on_change=renderers_on_change,
+                press_up_event=press_up_event,
+                sample_config=sample_config,
+            )
+        ]
+
+    # add top_figs to the layout again
     top_figs[-1].xaxis.visible = True
     time_figure_layout.children.append(column(*top_figs, sizing_mode="stretch_width"))
 
-    time_series_sources = {}
-    for i in top_figs:
-        for j in i.renderers:
-            if j.name != THRESHOLD_NAME:
-                time_series_sources[j.name] = {}
-                time_series_sources[j.name]["source"] = j.data_source
-                time_series_sources[j.name]["color"] = j.glyph.line_color
+    # updating the figure_layout y_ranges
+    update_time_series_y_ranges(time_figure_layout, fit_y_axis=True)
 
-    return time_series_sources
+    return _get_timeseries_sources(top_figs)
