@@ -1,3 +1,4 @@
+# %%
 from config import wam_config
 
 wam_config()

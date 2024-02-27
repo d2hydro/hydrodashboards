@@ -7,6 +7,7 @@ MAX_GRAPH_COUNT = 4
 DEFAULT_SAMPLE_CONFIG = {"method": "random_sample", "max_samples": 20000}
 TIME_PROPERTIES = ["cache_rebuild_time"]
 
+
 @dataclass
 class Config:
     bounds: list
@@ -69,9 +70,7 @@ class Config:
     @classmethod
     def from_json(cls, config_json: Path = Path("config.json")):
         config_json = Path(config_json)
-        config_dict = cls.__deserialize_values(
-            json.loads(config_json.read_text())
-            )
+        config_dict = cls.__deserialize_values(json.loads(config_json.read_text()))
         return cls(**config_dict)
 
     @property

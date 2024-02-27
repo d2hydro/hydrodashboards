@@ -2,11 +2,13 @@ import psutil
 import json
 from pathlib import Path
 
+
 def _result(pid, create_timestamp=None):
     result = {"pid": pid}
     if create_timestamp is not None:
         result["create_timestamp"] = create_timestamp
     return result
+
 
 def get() -> dict:
     """Get the pid and time-stamp of the current process."""
@@ -14,8 +16,8 @@ def get() -> dict:
     create_timestamp = psutil.Process(pid).create_time()
     return {"pid": pid, "create_timestamp": create_timestamp}
 
+
 def write_pid_file(file_path: str, pid: int, create_timestamp=None):
-    
     result = _result(pid, create_timestamp)
     # write result
     path = Path(file_path)
@@ -25,7 +27,7 @@ def write_pid_file(file_path: str, pid: int, create_timestamp=None):
         if path.exists():
             path.unlink(missing_ok=True)
     path.write_text(f"{json.dumps(result)}")
-    
+
 
 def write(file_path: str) -> dict:
     """Write and return pid of current python process."""
@@ -33,6 +35,7 @@ def write(file_path: str) -> dict:
     write_pid_file(file_path, **result)
 
     return result
+
 
 def read(file_path: str) -> dict:
     """Read the process from a file."""
@@ -42,7 +45,7 @@ def read(file_path: str) -> dict:
     else:
         result = None
     return result
-    
+
 
 def running(pid: int, create_timestamp=None) -> bool:
     """Check if a Python-process is running by Windows PID."""
@@ -58,8 +61,9 @@ def running(pid: int, create_timestamp=None) -> bool:
                 exists = True
     except psutil.NoSuchProcess:
         pass
-    
+
     return exists
+
 
 def terminate(pid: int, create_timestamp=None) -> bool:
     terminated = False
@@ -73,6 +77,7 @@ def terminate(pid: int, create_timestamp=None) -> bool:
             pass
 
     return terminated
+
 
 def terminate_bokeh() -> bool:
     pids = []

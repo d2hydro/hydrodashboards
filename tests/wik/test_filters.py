@@ -1,4 +1,5 @@
 from config import wik_config
+
 wik_config()
 
 from hydrodashboards.bokeh.main import filters, data, locations, parameters  # noqa
@@ -21,15 +22,19 @@ def test_add_new_filter_and_location():
     filters[0].active = [1]
     locations.active = [0]
     parameters.active = [0, 1]
-    assert parameters.labels == ["Gemeten debiet [m3/uur]",
-     "Gemeten waterstand (m NAP)"]
-    
+    assert parameters.labels == [
+        "Gemeten debiet [m3/uur]",
+        "Gemeten waterstand (m NAP)",
+    ]
+
     # %% add keten.neerslag to selection and add location 't Heufke
     filters[0].active = [0, 1]
     locations.active = [0, 1]  # here is our bug
-    assert parameters.labels == ["Gemeten debiet [m3/uur]",
-     "Gemeten waterstand (m NAP)",
-     "Neerslag (gecalibreerde radar)",
-     "Neerslag (gecalibreerde radar) early reanalysis",
-     "Neerslag (gecalibreerde radar) realtime"]
+    assert parameters.labels == [
+        "Gemeten debiet [m3/uur]",
+        "Gemeten waterstand (m NAP)",
+        "Neerslag (gecalibreerde radar)",
+        "Neerslag (gecalibreerde radar) early reanalysis",
+        "Neerslag (gecalibreerde radar) realtime",
+    ]
     filters[0].active = []
