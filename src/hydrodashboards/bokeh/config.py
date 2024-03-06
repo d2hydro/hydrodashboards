@@ -34,6 +34,7 @@ class Config:
     thresholds: list = field(default_factory=list)
     time_series_sampling: dict = field(default_factory=None)
     vertical_datum: str = "NAP"
+    remove_duplicates: bool = False
 
     def __post_init__(self):
         if self.disclaimer_file is not None:

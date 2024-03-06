@@ -135,6 +135,7 @@ class Data:
             self._fews_root_locations = self._fews_api.get_locations(
                 filter_id=self.config.root_filter,
                 attributes=self.config.location_attributes,
+                remove_duplicates=self.config.remove_duplicates
             )
             self._root_cache.set_data(self._fews_root_locations, "_fews_root_locations")
 
@@ -407,6 +408,18 @@ class Data:
             only_headers=True,
         )
         headers_df = _pi_headers_to_df(pi_headers)
+
+        # drop headers without a location_id that is retrieve by get_locations
+        if headers_df["location_id"].isna().any():
+            self.logger.warning(f"filter id:name {filter_id}:{filter_name} contains location is not returned by get_locations")
+            headers_df.dropna(subset="location_id", inplace=True)
+
+        # drop headers with location_names that are not defined
+        if headers_df["location_name"].isna().any():
+            no_names = headers_df[headers_df["location_name"].isna()]["location_id"].to_list()
+            self.logger.warning(f"filter id:name {filter_id}:{filter_name} contains location_ids without location_name that are removed: {no_names}")
+            headers_df.dropna(subset="location_name", inplace=True)
+
         locations = self.locations.options_from_headers_df(headers_df)
         parameters = self.parameters.options_from_headers_df(headers_df)
         filter_data.cache.set_data(

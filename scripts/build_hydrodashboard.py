@@ -8,7 +8,7 @@ from hydrodashboards.build_css_templates import map_opt
 from hydrodashboards.build_html_templates import thresholds_button
 import argparse
 import sys
-from typing import Union
+from typing import Union, Optional
 
 VIRTUAL_ENV = Path(sys.executable).parent.as_posix()
 HYDRODASHBOARDS_DIR = Path(hydrodashboards.__file__).parent
@@ -66,12 +66,12 @@ def copy_environment(virtual_env: Union[str, Path], reverse_bokeh_select=True):
 
 
 def bokeh(
-    app_dir: Union[str, Path],
-    config_file: Union[str, Path] = None,
-    css_file: Union[str, Path] = None,
-    virtual_env: Union[str, Path] = None,
+    app_dir: Optional[str | Path],
+    config_file: Optional[str | Path] = None,
+    css_file: Optional[str | Path] = None,
+    virtual_env: Optional[str | Path] = None,
+    bokeh_secret_key: Optional[str] = None,
     app_port: int = 5003,
-    bokeh_secret_key: str = None
 ):
     """
     Build a Bokeh dashboard
@@ -147,20 +147,13 @@ def bokeh(
     template_css = templates_css_dir / "base.css"
     base_css = css_dir / "base.css"
 
-    map_options_height = int(200 + 18 * len(config.map_overlays))
-    map_options_left = int(55 + 6.5 * max([len(i) for i in config.map_overlays.keys()]))
-    map_options_width = int(map_options_left - 10)
+    # map_options_height = int(200 + 18 * len(config.map_overlays))
+    # map_options_left = int(55 + 6.5 * max([len(i) for i in config.map_overlays.keys()]))
+    # map_options_width = int(map_options_left - 10)
     base_css.write_text(
         template_css.read_text()
         .replace("{{app}}", f"{app_dir.name}")
-        # .replace(
-        #     "/*.map_opt*/",
-        #     map_opt.format(
-        #         map_options_height=map_options_height,
-        #         map_options_left=map_options_left,
-        #         map_options_width=map_options_width,
-        #     )
-            )
+        )
 
     
     app_css_str = None
@@ -169,17 +162,16 @@ def bokeh(
     if css_file is not None:
         css_file = Path(css_file)
         if css_file.exists():
-            app_css_str = css_file.read_text()
-        else:
-            print(f"css_file {css_file} does not exists (ignored)")
+            css_file = None
+            print(f"css_file {css_file} does not exists (ignored)")          
     
     # read from default in repos
-    css_file = templates_css_dir / f"{app_dir.name}.css"
-    if css_file.exists():
-        app_css_str = css_file.read_text()
-    else:
+    if css_file is None:
         css_file = templates_css_dir / f"{app_dir.name}.css"
-        app_css_str = css_file.read_text()
+        if not css_file.exists():
+            print(f"css_file {css_file} does not exists in template-dir, we'll copy wam.css")   
+            css_file = templates_css_dir / "wam.css"
+    app_css_str = css_file.read_text()
 
     # write app-css to app directory
     app_css = css_dir / "custom.css"
