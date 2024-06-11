@@ -4,7 +4,7 @@ from hydrodashboards.datamodel.cache import Cache
 from fewspy.time_series import TimeSeries
 import geopandas as gpd
 import pandas as pd
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 import itertools
 
@@ -39,9 +39,9 @@ MAP_LOCATIONS = {
 class Locations(Filter):
     """Locations-data class for hydrodashboard"""
 
-    locations: gpd.GeoDataFrame = EMPTY_SET
-    sets: Cache = Cache(sub_dir="locations", data_frame=True)
-    app_df: pd.DataFrame = pd.DataFrame(MAP_LOCATIONS).set_index("id")
+    locations: gpd.GeoDataFrame = field(default_factory=EMPTY_SET)
+    sets: Cache = field(default_factory=Cache(sub_dir="locations", data_frame=True))
+    app_df: pd.DataFrame = field(default_factory=pd.DataFrame(MAP_LOCATIONS).set_index("id"))
 
     def __post_init__(self):
         self.title = locations_title[self.language]

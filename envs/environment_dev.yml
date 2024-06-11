@@ -1,23 +1,24 @@
-name: bokeh
+name: bokeh3
 
 channels:
   - conda-forge
   - defaults
 
 dependencies:
-  - python=3.10.5
+  - python
   - aiohttp
   - nest-asyncio
   - black
   - jupyter
-  - pandas=1.5.3
-  - bokeh=2.4.3
+  - pandas
+  - bokeh
   - mkdocs
   - mkdocstrings
   - mkdocstrings-python
   - mkdocs-material
-  - geopandas=0.12.2
+  - geopandas
   - requests
+  - schedule
   - pytest
   - pytest-cov
   - pytest-black

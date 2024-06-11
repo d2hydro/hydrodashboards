@@ -20,7 +20,7 @@ class TimeSeries:
     visible: bool = False
     empty: bool = True
     complete: bool = False
-    cache: Cache = CACHE
+    cache: Cache = field(default_factory=CACHE)
     datetime_created: datetime = datetime.now()
     start_datetime: datetime = None
     end_datetime: datetime = None
@@ -78,7 +78,7 @@ class TimeSeriesSets:
     time_series: List[TimeSeries] = field(default_factory=list)
     search_start: datetime = None
     search_end: datetime = None
-    cache: Cache = CACHE
+    cache: Cache = field(default_factory=CACHE)
     max_events_visible: int = 0
 
     def __len__(self):

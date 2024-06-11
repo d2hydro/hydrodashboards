@@ -12,8 +12,8 @@ from .utils import (
 
 @dataclass
 class Parameters(Filter):
-    _fews_parameters: pd.DataFrame = pd.DataFrame()
-    _fews_qualifiers: pd.DataFrame = pd.DataFrame()
+    _fews_parameters: pd.DataFrame = field(default_factory=pd.DataFrame())
+    _fews_qualifiers: pd.DataFrame = field(default_factory=pd.DataFrame())
     _options: List[tuple] = field(default_factory=list)
 
     def __post_init__(self):
@@ -23,8 +23,8 @@ class Parameters(Filter):
     @classmethod
     def from_fews(
         cls,
-        pi_parameters: pd.DataFrame = pd.DataFrame(),
-        pi_qualifiers: pd.DataFrame = pd.DataFrame(),
+        pi_parameters: pd.DataFrame = field(default_factory=pd.DataFrame()),
+        pi_qualifiers: pd.DataFrame = field(default_factory=pd.DataFrame()),
         language="dutch",
     ):
         return cls(
