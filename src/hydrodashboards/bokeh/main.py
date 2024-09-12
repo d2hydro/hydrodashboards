@@ -268,7 +268,6 @@ def update_location_options_on_search_input(attr, old, new):
             .to_dict(orient="list")
         )
     elif len(old) >= 3:
-        options = data.locations._options
         unselected_options = [
             i
             for i in data.locations._options
@@ -276,12 +275,24 @@ def update_location_options_on_search_input(attr, old, new):
         ]
         data.locations.options = data.locations.selected_options + unselected_options
         locations.labels = data.locations.labels
+        locations_source.data.update(
+            data.locations.app_df.loc[[i[0] for i in data.locations.options]]
+            .reset_index()
+            .to_dict(orient="list")
+        )
 
 
 def update_on_locations_selector(attr, old, new):
     """Update when values in locations filter are selected"""
     logger.debug(inspect.stack()[0][3])
 
+    # disable search if locations are selected
+    if len(new) > 0:
+        locations_layout[0].children[-1].disabled = True
+    else:
+        locations_layout[0].children[-1].disabled = False
+
+    # limit selected locations to max 10
     if len(new) > 10:
         setattr(locations, config.filter_selector, old)
 
@@ -774,19 +785,18 @@ filters_layout = filters_widgets.finish_filters(
 )
 curdoc().add_root(filters_layout)
 
-search_input = update_location_options_on_search_input
+# search_input = update_location_options_on_search_input
 
 locations_layout = filters_widgets.finish_filter(
-    locations, search_input=None, reset_button=True
+    locations, search_input=update_location_options_on_search_input, reset_button=True
 )
 curdoc().add_root(
     column(locations_layout, name="locations", sizing_mode="stretch_width")
 )
 
 
-search_input = update_parameter_options_on_search_input
 parameters_layout = filters_widgets.finish_filter(
-    parameters, search_input=search_input, reset_button=True
+    parameters, search_input=update_parameter_options_on_search_input, reset_button=True
 )
 curdoc().add_root(
     column(parameters_layout, name="parameters", sizing_mode="stretch_width")
