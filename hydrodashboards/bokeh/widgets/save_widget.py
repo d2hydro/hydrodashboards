@@ -3,11 +3,51 @@ from bokeh.models import CustomJS
 
 
 save_js = """
-html2canvas(document.getElementById("grafiek_upper")).then(canvas => {
-    canvas.toBlob(function(blob) {
-        window.saveAs(blob, 'grafiek.jpg');
-    });
-});
+var grafiekElement = document.getElementById("grafiek_upper");
+
+// Find all toolbars within the element
+var toolbars = grafiekElement.querySelectorAll(".bk-toolbar");
+
+// Check if there are any toolbars and target the one you want (e.g., the first one)
+if (toolbars.length > 0) {
+    var toolbarToHide = toolbars[0]; // Change the index as needed
+
+   // Hide all toolbars
+        toolbars.forEach(function(toolbar) {
+            toolbar.style.display = "none";
+        });
+
+
+    // Capture and save the plot after a short delay
+    setTimeout(function() {
+        var scaleFactor = 5; // Higher values for higher resolution
+
+        // Use html2canvas to capture the element and draw onto a new canvas
+        html2canvas(grafiekElement, { scale: scaleFactor }).then(canvas => {
+            // Create a new canvas for final scaling
+            var finalCanvas = document.createElement('canvas');
+            var context = finalCanvas.getContext('2d');
+
+            // Set canvas size
+            finalCanvas.width = grafiekElement.clientWidth * scaleFactor;
+            finalCanvas.height = grafiekElement.clientHeight * scaleFactor;
+
+            // Draw the captured image onto the final canvas
+            context.drawImage(canvas, 0, 0, finalCanvas.width, finalCanvas.height);
+
+            // Export the canvas to a Blob
+            finalCanvas.toBlob(function(blob) {
+                window.saveAs(blob, 'grafiek.png');
+            });
+
+            // Show all toolbars again after saving
+            toolbars.forEach(function(toolbar) {
+                toolbar.style.display = ""; // Restore the toolbar visibility
+            });
+        });
+    }, 100); // Adjust the delay as needed
+}
+
 """
 
 

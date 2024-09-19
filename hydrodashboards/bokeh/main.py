@@ -65,7 +65,8 @@ def toggle_view_time_series_controls(value=True):
     """Enable view period (used when first graph is loaded)."""
     view_period.disabled = value
     view_period.bar_color = "#e6e6e6"
-    download_time_series.disabled = value
+    download_time_series_csv.disabled = value
+    download_time_series_xls.disabled = value
     save_time_series.disabled = value
     history_search_time_series.disabled = value
     search_time_series.disabled = value
@@ -82,7 +83,8 @@ def toggle_download_button_on_sources(sources):
         else:
             disabled = False
     data.time_series_sets.max_events_visible = max_events_visible
-    download_time_series.disabled = disabled
+    download_time_series_csv.disabled = disabled
+    download_time_series_xls.disabled = disabled
     save_time_series.disabled = disabled
     history_search_time_series.disabled = disabled
     search_time_series.disabled = disabled
@@ -623,17 +625,34 @@ def set_visible_labels(attr, old, new):
     app_status.text = data.app_status(html_type=HTML_TYPE)
 
 
-def start_timeseries_downloader():
-    """Start the timeseries downloading process."""
+""" def start_timeseries_downloader():
     logger.debug(inspect.stack()[0][3])
 
     # get all data in sourced
     update_time_series_sources()
 
     # trigger jscript downloading process
-    _download_time_series.disabled = not _download_time_series.disabled
+    _download_time_series.disabled = not _download_time_series.disabled """
 
+def start_timeseries_downloader():
+    """Start the timeseries downloading process for XLS."""
+    logger.debug(inspect.stack()[0][3])
 
+    # get all data in sourced
+    update_time_series_sources()
+
+    # trigger JavaScript downloading process for XLS
+    _download_time_series_xls.disabled = not _download_time_series_xls.disabled
+
+def start_csv_downloader():
+    """Start the timeseries downloading process for CSV."""
+    logger.debug(inspect.stack()[0][3])
+
+    # get all data in sourced
+    update_time_series_sources()
+
+    # trigger JavaScript downloading process for CSV
+    _download_time_series_csv.disabled = not _download_time_series_csv.disabled
 """
 We read the config
 """
@@ -744,9 +763,26 @@ search_time_figure_layout = time_figure_widget.empty_layout(name="search_time_fi
 # all buttons
 
 #  download data
-download_time_series = download_widget.make_button(on_click=start_timeseries_downloader)
+""" download_time_series = download_widget.make_button(on_click=start_timeseries_downloader)
 
 _download_time_series = download_widget.make_ghost_button(
+    time_figure_layout=time_figure_layout,
+    disclaimer_file=config.disclaimer_file,
+    graph_count=config.graph_count,
+) """
+
+
+# download data
+download_time_series_xls = download_widget.make_button(on_click=start_timeseries_downloader)
+download_time_series_csv = download_widget.make_button(on_click=start_csv_downloader)
+
+_download_time_series_xls = download_widget.make_ghost_button_xls(
+    time_figure_layout=time_figure_layout,
+    disclaimer_file=config.disclaimer_file,
+    graph_count=config.graph_count,
+)
+
+_download_time_series_csv = download_widget.make_ghost_button_csv(
     time_figure_layout=time_figure_layout,
     disclaimer_file=config.disclaimer_file,
     graph_count=config.graph_count,
@@ -808,14 +844,42 @@ curdoc().add_root(
     column(update_graph, name="update_graph", sizing_mode="stretch_width")
 )
 
-curdoc().add_root(
+""" curdoc().add_root(
     column(
         download_time_series, name="download_time_series", sizing_mode="stretch_width"
+    )
+)"""
+
+curdoc().add_root(
+    column(save_time_series, name="save_time_series", sizing_mode="stretch_width")
+) 
+
+curdoc().add_root(
+    column(
+        download_time_series_xls, name="download_time_series_xls", sizing_mode="stretch_width"
     )
 )
 
 curdoc().add_root(
-    column(save_time_series, name="save_time_series", sizing_mode="stretch_width")
+    column(
+        download_time_series_csv, name="download_time_series_csv", sizing_mode="stretch_width"
+    )
+)
+
+curdoc().add_root(
+    column(
+        _download_time_series_xls,
+        name="download_time_series_dummy_xls",
+        sizing_mode="stretch_width",
+    )
+)
+
+curdoc().add_root(
+    column(
+        _download_time_series_csv,
+        name="download_time_series_dummy_csv",
+        sizing_mode="stretch_width",
+    )
 )
 
 # map-figure layout
@@ -855,13 +919,13 @@ curdoc().add_root(
     column(_scale_graphs, name="scale_graphs_dummy", sizing_mode="stretch_width")
 )
 
-curdoc().add_root(
+""" curdoc().add_root(
     column(
         _download_time_series,
         name="download_time_series_dummy",
         sizing_mode="stretch_width",
     )
-)
+) """
 
 curdoc().title = config.title
 
