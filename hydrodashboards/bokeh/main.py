@@ -462,23 +462,24 @@ def start_time_series_loader():
 def update_time_series_view():
     """Update time_series and stop time_fig_loader"""
     global time_series_sources  # we update the global variable time_series_sources
-
-    logger.debug(inspect.stack()[0][3])
+    logger.debug(inspect.stack()[0][3])  # Log the function name
     data.update_time_series()
 
     if data.time_series_sets.any_active:
         # update time_series_layout (top figures)
-        parameter_groups = data.parameters.get_groups()
+        parameter_groups = data.parameters.get_groups()   
         group_y_labels = data.parameters.get_y_labels(config.vertical_datum)
         time_series_groups = data.time_series_sets.by_parameter_groups(
             parameter_groups, active_only=True
         )
+        
         threshold_groups = data.threshold_groups(time_series_groups)
 
         if config.thresholds:
             thresholds_active = thresholds_button.active
         else:
             thresholds_active = False
+
         time_series_sources = time_figure_widget.create_time_figures(
             time_figure_layout=time_figure_layout,
             time_series_groups=time_series_groups,
@@ -491,6 +492,7 @@ def update_time_series_view():
             sample_config=config.time_series_sampling,
         )
 
+
         # update search_time_series
         search_time_series.options = data.time_series_sets.active_labels
         if search_time_series.value not in search_time_series.options:
@@ -498,6 +500,7 @@ def update_time_series_view():
 
         # add_search time_series
         _time_series = data.time_series_sets.get_by_label(search_time_series.value)
+        
         time_figure_widget.search_fig(
             search_time_figure_layout,
             time_series=_time_series,
@@ -515,6 +518,7 @@ def update_time_series_view():
         toggle_view_time_series_controls(value=False)
         sources = [i["source"] for i in time_series_sources.values()]
         toggle_download_button_on_sources(sources)
+        
         # update app status
         app_status.text = data.app_status(html_type=HTML_TYPE)
     else:
@@ -530,9 +534,12 @@ def update_time_series_view():
     app_status.text = data.app_status(html_type=HTML_TYPE)
 
 
+
 def update_on_search_time_series_value(attrname, old, new):
     """Update source of search_time_figure when search_time_series_value changes"""
     logger.debug(inspect.stack()[0][3])
+    # Determine if step_mode should be True based on keywords in search_time_series.value
+    step_mode = any(pattern in search_time_series.value for pattern in ["aan/uit", "start/stop", "open/dicht"])
 
     # change search time_series
     time_figure_widget.search_fig(
@@ -544,6 +551,7 @@ def update_on_search_time_series_value(attrname, old, new):
         color=time_series_sources[search_time_series.value]["color"],
         search_source=search_source,
         sample_config=config.time_series_sampling,
+        step_mode=step_mode
     )
 
 

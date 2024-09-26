@@ -661,7 +661,7 @@ input[type=checkbox]{
 -----------------------------------------------------------  */
 #sidebar > .sidebar-bokeh > .update-wrapper > .save > .bk-root > .bk > .bk >.bk.bk-btn-group > .bk.bk-btn.bk-btn-success{
 	background-color:#F16996;
-	background-image: url(/{{app}}/static/icons/save.png);
+	background-image: url(/{{app}}/static/icons/download_graph.png);
 	background-repeat: no-repeat;
 	background-position: center;
 	color: white;

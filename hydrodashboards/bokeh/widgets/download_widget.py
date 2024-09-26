@@ -70,8 +70,20 @@ function makeHeader(data, tags) {
 
 function addEvents(data, source) {
     source.data["datetime"].forEach((item, index) => {
-        data.push([new Date(item), source.data["value"][index]])      
-    })
+        const date = new Date(item);
+        const options = { 
+            timeZone: 'Europe/Amsterdam', 
+            year: 'numeric', 
+            month: '2-digit', 
+            day: '2-digit', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit',
+            hour12: false // Use 24-hour format
+        };
+        const formattedDate = date.toLocaleString('nl-NL', options).replace(',', ''); // Format for Excel
+        data.push([formattedDate, source.data["value"][index]]);
+    });
 }
 
 function write_excel(wb,filename){
@@ -178,12 +190,11 @@ function resolveAfter1Seconds() {
 async function sequentialStart() {
     console.log("==SEQUENTIAL START==");
 
-    // 1. Execution gets here almost instantly
     const fast = await resolveAfter1Seconds();
-    console.log(fast); // 1. this runs almost immediately
+    console.log(fast); // Fast promise resolved
     
     const slow = await resolveAfter2Seconds();
-    console.log(slow); // 2. this runs after slow promise
+    console.log(slow); // Slow promise resolved
 }
 
 function loading() {
@@ -194,102 +205,86 @@ function stoploading() {
     button.css_classes = ["stoploading_download_spinner"];    
 }
 
-// Function to determine time zone
 function getTimeZone() {
     setTimeout(loading, 1); 
     const summer = new Date(1, 8, 2020).toString();
     const time_zone_summer = summer.replace(/.*[(](.*)[)].*/, '$1');
     const winter = new Date(1, 1, 2020).toString();
     const time_zone_winter = winter.replace(/.*[(](.*)[)].*/, '$1');
-    if (time_zone_summer == time_zone_winter) {
+    if (time_zone_summer === time_zone_winter) {
         return String(time_zone_summer);
     } else {
         return String(([time_zone_summer, time_zone_winter])).replace(",", "/");
     }
 }
 
-// Function to format the CSV header rows with labels
-function makeHeader(data, tags, isFirstOccurrence) {
-    // Always add meetlocatie ident
-    data.push(["meetlocatie ident", tags[0]]);
-
-    if (isFirstOccurrence) {
-        // Add full header for the first occurrence
-        data.push(["meetlocatienaam", tags[1]]);
-        data.push(["x", tags[2].split(",")[0]]); // Add x value
-        data.push(["y", tags[2].split(",")[1]]); // Add y value
-    }
-
-    // Add common header data for both first and subsequent occurrences
-    data.push(["parameter", tags[3]]);
-    data.push(["qualifiers", tags[4]]);
-    data.push(["eenheid", tags[5]]);
-    data.push(["datum-tijd", "waarde"]); // Add the header for date-time and value
+function makeHeader(tags) {
+    const header = [];
+    header.push(["meetlocatie ident", tags[0]]);
+    header.push(["meetlocatienaam", tags[1]]);
+    header.push(["x", tags[2].split(",")[0]]); // x value
+    header.push(["y", tags[2].split(",")[1]]); // y value
+    header.push(["parameter", tags[3]]);
+    header.push(["qualifiers", tags[4]]);
+    header.push(["eenheid", tags[5]]);
+    header.push(["datum-tijd", "waarde"]); // Header for date-time and value
+    return header;
 }
 
-// Function to add events and data rows to CSV with formatted date-time
 function addEvents(data, source) {
     source.data["datetime"].forEach((item, index) => {
-        // Format the date-time in YYYY-MM-DD HH:MM:SS format, recognized by Excel
-        const formattedDate = new Date(item).toISOString().replace("T", " ").slice(0, 19); // Format for Excel
+        const date = new Date(item);
+        const options = { 
+            timeZone: 'Europe/Amsterdam', 
+            year: 'numeric', 
+            month: '2-digit', 
+            day: '2-digit', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit',
+            hour12: false // Use 24-hour format
+        };
+        const formattedDate = date.toLocaleString('nl-NL', options).replace(',', ''); // Format for CSV
         data.push([formattedDate, source.data["value"][index]]);
     });
 }
 
-// New function to create and download CSV files
 function newFile(data, fileName) {
-    // Create a Blob for the CSV content
     const blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });
+    return { blob, fileName }; // Return blob and fileName
+}
 
-    // Create a Blob URL
-    const exportUrl = URL.createObjectURL(blob);
-    
-    // Trigger download
-    const link = document.createElement('a');
-    link.href = exportUrl;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    
-    // Cleanup
-    document.body.removeChild(link);
-    URL.revokeObjectURL(exportUrl);
+async function zipFiles(files) {
+    const zip = new JSZip(); // Assuming JSZip is available in your environment
+    files.forEach(file => {
+        zip.file(file.fileName, file.blob);
+    });
+    const content = await zip.generateAsync({ type: 'blob' });
+    return content;
 }
 
 function resolveAfter2Seconds() {
     console.log("starting slow promise");
-    return new Promise((resolve) => {
-        setTimeout(() => {
+    return new Promise(async (resolve) => {
+        setTimeout(async () => {
             resolve("slow");
             console.log("slow promise is done");
 
             const time_zone = getTimeZone();
             setTimeout(loading, 1);
-            const event = new Date();
-            const options = { year: 'numeric', month: 'numeric', day: 'numeric' };
-
-            // Initialize disclaimer file content
+            
             let disclaimerContent = "";
             let disclaimerArray = JSON.parse(disclaimer);
             disclaimerArray.forEach((line) => {
-                disclaimerContent += line[0] + "\\n"; // Add each line to disclaimer
+                disclaimerContent += line[0] + "\\n";
             });
-            disclaimerContent += "\\n"; // Add an extra line break after the disclaimer
+            disclaimerContent += "\\n";
             disclaimerContent += "* De datumtijd-stappen zijn weergegeven in tijdzone: " + time_zone + "\\n\\n";
 
-            // Save disclaimer.txt separately
-            const disclaimerBlob = new Blob([disclaimerContent], { type: 'text/plain;charset=utf-8;' });
-            const disclaimerLink = document.createElement("a");
-            const disclaimerUrl = URL.createObjectURL(disclaimerBlob);
-            disclaimerLink.setAttribute("href", disclaimerUrl);
-            disclaimerLink.setAttribute("download", "disclaimer.txt");
-            document.body.appendChild(disclaimerLink);
-            disclaimerLink.click();
-            document.body.removeChild(disclaimerLink);
+            const disclaimerFile = newFile(disclaimerContent, "disclaimer.txt"); // Create disclaimer file
 
-            // Add headers and data from each visible renderer
             let meetlocatieData = {};
-            let processedMeetlocaties = {}; // Track processed meetlocatie identifiers
+            let nonUniqueData = {};
 
             for (let i = 0; i < figure.children[0].children.length; i++) {
                 var renderers = figure.children[0].children[i].renderers;
@@ -298,47 +293,77 @@ function resolveAfter2Seconds() {
                     if (renderer.visible) {
                         var source = renderer.data_source;
                         var tags = source.tags;
-                        var meetlocatieIdent = tags[1]; // Extract meetlocatie ident value
-                        var data = [];
+                        var meetlocatieIdent = tags[0]; // Group by meetlocatie_ident
+                        var meetlocatieNaam = tags[1];  // Keep meetlocatienaam unchanged
+                        var parameter = tags[3].replace(/\//g, "_"); // Replace slashes in parameter
+                        let csvData = [];
 
-                        // Check if this meetlocatieIdent has already been processed
-                        const isFirstOccurrence = !processedMeetlocaties[meetlocatieIdent];
+                        // Add header and data for this specific meetlocatie and parameter
+                        const header = makeHeader(tags);
+                        csvData = csvData.concat(header);
 
-                        // Add header with the specified labels, adjusted based on first occurrence
-                        makeHeader(data, tags, isFirstOccurrence);
+                        // Add events (data rows)
+                        addEvents(csvData, source);
+                        
+                        // Convert array to CSV string
+                        let csvContent = "";
+                        csvData.forEach(row => {
+                            csvContent += row.join(",") + "\\n";
+                        });
 
-                        // Add data rows
-                        addEvents(data, source);
-
-                        // Mark this meetlocatieIdent as processed
-                        processedMeetlocaties[meetlocatieIdent] = true;
-
-                        // Store the data for this meetlocatie ident
+                        // Initialize meetlocatie_ident if not exist
                         if (!meetlocatieData[meetlocatieIdent]) {
-                            meetlocatieData[meetlocatieIdent] = [];
+                            meetlocatieData[meetlocatieIdent] = {};
                         }
-                        meetlocatieData[meetlocatieIdent].push(data);
+
+                        // Check for uniqueness of parameter
+                        if (!meetlocatieData[meetlocatieIdent][parameter]) {
+                            meetlocatieData[meetlocatieIdent][parameter] = { content: csvContent, meetlocatieNaam: meetlocatieNaam };
+                        } else {
+                            // If duplicate parameter, add to non-unique data
+                            if (!nonUniqueData[meetlocatieIdent]) {
+                                nonUniqueData[meetlocatieIdent] = {};
+                            }
+                            nonUniqueData[meetlocatieIdent][parameter] = { content: csvContent, meetlocatieNaam: meetlocatieNaam };
+                        }
                     }
                 }
             }
 
-            // Create CSV files for each meetlocatie ident using newFile function
+            const zipFilesList = [];
+            
+            // Create files for unique meetlocatie_ident and parameter
             for (const meetlocatieIdent in meetlocatieData) {
-                let csvContent = "";
-
-                // Add rows to the CSV content
-                meetlocatieData[meetlocatieIdent].forEach((dataRows) => {
-                    dataRows.forEach((row) => {
-                        csvContent += row.join(",") + "\\n"; // Join each row with commas and newlines
-                    });
-                });
-
-                // Debugging the csvContent creation
-                console.log("CSV Content for meetlocatie ident: " + meetlocatieIdent, csvContent);
-
-                // Use newFile to trigger the download
-                newFile(csvContent, `${meetlocatieIdent}.csv`);
+                for (const parameter in meetlocatieData[meetlocatieIdent]) {
+                    const meetlocatieNaam = meetlocatieData[meetlocatieIdent][parameter].meetlocatieNaam;
+                    const fileName = `${meetlocatieNaam}_${meetlocatieIdent}_${parameter}.csv`; // Include meetlocatienaam in filename
+                    const file = newFile(meetlocatieData[meetlocatieIdent][parameter].content, fileName);
+                    zipFilesList.push(file);
+                }
             }
+
+            // Create separate files for non-unique meetlocatie_ident/parameter
+            for (const meetlocatieIdent in nonUniqueData) {
+                for (const parameter in nonUniqueData[meetlocatieIdent]) {
+                    const meetlocatieNaam = nonUniqueData[meetlocatieIdent][parameter].meetlocatieNaam;
+                    const fileName = `${meetlocatieNaam}_${meetlocatieIdent}_${parameter}_nonunique.csv`; // Include meetlocatienaam in filename for non-unique files
+                    const file = newFile(nonUniqueData[meetlocatieIdent][parameter].content, fileName);
+                    zipFilesList.push(file);
+                }
+            }
+
+            // Include the disclaimer file in the zip
+            zipFilesList.push(disclaimerFile);
+
+            // Zip all collected files
+            const zipContent = await zipFiles(zipFilesList);
+            const zipUrl = URL.createObjectURL(zipContent);
+            const downloadLink = document.createElement('a');
+            downloadLink.href = zipUrl;
+            downloadLink.download = 'Timeseries_csv.zip';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
 
             setTimeout(stoploading, 50);
 
@@ -347,6 +372,8 @@ function resolveAfter2Seconds() {
 }
 
 sequentialStart();
+
+
 
 """
 
