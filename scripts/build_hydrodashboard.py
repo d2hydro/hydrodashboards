@@ -246,6 +246,13 @@ set BOKEH_SIGN_SESSIONS=true"""
 rem serve {app_dir.name}
 python.exe serve_hydrodashboard.py -app_dir {app_dir.name}
 """)
+    
+    app_dir.parent.joinpath("test_app.bat").write_text(f"""{activate_env}
+
+rem serve {app_dir.name}
+bokeh serve {app_dir.name}
+""")
+    
 
     app_dir.parent.joinpath("build_cache.bat").write_text(f"""{activate_env}
 
