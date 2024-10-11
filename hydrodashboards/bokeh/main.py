@@ -269,19 +269,22 @@ def update_location_options_on_search_input(attr, old, new):
             .reset_index()
             .to_dict(orient="list")
         )
-    elif len(old) >= 3:
-        unselected_options = [
-            i
-            for i in data.locations._options
-            if i not in data.locations.selected_options
-        ]
-        data.locations.options = data.locations.selected_options + unselected_options
-        locations.labels = data.locations.labels
-        locations_source.data.update(
-            data.locations.app_df.loc[[i[0] for i in data.locations.options]]
-            .reset_index()
-            .to_dict(orient="list")
-        )
+    else:
+        data.locations.search_input = None
+        if len(old) >= 3:
+            unselected_options = [
+                i
+                for i in data.locations._options
+                if i not in data.locations.selected_options
+            ]
+            data.locations.options = data.locations.selected_options + unselected_options
+            locations.labels = data.locations.labels
+            
+            locations_source.data.update(
+                data.locations.app_df.loc[[i[0] for i in data.locations.options]]
+                .reset_index()
+                .to_dict(orient="list")
+            )
 
 
 def update_on_locations_selector(attr, old, new):
@@ -311,6 +314,7 @@ def update_on_locations_selector(attr, old, new):
             actives = filters_widgets.get_filters_actives(filters, config.thematic_view)
             data.update_on_filter_select(actives)
             data.parameters.limit_options_on_search_input()
+            parameters.active = []
             parameters.active = data.parameters.active
             parameters.labels = data.parameters.labels
             parameters.disabled = True
@@ -500,6 +504,8 @@ def update_time_series_view():
 
         # add_search time_series
         _time_series = data.time_series_sets.get_by_label(search_time_series.value)
+
+        step_mode = any(pattern in search_time_series.value for pattern in ["aan/uit", "start/stop", "open/dicht"])
         
         time_figure_widget.search_fig(
             search_time_figure_layout,
@@ -510,6 +516,7 @@ def update_time_series_view():
             color=time_series_sources[search_time_series.value]["color"],
             search_source=search_source,
             sample_config=config.time_series_sampling,
+            step_mode=step_mode
         )
 
         _scale_graphs.disabled = True
