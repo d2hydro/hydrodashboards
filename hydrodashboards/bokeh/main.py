@@ -494,6 +494,7 @@ def update_time_series_view():
             press_up_event=press_up_event,
             renderers_on_change=[("visible", set_visible_labels)],
             sample_config=config.time_series_sampling,
+            step_enumeration=config.step_enumeration
         )
 
 
@@ -505,7 +506,7 @@ def update_time_series_view():
         # add_search time_series
         _time_series = data.time_series_sets.get_by_label(search_time_series.value)
 
-        step_mode = any(pattern in search_time_series.value for pattern in ["aan/uit", "start/stop", "open/dicht"])
+        step_mode = any(pattern in search_time_series.value for pattern in config.step_enumeration.keys())
         
         time_figure_widget.search_fig(
             search_time_figure_layout,
@@ -546,7 +547,7 @@ def update_on_search_time_series_value(attrname, old, new):
     """Update source of search_time_figure when search_time_series_value changes"""
     logger.debug(inspect.stack()[0][3])
     # Determine if step_mode should be True based on keywords in search_time_series.value
-    step_mode = any(pattern in search_time_series.value for pattern in ["aan/uit", "start/stop", "open/dicht"])
+    step_mode = any(pattern in search_time_series.value for pattern in config.step_enumeration.keys())
 
     # change search time_series
     time_figure_widget.search_fig(

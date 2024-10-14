@@ -216,20 +216,18 @@ def _ends(renderers):
     return start, end
 
 
-def update_time_series_y_ranges(time_figure_layout, fit_y_axis=False):
+def update_time_series_y_ranges(time_figure_layout, fit_y_axis=False, step_enumeration: dict = {}):
     def update_range(fig, fit_y_axis=False):
-        # If the figure contains labels like "aan/uit" or "open/dicht"
-        contains_open_dicht = any("open/dicht" in renderer.name for renderer in fig.renderers)
-        contains_aan_uit = any("aan/uit" in renderer.name for renderer in fig.renderers)
 
-        if contains_open_dicht or contains_aan_uit:
+        # handle enumeration
+        enum = next((v for k, v in step_enumeration.items() if any(k in renderer.name for renderer in fig.renderers)), {})
+
+        if len(enum) != 0:
             # Explicitly set the y-axis ticks and labels for binary state
-            fig.y_range.start, fig.y_range.end = 0, 1
-            fig.yaxis.ticker = [0, 1]
-            fig.yaxis.major_label_overrides = {
-                0: "dicht" if contains_open_dicht else "uit", 
-                1: "open" if contains_open_dicht else "aan"
-            }
+            start, stop = list(enum.keys())[0], list(enum.keys())[1]
+            fig.y_range.start, fig.y_range.end = start, stop
+            fig.yaxis.ticker = [start, stop]
+            fig.yaxis.major_label_overrides = enum
         else:
             # For non-binary data, calculate y-axis range based on data
             ends = _ends(fig.renderers)
@@ -289,7 +287,7 @@ def append_to_legend(renderer, legend):
 
 
 def time_series_to_fig(
-    time_series, time_fig, colors, sample_config, renderers_on_change
+    time_series, time_fig, colors, sample_config, renderers_on_change, step_enumeration
 ):
     """Add a time_series to the figure."""
     legend = get_legend(time_fig)
@@ -298,12 +296,7 @@ def time_series_to_fig(
         label = i.label
 
         # Check if the label matches the specific pattern
-        if any(pattern in label for pattern in ["aan/uit", "start/stop", "open/dicht"]):
-            # Use a step plot for this specific parameter 
-            step_mode = True
-        else:
-            step_mode = False
-
+        step_mode = any(pattern in label for pattern in step_enumeration.keys())
         x_start, x_end = date_time_range_as_datetime(time_fig.x_range)
         source = time_series_to_source(
             i, start_date_time=x_start, end_date_time=x_end, sample_config=sample_config
@@ -453,6 +446,7 @@ def create_top_fig(
     press_up_event=None,
     renderers_on_change=[],
     sample_config=None,
+    step_enumeration={}
 ):
     """Generate a time-figure from supplied bokeh input parameters."""
     
@@ -467,13 +461,12 @@ def create_top_fig(
     wheel_zoom = WheelZoomTool(speed=0.001, dimensions="width")
     tools = ["pan", "box_zoom", wheel_zoom, "reset", time_hover]
 
-    # Detect if any time series match the binary patterns ("aan/uit" or "open/dicht")
-    contains_open_dicht = any("open/dicht" in ts.label for ts in time_series)
-    contains_aan_uit = any("aan/uit" in ts.label for ts in time_series)
-
-    if contains_open_dicht or contains_aan_uit:
+    # Detect if any time series match enumeration
+    enum = next((v for k,v in step_enumeration.items() if any(k in ts.label for ts in time_series)), {})
+    if len(enum) != 0:
+        start, stop = list(enum.keys())[0], list(enum.keys())[1]
         # Set y_range explicitly for binary state series
-        y_range = Range1d(start=-0.1, end=1.1)  # Expand slightly beyond 0 and 1 for better visibility
+        y_range = Range1d(start=start-0.1, end=stop+0.1)  # Expand slightly beyond 0 and 1 for better visibility
     else:
         y_range = make_y_range(time_series)
 
@@ -482,7 +475,7 @@ def create_top_fig(
         sizing_mode="stretch_width",
         x_range=x_range,
         y_range=y_range,
-        y_axis_label=y_axis_label if not (contains_open_dicht or contains_aan_uit) else "Indicatie",
+        y_axis_label=y_axis_label,
         active_scroll=wheel_zoom,
         active_drag="box_zoom",
         toolbar_location="above",
@@ -496,19 +489,16 @@ def create_top_fig(
     time_fig.xaxis.formatter = FuncTickFormatter(code=DT_JS_FORMAT.format("tick"))
     time_fig.xaxis.visible = True
 
-    if contains_open_dicht or contains_aan_uit:
+    if len(enum) != 0:
         # Force binary y-axis for specific series
-        time_fig.yaxis[0].ticker = [0, 1]
-        time_fig.yaxis[0].major_label_overrides = {
-            0: "dicht" if contains_open_dicht else "uit",
-            1: "open" if contains_open_dicht else "aan"
-        }
+        time_fig.yaxis[0].ticker = [start, stop]
+        time_fig.yaxis[0].major_label_overrides = enum
     else:
         time_fig.yaxis[0].formatter = NumeralTickFormatter(format="0.00")
 
     # Add time_series to figure
     colors = Colors()
-    time_series_to_fig(time_series, time_fig, colors, sample_config, renderers_on_change)
+    time_series_to_fig(time_series, time_fig, colors, sample_config, renderers_on_change, step_enumeration)
 
     # Add thresholds to figure
     thresholds = threshold_groups.get(parameter_group, {})
@@ -531,6 +521,7 @@ def create_time_figures(
     renderers_on_change=[],
     press_up_event=None,
     sample_config=None,
+    step_enumeration={}
 ):
     # Clean all existing top figures
     top_figs = []
@@ -541,9 +532,7 @@ def create_time_figures(
                 parameter_group = time_fig.name
                 time_series = time_series_groups[time_fig.name]
 
-                # Check for presence of "open/dicht"
-                contains_open_dicht = any("Indicatie open/dicht" in ts.label for ts in time_series)
-                contains_aan_uit = any("Indicatie aan/uit" in ts.label for ts in time_series)
+                enum = next((v for k,v in step_enumeration.items() if any(k in ts.label for ts in time_series)), {})
 
                 # Delete unused renderers and update used
                 labels = [i.label for i in time_series]
@@ -579,20 +568,20 @@ def create_time_figures(
                 # Add missing time_series to time_fig
                 time_series = (i for i in time_series if i.label not in renderer_names)
                 time_series_to_fig(
-                    time_series, time_fig, colors, sample_config, renderers_on_change
+                    time_series, time_fig, colors, sample_config, renderers_on_change, step_enumeration
                 )
 
                 # Add thresholds to time_fig
                 thresholds = threshold_groups[parameter_group]
                 thresholds_to_fig(thresholds, time_fig, threshold_visible)
 
-                # Update y-axis label based on presence of "Indicatie open/dicht" or "Indicatie aan/uit"
-                if contains_open_dicht or contains_aan_uit:
-                    time_fig.yaxis.axis_label = "Indicatie"
-                    time_fig.yaxis.ticker = [0, 1]  # Set ticks for binary
-                    time_fig.yaxis.major_label_overrides = {0: "dicht" if contains_open_dicht else "uit", 1: "open" if contains_open_dicht else "aan"}
-                else:
-                    time_fig.yaxis.axis_label = group_y_labels[parameter_group]
+                # Update y-axis label based on presence of enumeration
+                if len(enum) != 0:
+                    start, stop = list(enum.keys())
+                    time_fig.yaxis.ticker = [start, stop]  # Set ticks for binary
+                    time_fig.yaxis.major_label_overrides = enum
+
+                time_fig.yaxis.axis_label = group_y_labels[parameter_group]
 
                 
                 time_fig.xaxis.visible = False
@@ -617,6 +606,7 @@ def create_time_figures(
                 renderers_on_change=renderers_on_change,
                 press_up_event=press_up_event,
                 sample_config=sample_config,
+                step_enumeration=step_enumeration
             )
         )
 
