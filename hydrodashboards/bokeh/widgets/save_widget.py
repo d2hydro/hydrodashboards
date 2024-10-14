@@ -52,7 +52,7 @@ if (toolbars.length > 0) {{
 
             // Export the canvas to a Blob
             finalCanvas.toBlob(function(blob) {{
-                window.saveAs(blob, 'grafiek_with_text.png');
+                window.saveAs(blob, 'grafiek.png');
             }});
 
             // Show all toolbars again after saving
