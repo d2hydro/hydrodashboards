@@ -147,3 +147,6 @@ cache/*
 src/hydrodashboards/bokeh/static/css/styles.css
 docs/doc_images.pptx
 doc_images.pptx
+
+# stash
+stash/*

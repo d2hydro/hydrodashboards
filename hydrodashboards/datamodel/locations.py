@@ -39,9 +39,9 @@ MAP_LOCATIONS = {
 class Locations(Filter):
     """Locations-data class for hydrodashboard"""
 
-    locations: gpd.GeoDataFrame = field(default_factory=EMPTY_SET)
-    sets: Cache = field(default_factory=Cache(sub_dir="locations", data_frame=True))
-    app_df: pd.DataFrame = field(default_factory=pd.DataFrame(MAP_LOCATIONS).set_index("id"))
+    locations: gpd.GeoDataFrame = field(default_factory=lambda: EMPTY_SET)
+    sets: Cache = field(default_factory=lambda: Cache(sub_dir="locations", data_frame=True))
+    app_df: pd.DataFrame = field(default_factory=lambda: pd.DataFrame(MAP_LOCATIONS).set_index("id"))
 
     def __post_init__(self):
         self.title = locations_title[self.language]

@@ -5,7 +5,7 @@ from bokeh.events import PanEnd, MouseWheel
 from bokeh.models.widgets import Div
 from bokeh.models import (
     HoverTool,
-    FuncTickFormatter,
+    # FuncTickFormatter,
     Legend,
     Range1d,
     NumeralTickFormatter,
@@ -486,7 +486,7 @@ def create_top_fig(
     time_fig.toolbar.logo = None
     time_fig.toolbar.autohide = False
     time_fig.title.align = "center"
-    time_fig.xaxis.formatter = FuncTickFormatter(code=DT_JS_FORMAT.format("tick"))
+    # time_fig.xaxis.formatter = FuncTickFormatter(code=DT_JS_FORMAT.format("tick"))
     time_fig.xaxis.visible = True
 
     if len(enum) != 0:

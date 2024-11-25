@@ -11,7 +11,7 @@ SIZING_MODE = "stretch_width"
 @dataclass
 class TimeSeriesFilter(Filter):
     id: str = None
-    cache: Cache = field(default_factory=Cache(sub_dir="filters"))
+    cache: Cache = field(default_factory=lambda: Cache(sub_dir="filters"))
 
 
 @dataclass
