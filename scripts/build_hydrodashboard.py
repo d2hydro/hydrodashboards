@@ -177,6 +177,11 @@ def bokeh(
     app_css = css_dir / "custom.css"
     app_css.write_text(app_css_str)
 
+
+    # write data-json to app directory
+    data_json = css_dir / "data.json"
+    data_json.write_text((templates_css_dir / "data.json").read_text())
+
     # write icons
     icons_dir = static_dir / "icons"
     icons_src_dir = HYDRODASHBOARDS_DIR.joinpath("bokeh", "static", "icons")
