@@ -480,8 +480,8 @@ input[type=checkbox]{
 }
 
 #sidebar > .sidebar-bokeh > .update-wrapper > .update {
-    flex: 0 0 65%;
-    max-width: 65%;
+    flex: 0 0 50%;
+    max-width: 50%;
 
     height: 30px;
 	margin-right:2px;
@@ -495,7 +495,12 @@ input[type=checkbox]{
     height: 30px !important;
 }
 
-#sidebar > .sidebar-bokeh > .update-wrapper > .download {
+#sidebar > .sidebar-bokeh > .update-wrapper > .download_csv {
+    flex: 0 0 14%;
+    max-width: 14%;
+	
+}
+#sidebar > .sidebar-bokeh > .update-wrapper > .download_xls {
     flex: 0 0 14%;
     max-width: 14%;
 	
@@ -567,23 +572,39 @@ input[type=checkbox]{
 /*---------------------------------------------------------
 	Download button styling
 -----------------------------------------------------------  */
-#sidebar > .sidebar-bokeh > .update-wrapper > .download > .bk-root > .bk > .bk >.bk.bk-btn-group > .bk.bk-btn.bk-btn-success{
+#sidebar > .sidebar-bokeh > .update-wrapper > .download_csv > .bk-root > .bk > .bk >.bk.bk-btn-group > .bk.bk-btn.bk-btn-success{
 	background-color:#F16996;
-	background-image: url(/{{app}}/static/icons/download.png);
+	background-image: url(/{{app}}/static/icons/download_csv.png);
 	background-repeat: no-repeat;
 	background-position: center;
 	color: white;
 	position:inline-block;
-	float: left;
+	float:left;
 	display:flex;
 	border-width:0px;
 	height: 30px;
-        min-width:32px;
-	width:32px;	
-	cursor: pointer;
+    min-width:32px;
+	width:32px;
+	cursor: pointer;	
 }
 
-.download .tooltiptext {
+#sidebar > .sidebar-bokeh > .update-wrapper > .download_xls > .bk-root > .bk > .bk >.bk.bk-btn-group > .bk.bk-btn.bk-btn-success{
+	background-color:#F16996;
+	background-image: url(/{{app}}/static/icons/download_xls.png);
+	background-repeat: no-repeat;
+	background-position: center;
+	color: white;
+	position:inline-block;
+	float:left;
+	display:flex;
+	border-width:0px;
+	height: 30px;
+    min-width:32px;
+	width:32px;
+	cursor: pointer;	
+}
+
+.download_csv .tooltiptext {
   visibility: hidden;
   width: 150px;
   background-color: white;
@@ -601,18 +622,46 @@ input[type=checkbox]{
   left: 70%;
 }
 
-.download:hover .tooltiptext {
+.download_csv:hover .tooltiptext {
   visibility: visible;
   animation: tooltipkeys 1s 1 ;
   opacity: 1;
 }
+
+
+.download_xls .tooltiptext {
+  visibility: hidden;
+  width: 140px;
+  background-color: white;
+  color: black;
+  font-size: 12px; 
+  text-align: center;
+  border: 1px solid ;
+  border-radius: 6px;
+  padding: 2px 5px;
+
+  
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  top: 100%;
+  left: 77%;
+}
+
+.download_xls:hover .tooltiptext {
+  visibility: visible;
+  animation: tooltipkeys 1s 1 ;
+  opacity: 1;
+}
+
+
 
 /*---------------------------------------------------------
 	Save button styling
 -----------------------------------------------------------  */
 #sidebar > .sidebar-bokeh > .update-wrapper > .save > .bk-root > .bk > .bk >.bk.bk-btn-group > .bk.bk-btn.bk-btn-success{
 	background-color:#F16996;
-	background-image: url(/{{app}}/static/icons/save.png);
+	background-image: url(/{{app}}/static/icons/download_graph.png);
 	background-repeat: no-repeat;
 	background-position: center;
 	color: white;

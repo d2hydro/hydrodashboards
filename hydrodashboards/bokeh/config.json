@@ -84,6 +84,7 @@
   },
   "root_filter": "WDB",
   "ssl_verify": false,
+  "step_enumeration": {"open/dicht": {"0": "dicht", "1": "open"}, "aan/uit": {"0": "uit", "1": "aan"}, "start/stop": {}},
   "thematic_view": true,
   "thresholds": [],
   "time_series_sampling": {

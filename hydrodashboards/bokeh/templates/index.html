@@ -15,7 +15,6 @@
     <!-- Font Awesome JS -->
     <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
     <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
-
     <!-- jQuery CDN - Slim version (=without AJAX) -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <!-- Popper.JS -->
@@ -26,7 +25,8 @@
     <script src="/{{app}}/static/js/main.js"></script>
 	<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 	<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script type="text/javascript">
         $(document).ready(function () {
             $('#sidebarCollapse').on('click', function () {
@@ -124,11 +124,16 @@
 						{{ embed(roots.scale_graphs_dummy)}}
 						<span class="tooltiptext">Toon grafiek (na selectie)</span>
 					</div>	
-					<div class="download">		
-                        {{ embed(roots.download_time_series)}}
-                        {{ embed(roots.download_time_series_dummy)}}						
+					<div class="download_xls">		
+						{{ embed(roots.download_time_series_xls)}}
+						{{ embed(roots.download_time_series_dummy_xls)}}						
 						<span class="tooltiptext">Download data (excel)</span>
-					</div>	
+					</div>
+					<div class="download_csv">		
+						{{ embed(roots.download_time_series_csv)}}
+						{{ embed(roots.download_time_series_dummy_csv)}}						
+						<span class="tooltiptext">Download data (csv)</span>
+					</div>
 					<div class="save">
 					    {{ embed(roots.save_time_series)}}
 						<span class="tooltiptext">Opslaan grafiek (jpg)</span>
