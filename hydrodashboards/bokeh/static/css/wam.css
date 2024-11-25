@@ -1,0 +1,48 @@
+.map_opt{
+  top: calc(100% - 280px);
+}
+
+/*---------------------------------------------------------
+	Sidemenu Checkboxes positioning
+-----------------------------------------------------------  */
+/*all filters till locations*/
+#sidebar > .sidebar-bokeh > .bk-root:first-child {
+    min-height: 150px;
+    max-height: 300px;
+}
+/*locations*/
+#sidebar > .sidebar-bokeh > .bk-root:nth-child(2) {
+    min-height: 150px;
+}
+/*parameters*/
+#sidebar > .sidebar-bokeh > .bk-root:nth-child(3) {
+    min-height: 150px;
+}
+/*search bar*/
+#sidebar > .sidebar-bokeh > .bk-root:nth-child(4) {
+    height: 74px;
+}
+
+#sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_1 {
+    min-height: 78px;
+    height: calc(50% - 42px) !important;
+}
+#sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_2 {
+    min-height: 78px;
+    height: calc(50% - 42px) !important;
+}
+#sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_3 {
+    min-height: 80px;
+    height: calc(100% - 42px) !important;
+}
+#sidebar > .sidebar-bokeh .bk.filter_checkboxgroup_4 {
+    min-height: 80px;
+    height: calc(100% - 42px) !important;
+  }
+
+
+
+
+
+
+

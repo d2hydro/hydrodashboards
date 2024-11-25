@@ -1,4 +1,4 @@
-name: bokeh3
+name: bokeh
 
 channels:
   - conda-forge
@@ -10,7 +10,8 @@ dependencies:
   - requests
   - pandas
   - geopandas
-  - bokeh==3.0.3
+  - bokeh
+  - schedule
   - pip:
     - fewspy
     - hydrodashboards

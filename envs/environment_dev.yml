@@ -5,6 +5,7 @@ channels:
   - defaults
 
 dependencies:
+  - python
   - aiohttp
   - nest-asyncio
   - black
@@ -17,6 +18,7 @@ dependencies:
   - mkdocs-material
   - geopandas
   - requests
+  - schedule
   - pytest
   - pytest-cov
   - pytest-black
