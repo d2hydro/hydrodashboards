@@ -82,7 +82,6 @@ def make_map(
     # set tools
     map_hover = HoverTool(tooltips=[("Locatie", "@name"), ("ID", "@id")])
 
-    # map_hover.toggleable = False
     map_hover.visible = False
 
     tools = [

@@ -456,7 +456,7 @@ def create_top_fig(
         tooltips=[("datum-tijd", "@datetime{%F %H:%M}"), ("waarde", "@value{'0.0'}")],
         formatters={ "@datetime": CustomJSHover(code=DT_JS_FORMAT.format("special_vars.data_x")) },
     )
-    time_hover.toggleable = False
+    time_hover.visible = False
 
     wheel_zoom = WheelZoomTool(speed=0.001, dimensions="width")
     tools = ["pan", "box_zoom", wheel_zoom, "reset", time_hover]
