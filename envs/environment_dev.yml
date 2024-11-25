@@ -10,7 +10,7 @@ dependencies:
   - black
   - jupyter
   - pandas
-  - bokeh==3.0.3
+  - bokeh==3.6.1
   - mkdocs
   - mkdocstrings
   - mkdocstrings-python
