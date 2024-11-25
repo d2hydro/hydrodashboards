@@ -2,17 +2,28 @@
 function loadJsonData() {
     const jsonFilePath = 'wam/static/css/data.json'; // Specify the correct path to your JSON file
 
+    console.log('Starting JSON data load from:', jsonFilePath);
+
     fetch(jsonFilePath)
         .then(response => {
+            console.log('Fetch response received:', response);
             if (!response.ok) {
+                console.error('Network response was not ok:', response.status, response.statusText);
                 throw new Error('Network response was not ok');
             }
             return response.text(); // Read as text to allow comment removal
         })
         .then(text => {
+            console.log('Raw JSON text received:', text);
             const jsonString = removeComments(text); // Remove comments from the JSON string
+            console.log('Cleaned JSON string (comments removed):', jsonString);
+
             const data = JSON.parse(jsonString); // Parse the cleaned JSON
+            console.log('Parsed JSON data:', data);
+
             const mapping = mapBokehDataRoots(); // Get the Bokeh data root mapping
+            console.log('Bokeh Data Root Mapping:', mapping);
+
             applyDynamicStyle(data, mapping); // Call your function to apply styles
         })
         .catch(error => {
@@ -22,10 +33,9 @@ function loadJsonData() {
 
 /**
  * Function to remove comments from JSON-like text.
- * @param {string} text - The input text potentially containing comments.
- * @returns {string} - The cleaned text without comments.
  */
 function removeComments(text) {
+    console.log('Removing comments from text...');
     text = text.replace(/\/\/.*$/gm, ''); // Remove single-line comments (// comment)
     text = text.replace(/\/\*[\s\S]*?\*\//g, ''); // Remove multi-line comments (/* comment */)
     return text;
@@ -35,8 +45,11 @@ function removeComments(text) {
  * Function to collect all Bokeh data-root-id elements, sort them, and assign custom names
  */
 function mapBokehDataRoots() {
+    console.log('Collecting Bokeh data-root-id elements...');
     const dataRootElements = document.querySelectorAll('[data-root-id]');
     const dataRootArray = Array.from(dataRootElements);
+
+    console.log('Data-root elements found:', dataRootArray);
 
     dataRootArray.sort((a, b) => {
         const idA = a.getAttribute('data-root-id');
@@ -50,18 +63,21 @@ function mapBokehDataRoots() {
         rootMapping[customName] = element.getAttribute('data-root-id');
     });
 
-    console.log('Data Root Mapping:', rootMapping);
-	
+    console.log('Final Data Root Mapping:', rootMapping);
     return rootMapping;
 }
 
 /**
- * Function to directly apply styles to elements identified by the given hierarchy.
- * @param {Array} dataArray - The parsed JSON data containing hierarchy and styles.
- * @param {Object} mapping - The mapping of data-root identifiers to their actual values.
+ * Function to apply styles dynamically based on hierarchy.
  */
 function applyDynamicStyle(dataArray, mapping) {
+    console.log('Applying dynamic styles...');
+    console.log('Data Array:', dataArray);
+    console.log('Mapping:', mapping);
+
     dataArray.forEach(data => {
+        console.log('Processing data item:', data);
+
         let { tag, hierarchy, style } = data;
 
         // Update tag if it includes dataroot
@@ -69,21 +85,25 @@ function applyDynamicStyle(dataArray, mapping) {
             const match = tag.match(/dataroot(\d+)/);
             if (match) {
                 const rootKey = `dataroot${match[1]}`;
+                console.log('Replacing tag dataroot placeholder with mapping:', rootKey);
                 tag = tag.replace(`dataroot${match[1]}`, mapping[rootKey]);
             }
         }
 
-        // Update hierarchy steps for dataroot mapping
+        // Debug hierarchy processing
+        console.log('Hierarchy before mapping:', hierarchy);
         hierarchy = hierarchy.map(step => {
             if (step.includes('dataroot')) {
                 const match = step.match(/dataroot(\d+)/);
                 if (match) {
                     const rootKey = `dataroot${match[1]}`;
+                    console.log('Replacing hierarchy dataroot placeholder with mapping:', rootKey);
                     return step.replace(`dataroot${match[1]}`, mapping[rootKey]);
                 }
             }
             return step; // If not a dataroot placeholder, return the step unchanged
         });
+        console.log('Hierarchy after mapping:', hierarchy);
 
         let currentElements = [document.querySelector(hierarchy[0])]; // Start with the root element, usually "body"
 
@@ -92,14 +112,18 @@ function applyDynamicStyle(dataArray, mapping) {
             return;
         }
 
+        console.log('Starting elements found:', currentElements);
+
         // Traverse the hierarchy to find the target elements
         for (let i = 1; i < hierarchy.length; i++) {
             const currentStep = hierarchy[i];
+            console.log(`Traversing hierarchy step: ${currentStep}`);
             let nextElements = [];
 
             if (currentStep === 'shadow-root') {
                 currentElements.forEach(currentElement => {
                     if (currentElement.shadowRoot) {
+                        console.log('Shadow root found:', currentElement.shadowRoot);
                         nextElements.push(currentElement.shadowRoot);
                     } else {
                         console.error('Shadow root not found at:', currentElement);
@@ -108,6 +132,7 @@ function applyDynamicStyle(dataArray, mapping) {
             } else {
                 currentElements.forEach(currentElement => {
                     const foundElements = Array.from(currentElement.querySelectorAll(currentStep));
+                    console.log(`Elements found for step ${currentStep}:`, foundElements);
                     nextElements = nextElements.concat(foundElements);
                 });
 
@@ -120,106 +145,32 @@ function applyDynamicStyle(dataArray, mapping) {
             currentElements = nextElements;
         }
 
+        console.log('Final elements to apply styles to:', currentElements);
+
         // Apply styles to found elements
         currentElements.forEach(currentElement => {
-            // Check if the element is .noUi-target
-            if (currentElement.classList.contains('noUi-target')) {
-                console.log('noUi-target element found:', currentElement);
+            console.log('Applying styles to element:', currentElement);
 
-                // Get the .noUi-connect element within this target
-                const connectElement = currentElement.querySelector('.noUi-connect');
-                if (!connectElement) {
-                    console.warn('No .noUi-connect element found inside the .noUi-target');
-                    return;
-                }
-
-                // Extract the colors from the JSON "style" property
-                let disabledColor = 'lightgrey'; // Default colors if not in JSON
-                let enabledColor = '#F16996';
-
-                style.forEach(styleRule => {
-                    const [property, value] = styleRule.split(':').map(s => s.trim());
-                    if (property === 'background-disabled') {
-                        disabledColor = value; // Set disabled color from JSON
-                    } else if (property === 'background-enabled') {
-                        enabledColor = value; // Set enabled color from JSON
-                    }
-                });
-
-                // Setup MutationObserver to detect changes to the 'disabled' attribute
-                const observer = new MutationObserver((mutationsList) => {
-                    mutationsList.forEach(mutation => {
-                        if (mutation.type === 'attributes' && mutation.attributeName === 'disabled') {
-                            console.log('Mutation detected for disabled attribute:', mutation.target);
-
-                            if (mutation.target.hasAttribute('disabled')) {
-                                // Disabled state
-                                console.log(`Element is disabled. Changing background to ${disabledColor}.`);
-                                connectElement.style.setProperty('background', disabledColor, 'important');
-                            } else {
-                                // Enabled state (disabled attribute is removed)
-                                console.log(`Element is enabled. Changing background to ${enabledColor}.`);
-                                connectElement.style.setProperty('background', enabledColor, 'important');
-                            }
-                        } else {
-                            console.log(`Attribute changed: ${mutation.attributeName}, but it's not 'disabled'.`);
-                        }
-                    });
-                });
-
-                // Observe changes to the 'disabled' attribute on the .noUi-target element
-                observer.observe(currentElement, {
-                    attributes: true, // Observe attribute changes
-                    attributeFilter: ['disabled'] // Only observe changes to the 'disabled' attribute
-                });
-
-                // Log if the observer is attached
-                console.log('MutationObserver attached to .noUi-target element:', currentElement);
-            } else {
-                console.log('Current element is not a .noUi-target:', currentElement);
-            }
-
-            // Apply any other styles in the JSON (for buttons, etc.)
             if (style.length > 0) {
                 style.forEach(styleRule => {
                     const [property, value] = styleRule.split(':').map(s => s.trim());
                     if (property && value) {
-                        currentElement.style.setProperty(property, value, 'important'); // Apply each style property
-                        console.log(`Style applied: ${property}: ${value}`);
+                        console.log(`Applying style: ${property}: ${value}`);
+                        currentElement.style.setProperty(property, value, 'important');
                     }
                 });
-            }
-
-            // Set up a separate MutationObserver for button elements
-            if (currentElement.tagName.toLowerCase() === 'button') {
-                console.log('Button detected:', currentElement);
-
-                // Set up MutationObserver for button
-                const buttonObserver = new MutationObserver((mutationsList) => {
-                    for (let mutation of mutationsList) {
-                        if (mutation.type === 'attributes' && mutation.attributeName === 'disabled') {
-                            console.log('Button disabled attribute changed:', mutation.target);
-                            // Reapply styles for the button
-                            applyDynamicStyle([data], mapping); // Reapply the styles for the button
-                        }
-                    }
-                });
-
-                buttonObserver.observe(currentElement, {
-                    attributes: true // Observe attribute changes
-                });
-
-                console.log('MutationObserver attached to button:', currentElement);
             }
         });
     });
 }
 
-
-// Call the loadJsonData function after a delay of 2 seconds after the window is fully loaded
-window.addEventListener('load', function() {
-    setTimeout(loadJsonData, 2000); // Delay for 2 seconds (2000 milliseconds)
+// Call the loadJsonData function after the window is loaded
+window.addEventListener('load', function () {
+    console.log('Window loaded. Starting delayed execution...');
+    setTimeout(loadJsonData, 2000);
 });
+
+
 // Call the loadJsonData function after a delay of 2 seconds after the window is fully loaded
 window.addEventListener('load', function() {
     const loadingOverlay = document.getElementById('loading-overlay');

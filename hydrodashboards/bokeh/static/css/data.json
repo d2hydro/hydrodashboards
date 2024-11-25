@@ -19,7 +19,7 @@
             "div.sidebar-header",
             "div.row",
             "div.col-10",
-            "div[data-root-id='dataroot4']",
+            "div[data-root-id='dataroot3']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-Div.app_title"
@@ -41,7 +41,7 @@
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot5']",
+            "div[data-root-id='dataroot4']",
             "div.bk-Column"
         ],
         "style": [
@@ -49,13 +49,13 @@
 			]
     },
 	{
-        "tag": "div[data-root-id='dataroot5']", 
+        "tag": "div[data-root-id='dataroot4']", 
         "hierarchy": [
             "body",
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot5']"
+            "div[data-root-id='dataroot4']"
         ],
         "style": [
             "display: flex",
@@ -73,7 +73,7 @@
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot6']",
+            "div[data-root-id='dataroot5']",
             "div.bk-Column"
         ],
         "style": [
@@ -83,13 +83,13 @@
 			]
     },
 	{
-	    "tag": "div[data-root-id='dataroot6']",
+	    "tag": "div[data-root-id='dataroot5']",
         "hierarchy": [
             "body",
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot6']"
+            "div[data-root-id='dataroot5']"
         ],
         "style": [
 			"display: flex",
@@ -106,7 +106,7 @@
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot7']",
+            "div[data-root-id='dataroot6']",
             "div.bk-Column"],
         "style": [
 			"display: flex",
@@ -115,13 +115,13 @@
 			]
     },
 	{
-	    "tag": "div[data-root-id='dataroot7']",
+	    "tag": "div[data-root-id='dataroot6']",
         "hierarchy": [
             "body",
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot7']"
+            "div[data-root-id='dataroot6']"
         ],
         "style": [
 			"display: flex",
@@ -139,7 +139,7 @@
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot8']",
+            "div[data-root-id='dataroot7']",
             "div.bk-Column"
         ],
         "style": [
@@ -149,13 +149,13 @@
 			]
     },
 	{
-	    "tag": "div[data-root-id='dataroot8']",
+	    "tag": "div[data-root-id='dataroot7']",
         "hierarchy": [
             "body",
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot8']"
+            "div[data-root-id='dataroot7']"
         ],
         "style": [
 		  	"display: flex",
@@ -173,7 +173,7 @@
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot5']",
+            "div[data-root-id='dataroot4']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-CheckboxGroup.filter_checkboxgroup_1"
@@ -198,7 +198,7 @@
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot5']",
+            "div[data-root-id='dataroot4']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-CheckboxGroup.filter_checkboxgroup_2"
@@ -222,7 +222,7 @@
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot6']",
+            "div[data-root-id='dataroot5']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-CheckboxGroup.filter_checkboxgroup_3"
@@ -247,7 +247,7 @@
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot7']",
+            "div[data-root-id='dataroot6']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-CheckboxGroup.filter_checkboxgroup_4"
@@ -275,7 +275,7 @@
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot5']",
+            "div[data-root-id='dataroot4']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-Row.filter_title"
@@ -302,7 +302,7 @@
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot5']",
+            "div[data-root-id='dataroot4']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-Row.filter_title"
@@ -329,7 +329,7 @@
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot6']",
+            "div[data-root-id='dataroot5']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-Row.filter_title"
@@ -356,7 +356,7 @@
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot7']",
+            "div[data-root-id='dataroot6']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-Row.filter_title"
@@ -384,7 +384,7 @@
           "div.wrapper",
           "nav#sidebar",
           "div.sidebar-bokeh",
-          "div[data-root-id='dataroot5']",
+          "div[data-root-id='dataroot4']",
           "div.bk-Column",
           "shadow-root",
           "div.bk-Row.filter_title",
@@ -408,7 +408,7 @@
           "div.wrapper",
           "nav#sidebar",
           "div.sidebar-bokeh",
-          "div[data-root-id='dataroot6']",
+          "div[data-root-id='dataroot5']",
           "div.bk-Column",
           "shadow-root",
           "div.bk-Row.filter_title",
@@ -432,7 +432,7 @@
           "div.wrapper",
           "nav#sidebar",
           "div.sidebar-bokeh",
-          "div[data-root-id='dataroot7']",
+          "div[data-root-id='dataroot6']",
           "div.bk-Column",
           "shadow-root",
           "div.bk-Row.filter_title",
@@ -456,7 +456,7 @@
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot5']",
+            "div[data-root-id='dataroot4']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-Row.filter_title",
@@ -485,7 +485,7 @@
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot6']",
+            "div[data-root-id='dataroot5']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-Row.filter_title",
@@ -515,7 +515,7 @@
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot7']",
+            "div[data-root-id='dataroot6']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-Row.filter_title",
@@ -545,7 +545,7 @@
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot6']",
+            "div[data-root-id='dataroot5']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-Row.filter_title",
@@ -568,7 +568,7 @@
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot6']",
+            "div[data-root-id='dataroot5']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-Row.filter_title",
@@ -593,7 +593,7 @@
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot7']",
+            "div[data-root-id='dataroot6']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-Row.filter_title",
@@ -615,7 +615,7 @@
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot7']",
+            "div[data-root-id='dataroot6']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-Row.filter_title",
@@ -643,7 +643,7 @@
             "div.wrapper",
             "nav#sidebar",
             "div.sidebar-bokeh",
-            "div[data-root-id='dataroot8']",
+            "div[data-root-id='dataroot7']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-Row",
@@ -669,7 +669,7 @@
             "div.sidebar-bokeh",
             "div#update_download.update-wrapper",
             "div.update",
-            "div[data-root-id='dataroot9']",
+            "div[data-root-id='dataroot8']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-Button",
@@ -700,7 +700,7 @@
             "div.sidebar-bokeh",
             "div#update_download.update-wrapper",
             "div.download_xls",
-            "div[data-root-id='dataroot11']",
+            "div[data-root-id='dataroot10']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-Button",
@@ -732,7 +732,7 @@
             "div.sidebar-bokeh",
             "div#update_download.update-wrapper",
             "div.download_csv",
-            "div[data-root-id='dataroot12']",
+            "div[data-root-id='dataroot11']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-Button",
@@ -764,7 +764,7 @@
             "div.sidebar-bokeh",
             "div#update_download.update-wrapper",
             "div.save",
-            "div[data-root-id='dataroot10']",
+            "div[data-root-id='dataroot9']",
             "div.bk-Column",
             "shadow-root",
             "div.bk-Button",
@@ -801,7 +801,7 @@
             "div.tab-content",
             "div.container-fluid.h-100",
             "div#zoekgrafiek-bar.row",
-            "div[data-root-id='dataroot17']",
+            "div[data-root-id='dataroot16']",
 			"div.bk-Column",
 			"shadow-root",
 			"div.bk-Button",
@@ -838,7 +838,7 @@
 		  "div.tab-content",
 		  "div#zoekgrafiek-en-slider.row",
 		  "div#grafiek-slider.col-12",
-		  "div[data-root-id='dataroot19']",
+		  "div[data-root-id='dataroot18']",
 		  "div.bk-Column",
 		  "shadow-root",
 		  "div.bk-DateRangeSlider",
@@ -850,7 +850,6 @@
 		"background-enabled: #F16996"
 	  ]
 	}
-
 	
 ]
 
