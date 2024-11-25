@@ -82,7 +82,8 @@ def make_map(
     # set tools
     map_hover = HoverTool(tooltips=[("Locatie", "@name"), ("ID", "@id")])
 
-    map_hover.toggleable = False
+    # map_hover.toggleable = False
+    map_hover.visible = False
 
     tools = [
         "tap",
@@ -110,30 +111,32 @@ def make_map(
     map_fig.xgrid.grid_line_color = None
     map_fig.ygrid.grid_line_color = None
     map_fig.select(type=TapTool)
+    map_fig.match_aspect = True
+    map_fig.sizing_mode="stretch_both"
 
     # add background
     tile_source = get_tilesource(settings["background"])
     map_fig.add_tile(tile_source, name="background")
 
-    # add custom map-layers (if any)
-    if map_overlays:
-        layer_names = list(map_overlays.keys())
-        layer_names.reverse()
-        for layer_name in layer_names:
-            tile_source = get_tilesource(layer_name, map_configs=map_overlays)
-            if "alpha" in map_overlays[layer_name].keys():
-                alpha = map_overlays[layer_name]["alpha"]
-            else:
-                alpha = 1
-            map_fig.add_tile(
-                tile_source,
-                name=layer_name,
-                visible=map_overlays[layer_name]["visible"],
-                alpha=alpha,
-            )
+    # # add custom map-layers (if any)
+    # if map_overlays:
+    #     layer_names = list(map_overlays.keys())
+    #     layer_names.reverse()
+    #     for layer_name in layer_names:
+    #         tile_source = get_tilesource(layer_name, map_configs=map_overlays)
+    #         if "alpha" in map_overlays[layer_name].keys():
+    #             alpha = map_overlays[layer_name]["alpha"]
+    #         else:
+    #             alpha = 1
+    #         map_fig.add_tile(
+    #             tile_source,
+    #             name=layer_name,
+    #             visible=map_overlays[layer_name]["visible"],
+    #             alpha=alpha,
+    #         )
 
     # add locations glyph
-    map_fig.circle(x="x", y="y", source=locations_source, **BOKEH_LOCATIONS_SETTINGS)
+    map_fig.scatter(x="x", y="y", source=locations_source, **BOKEH_LOCATIONS_SETTINGS)
 
     return map_fig
 

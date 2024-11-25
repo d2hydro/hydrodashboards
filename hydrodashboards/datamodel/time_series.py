@@ -4,7 +4,7 @@ from typing import List
 from datetime import datetime
 from hydrodashboards.datamodel.cache import Cache
 
-COLUMNS = {"datetime": "datetime64", "value": float}
+COLUMNS = {"datetime": "datetime64[ns]", "value": float}
 KEY = "__{location}__{parameter}__"
 CACHE = Cache("time_series", data_frame=False, compression=False, load_data=False)
 
