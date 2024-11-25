@@ -1,6 +1,10 @@
 function loadJsonData() {
     const jsonFilePath = 'wam/static/css/data.json'; // Specify the correct path to your JSON file
 
+    // Show the loading spinner
+    const spinner = document.getElementById('loading-spinner');
+    if (spinner) spinner.style.display = 'flex';
+
     fetch(jsonFilePath)
         .then(response => {
             if (!response.ok) {
@@ -16,8 +20,16 @@ function loadJsonData() {
         })
         .catch(error => {
             console.error('Error loading JSON:', error);
+        })
+        .finally(() => {
+            // Hide and remove the spinner
+            if (spinner) {
+                spinner.style.display = 'none'; // Hide the spinner
+                spinner.remove(); // Optionally remove it from the DOM
+            }
         });
 }
+
 
 /**
  * Function to remove comments from JSON-like text.
@@ -121,27 +133,61 @@ function applyDynamicStyle(dataArray, mapping) {
 
         // Apply styles to found elements
         currentElements.forEach(currentElement => {
-            // Check if the element is .noUi-connect
-            if (currentElement.classList.contains('noUi-connect')) {
-                console.log('noUi-connect element found:', currentElement);
+            // Check if the element is .noUi-target
+            if (currentElement.classList.contains('noUi-target')) {
+                console.log('noUi-target element found:', currentElement);
 
-                // Apply initial style immediately
-                currentElement.style.setProperty('background', 'purple');
-                console.log('Initial background style set.');
+                // Get the .noUi-connect element within this target
+                const connectElement = currentElement.querySelector('.noUi-connect');
+                if (!connectElement) {
+                    console.warn('No .noUi-connect element found inside the .noUi-target');
+                    return;
+                }
 
-                // Setup MutationObserver to detect future changes
-                const observer = new MutationObserver(() => {
-                    if (currentElement.classList.contains('disabled')) {
-                        currentElement.style.setProperty('background', 'grey', 'important'); // Active state
-                    } else {
-                        currentElement.style.setProperty('background', 'green', 'important'); // Disabled state
+                // Extract the colors from the JSON "style" property
+                let disabledColor = 'lightgrey'; // Default colors if not in JSON
+                let enabledColor = 'green';
+
+                style.forEach(styleRule => {
+                    const [property, value] = styleRule.split(':').map(s => s.trim());
+                    if (property === 'background-disabled') {
+                        disabledColor = value; // Set disabled color from JSON
+                    } else if (property === 'background-enabled') {
+                        enabledColor = value; // Set enabled color from JSON
                     }
                 });
 
+                // Setup MutationObserver to detect changes to the 'disabled' attribute
+                const observer = new MutationObserver((mutationsList) => {
+                    mutationsList.forEach(mutation => {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'disabled') {
+                            console.log('Mutation detected for disabled attribute:', mutation.target);
+
+                            if (mutation.target.hasAttribute('disabled')) {
+                                // Disabled state
+                                console.log(`Element is disabled. Changing background to ${disabledColor}.`);
+                                connectElement.style.setProperty('background', disabledColor, 'important');
+                            } else {
+                                // Enabled state (disabled attribute is removed)
+                                console.log(`Element is enabled. Changing background to ${enabledColor}.`);
+                                connectElement.style.setProperty('background', enabledColor, 'important');
+                            }
+                        } else {
+                            console.log(`Attribute changed: ${mutation.attributeName}, but it's not 'disabled'.`);
+                        }
+                    });
+                });
+
+                // Observe changes to the 'disabled' attribute on the .noUi-target element
                 observer.observe(currentElement, {
                     attributes: true, // Observe attribute changes
-                    attributeFilter: ['class'] // Only observe changes to the class attribute
+                    attributeFilter: ['disabled'] // Only observe changes to the 'disabled' attribute
                 });
+
+                // Log if the observer is attached
+                console.log('MutationObserver attached to .noUi-target element:', currentElement);
+            } else {
+                console.log('Current element is not a .noUi-target:', currentElement);
             }
 
             // Apply any other styles in the JSON (for buttons, etc.)
@@ -150,16 +196,17 @@ function applyDynamicStyle(dataArray, mapping) {
                     const [property, value] = styleRule.split(':').map(s => s.trim());
                     if (property && value) {
                         currentElement.style.setProperty(property, value, 'important'); // Apply each style property
+                        console.log(`Style applied: ${property}: ${value}`);
                     }
                 });
             }
 
-            // Set up a MutationObserver for any button detected
+            // Set up a separate MutationObserver for button elements
             if (currentElement.tagName.toLowerCase() === 'button') {
                 console.log('Button detected:', currentElement);
 
-                // Set up MutationObserver for style reapplication
-                const observer = new MutationObserver((mutationsList) => {
+                // Set up MutationObserver for button
+                const buttonObserver = new MutationObserver((mutationsList) => {
                     for (let mutation of mutationsList) {
                         if (mutation.type === 'attributes' && mutation.attributeName === 'disabled') {
                             console.log('Button disabled attribute changed:', mutation.target);
@@ -169,15 +216,16 @@ function applyDynamicStyle(dataArray, mapping) {
                     }
                 });
 
-                observer.observe(currentElement, {
+                buttonObserver.observe(currentElement, {
                     attributes: true // Observe attribute changes
                 });
 
-                console.log('MutationObserver attached to element:', currentElement);
+                console.log('MutationObserver attached to button:', currentElement);
             }
         });
     });
 }
+
 
 // Call the loadJsonData function after a delay of 2 seconds after the window is fully loaded
 window.addEventListener('load', function() {
