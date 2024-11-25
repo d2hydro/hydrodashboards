@@ -1,0 +1,856 @@
+[
+//   Overwrite map_opt by configuring app
+   
+
+//	General styling app
+
+// Navbar
+ 
+//   SIDEBAR STYLE
+
+	
+// Title dashboard with shadowroots
+    {
+        "tag": "Title_dashboard",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-header",
+            "div.row",
+            "div.col-10",
+            "div[data-root-id='dataroot4']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-Div.app_title"
+        ],
+        "style": [
+		    "display: flex",
+			"align-items: center",
+			"font-size: large"
+		]
+    },
+	
+// Sidemenu Checkboxes positioning with shadowroots
+
+//all filters till locations
+     {
+        "tag": "div.bk-Column",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot5']",
+            "div.bk-Column"
+        ],
+        "style": [
+            "display: flex"
+			]
+    },
+	{
+        "tag": "div[data-root-id='dataroot5']", 
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot5']"
+        ],
+        "style": [
+            "display: flex",
+			"flex-direction: column",
+			"flex-grow: 0",
+			"flex-basis: 0"
+			]
+    },
+
+//locations
+	{
+        "tag": "div.bk-Column",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot6']",
+            "div.bk-Column"
+        ],
+        "style": [
+			"display: flex",
+			"flex-grow: 2",
+			"flex-basis: 0"
+			]
+    },
+	{
+	    "tag": "div[data-root-id='dataroot6']",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot6']"
+        ],
+        "style": [
+			"display: flex",
+			"flex-direction: column",
+			"flex-grow: 2",
+			"flex-basis: 0"]
+    },
+	
+//parameters	
+	{
+        "tag": "div.bk-Column",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot7']",
+            "div.bk-Column"],
+        "style": [
+			"display: flex",
+			"flex-grow: 1",
+			"flex-basis: 0"
+			]
+    },
+	{
+	    "tag": "div[data-root-id='dataroot7']",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot7']"
+        ],
+        "style": [
+			"display: flex",
+			"flex-direction: column",
+			"flex-grow: 1",
+			"flex-basis: 0"
+			]
+    },
+	
+//search bar	
+	{
+         "tag": "div.bk-Column",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot8']",
+            "div.bk-Column"
+        ],
+        "style": [
+			"display: flex",
+			"flex-basis: 0",
+			"margin-top: 10px"
+			]
+    },
+	{
+	    "tag": "div[data-root-id='dataroot8']",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot8']"
+        ],
+        "style": [
+		  	"display: flex",
+			"flex-direction: column",
+			"max-height: 74px",
+			"flex-basis: 0"]
+    },
+
+//chekboxes
+	
+	   {
+        "tag": "filter_checkboxgroup_1",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot5']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-CheckboxGroup.filter_checkboxgroup_1"
+        ],
+        "style": [
+			"color: white",
+			"overflow-y: auto",
+			"background:#495568",
+			"padding: 6px",
+			"width: 100%",
+			"border-bottom-left-radius: 2px",
+			"border-bottom-right-radius: 2px",
+			"box-shadow: 0px 4px 8px #495568",
+			"min-height: 78px",
+			"margin: 0px"]
+    },
+	
+		   {
+        "tag": "filter_checkboxgroup_2",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot5']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-CheckboxGroup.filter_checkboxgroup_2"
+        ],
+        "style": [
+			"color: white",
+			"overflow-y: auto",
+			"background:#495568",
+			"padding: 6px",
+			"width: 100%",
+			"border-bottom-left-radius: 2px",
+			"border-bottom-right-radius: 2px",
+			"box-shadow: 0px 4px 8px #495568",
+			"min-height: 78px",
+			"margin: 0px"]
+    },
+			   {
+        "tag": "filter_checkboxgroup_3",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot6']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-CheckboxGroup.filter_checkboxgroup_3"
+        ],
+        "style": [
+			"color: white",
+			"flex:1",
+			"overflow-y: auto",
+			"background:#495568",
+			"padding: 6px",
+			"width: 100%",
+			"border-bottom-left-radius: 2px",
+			"border-bottom-right-radius: 2px",
+			"box-shadow: 0px 4px 8px #495568",
+			"min-height: 80px",
+			"margin: 0px"]
+    },
+			   {
+        "tag": "filter_checkboxgroup_4",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot7']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-CheckboxGroup.filter_checkboxgroup_4"
+        ],
+        "style": [
+			"color: white",
+			"flex-basis: 0",
+			"flex-grow: 1",
+			"overflow-y: auto",
+			"background:#495568",
+			"padding: 6px",
+			"width: 100%",
+			"border-bottom-left-radius: 2px",
+			"border-bottom-right-radius: 2px",
+			"box-shadow: 0px 4px 8px #495568",
+			"min-height: 80px",
+			"margin: 0px"]
+    },
+	
+//filter_title
+	{
+        "tag": "filter_title-checkbox1",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot5']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-Row.filter_title"
+        ],
+        "style": [
+		  "display: flex",
+		  "position: relative",
+		  "flex-direction: row",
+		  "justify-content: flex-start",
+		  "align-items: center",
+		  "background-color:#363F4D",
+		  "color: white",
+		  "margin-top:10px",
+		  "box-shadow: 0px -4px 8px #495568",
+		  "border-top-left-radius: 2px!important",
+		  "border-top-right-radius: 2px!important",
+		  "width: 100%"
+		  ]
+    },
+	{
+        "tag": "filter_title-checkbox2",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot5']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-Row.filter_title"
+        ],
+        "style": [
+		  "display: flex",
+		  "position: relative",
+		  "flex-direction: row",
+		  "justify-content: flex-start",
+		  "align-items: center",
+		  "background-color:#363F4D",
+		  "color: white",
+		  "margin-top:10px",
+		  "box-shadow: 0px -4px 8px #495568",
+		  "border-top-left-radius: 2px!important",
+		  "border-top-right-radius: 2px!important",
+		  "width: 100%"
+		  ]
+    },
+		{
+        "tag": "filter_title-checkbox3",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot6']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-Row.filter_title"
+        ],
+        "style": [
+		  "display: flex",
+		  "position: relative",
+		  "flex-direction: row",
+		  "justify-content: flex-start",
+		  "align-items: center",
+		  "background-color:#363F4D",
+		  "color: white",
+		  "margin-top:10px",
+		  "box-shadow: 0px -4px 8px #495568",
+		  "border-top-left-radius: 2px!important",
+		  "border-top-right-radius: 2px!important",
+		  "width: 100%"
+		  ]
+    },
+		{
+        "tag": "filter_title_checkbox4",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot7']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-Row.filter_title"
+        ],
+        "style": [
+		  "display: flex",
+		  "position: relative",
+		  "flex-direction: row",
+		  "justify-content: flex-start",
+		  "align-items: center",
+		  "background-color:#363F4D",
+		  "color: white",
+		  "margin-top:10px",
+		  "box-shadow: 0px -4px 8px #495568",
+		  "border-top-left-radius: 2px",
+		  "border-top-right-radius: 2px",
+		  "width: 100%"
+		  ]
+    },
+//Sidemenu reset button
+	    {
+        "tag": "filter_reset_button-checkbox1",
+        "hierarchy": [
+          "body",
+          "div.wrapper",
+          "nav#sidebar",
+          "div.sidebar-bokeh",
+          "div[data-root-id='dataroot5']",
+          "div.bk-Column",
+          "shadow-root",
+          "div.bk-Row.filter_title",
+          "shadow-root",
+          "div.bk-Button.filter_reset_button"
+        ],
+        "style": [
+		  "display: flex",
+		  "position: relative",
+		  "flex: 0 0 8%",
+		  "max-width: 8%",
+		  "left: 0px",
+		  "margin-left: 0px",
+		  "height : auto"
+		]
+    },	
+		    {
+        "tag": "filter_reset_button-checkbox2",
+        "hierarchy": [
+          "body",
+          "div.wrapper",
+          "nav#sidebar",
+          "div.sidebar-bokeh",
+          "div[data-root-id='dataroot6']",
+          "div.bk-Column",
+          "shadow-root",
+          "div.bk-Row.filter_title",
+          "shadow-root",
+          "div.bk-Button.filter_reset_button"
+        ],
+        "style": [
+		  "display: flex",
+		  "position: relative",
+		  "flex: 0 0 8%",
+		  "max-width: 8%",
+		  "left: 0px",
+		  "margin-left: 0px",
+		  "height : auto"
+		]
+    },	
+			    {
+        "tag": "filter_reset_button-checkbox3",
+        "hierarchy": [
+          "body",
+          "div.wrapper",
+          "nav#sidebar",
+          "div.sidebar-bokeh",
+          "div[data-root-id='dataroot7']",
+          "div.bk-Column",
+          "shadow-root",
+          "div.bk-Row.filter_title",
+          "shadow-root",
+          "div.bk-Button.filter_reset_button"
+        ],
+        "style": [
+		  "display: flex",
+		  "position: relative",
+		  "flex: 0 0 8%",
+		  "max-width: 8%",
+		  "left: 0px",
+		  "margin-left: 0px",
+		  "height : auto"
+		]
+    },	
+	    {
+        "tag": "refresh-icon-checkbox1",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot5']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-Row.filter_title",
+            "shadow-root",
+            "div.bk-Button.filter_reset_button",
+            "shadow-root",
+            "div.bk-btn-group",
+			"button.bk-btn.bk-btn-default"
+        ],
+        "style": [
+			"background-color:#363F4D",
+			"background-image: url(/wam/static/icons/refresh_filters.png)",
+			"background-repeat: no-repeat",
+			"height:21px",
+			"max-width:21px",
+			"width:21px!important",
+			"background-position: center",
+			"border:0",
+			"margin-left:4px"
+		]
+    },	
+	    {
+        "tag": "refresh-icon-checkbox2",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot6']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-Row.filter_title",
+            "shadow-root",
+            "div.bk-Button.filter_reset_button",
+            "shadow-root",
+            "div.bk-btn-group",
+			"button.bk-btn.bk-btn-default"
+        ],
+        "style": [
+			"background-color:#363F4D",
+			"background-image: url(/wam/static/icons/refresh_filters.png)",
+			"background-repeat: no-repeat",
+			"height:21px",
+			"max-width:21px",
+			"width:21px!important",
+			"background-position: center",
+			"border:0",
+			"margin-left:4px"
+		]
+    }
+	,	
+	    {
+        "tag": "refresh-icon-checkbox3",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot7']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-Row.filter_title",
+            "shadow-root",
+            "div.bk-Button.filter_reset_button",
+            "shadow-root",
+            "div.bk-btn-group",
+			"button.bk-btn.bk-btn-default"
+        ],
+        "style": [
+			"background-color:#363F4D",
+			"background-image: url(/wam/static/icons/refresh_filters.png)",
+			"background-repeat: no-repeat",
+			"height:21px",
+			"max-width:21px",
+			"width:21px!important",
+			"background-position: center",
+			"border:0",
+			"margin-left:4px"
+		]
+    },
+//search-button
+   {
+        "tag": "search_button-locations",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot6']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-Row.filter_title",
+            "shadow-root",
+            "div.bk-TextInput.filter_search"
+        ],
+        "style": [
+			"display: flex",
+			"flex: 0 0 56%",
+			"max-width: 56%",	
+			"color:#495568",
+			"margin: 0px"
+		]
+    },
+	
+	{
+        "tag": "search_icon-locations",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot6']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-Row.filter_title",
+            "shadow-root",
+            "div.bk-TextInput.filter_search",
+			"shadow-root",
+			"input.bk-input"
+        ],
+        "style": [
+			"background-color:#495568",
+			"border-color:#282F3A",
+			"background-image: url(/wam/static/icons/search.png)",
+			"background-repeat: no-repeat",
+			"background-position:left center",
+			"background-position-x: 4px"
+		]
+    },
+	   {
+        "tag": "search_button-parameters",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot7']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-Row.filter_title",
+            "shadow-root",
+            "div.bk-TextInput.filter_search"
+        ],
+        "style": [
+			"display: flex",
+			"flex: 0 0 56%",
+			"max-width: 56%",	
+			"color:#495568",
+			"margin: 0px"
+		]
+    },
+	{
+        "tag": "search_icon-parameters",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot7']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-Row.filter_title",
+            "shadow-root",
+            "div.bk-TextInput.filter_search",
+			"shadow-root",
+			"input.bk-input"
+        ],
+        "style": [
+			"background-color:#495568",
+			"border-color:#282F3A",
+			"background-image: url(/wam/static/icons/search.png)",
+			"background-repeat: no-repeat",
+			"background-position:left center",
+			"color: white",
+			"background-position-x: 4px"
+		]
+    },
+
+//calendar, used by js script to set type=data, otherwise Bokeh overwrites the calendar with its own styling
+			    {
+        "tag": "calendar-input",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div[data-root-id='dataroot8']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-Row",
+            "shadow-root",
+            "div.bk-DatePicker.search_period",
+            "shadow-root",
+            "div.bk-input-group",
+			"input#input.bk-input.flatpickr-input"
+        ],
+        "style": [
+			""
+		]
+    },
+
+//Sidemenu positioning Load timefig, Download and Save buttons
+	
+	    {
+        "tag": "Button-grafiek-bijwerken",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div#update_download.update-wrapper",
+            "div.update",
+            "div[data-root-id='dataroot9']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-Button",
+            "shadow-root",
+            "div.bk-btn-group",
+			"button.bk-btn.bk-btn-primary"
+        ],
+        "style": [
+			"background: #F16996",
+			"border: none",
+			"height: 30px",
+			"width: 100px",
+			"min-height:30px",
+			"position: inline-block",
+			"bottom: auto",
+			"left:32px!important",
+			"align-items:center !important"]
+    },
+	
+	
+	
+	{
+        "tag": "download_xls",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div#update_download.update-wrapper",
+            "div.download_xls",
+            "div[data-root-id='dataroot11']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-Button",
+            "shadow-root",
+            "div.bk-btn-group",
+			"button.bk-btn.bk-btn-success"
+        ],
+        "style": [
+		  "background-color:#F16996",
+		  "background-image: url(/wam/static/icons/download_xls.png)",
+		  "background-repeat: no-repeat",
+		  "background-position: center",
+		  "color: white",
+		  "position: inline-block",
+		  "float: left",
+		  "display: flex",
+		  "border-width:0px",
+		  "height: 30px",
+		  "min-width:32px",
+		  "width:32px",
+		  "cursor: pointer"]
+    },
+	 {
+        "tag": "download_csv",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div#update_download.update-wrapper",
+            "div.download_csv",
+            "div[data-root-id='dataroot12']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-Button",
+            "shadow-root",
+            "div.bk-btn-group",
+			"button.bk-btn.bk-btn-success"
+        ],
+        "style": [
+		  "background-color:#F16996",
+		  "background-image: url(/wam/static/icons/download_csv.png)",
+		  "background-repeat: no-repeat",
+		  "background-position: center",
+		  "color: white",
+		  "position: inline-block",
+		  "float: left",
+		  "display: flex",
+		  "border-width:0px",
+		  "height: 30px",
+		  "min-width:32px",
+		  "width:32px",
+		  "cursor: pointer"]
+    },
+		 {
+        "tag": "save",
+        "hierarchy": [
+           "body",
+            "div.wrapper",
+            "nav#sidebar",
+            "div.sidebar-bokeh",
+            "div#update_download.update-wrapper",
+            "div.save",
+            "div[data-root-id='dataroot10']",
+            "div.bk-Column",
+            "shadow-root",
+            "div.bk-Button",
+            "shadow-root",
+            "div.bk-btn-group",
+			"button.bk-btn.bk-btn-success"
+        ],
+        "style": [
+			"background-color:#F16996",
+			 "background-image: url(/wam/static/icons/download_graph.png)",
+			 "background-repeat: no-repeat",
+			 "background-position: center",
+			 "color: white",
+			 "position: inline-block",
+			 "float: left",
+			 "display: flex",
+			 "border-width:0px",
+			 "height:30px",
+			 "min-width:32px",
+			 "width:32px",
+			 "cursor: pointer"
+			 ]
+    },
+	
+	
+	
+// Toon historie zoekgrafiek
+ {
+        "tag": "historie-zoekgrafiek-button",
+        "hierarchy": [
+            "body",
+            "div.wrapper",
+            "div#content",
+            "div.tab-content",
+            "div.container-fluid.h-100",
+            "div#zoekgrafiek-bar.row",
+            "div[data-root-id='dataroot17']",
+			"div.bk-Column",
+			"shadow-root",
+			"div.bk-Button",
+			"shadow-root",
+			"div.bk-btn-group",
+			"button.bk-btn.bk-btn-success"	
+        ],
+        "style": [
+		 "background-color:#F16996",
+		  "background-image: url(/wam/static/icons/history.png)",
+		  "background-repeat: no-repeat",
+		  "background-position: center",
+		  "color: white",
+		  "position: inline-block",
+		  "float: left",
+		  "display: flex",
+		  "box-shadow: 0",
+		  "border-width:0px",
+		  "height: 30px",
+		  "min-width:32px",
+		  "max-width:32px",
+		  "width:32px"]
+    },
+
+
+//sliderange slider	
+ 
+	{
+	  "tag": "slideranger-color",
+	  "hierarchy": [
+		  "body",
+		  "div.wrapper",
+		  "div#content",
+		  "div.tab-content",
+		  "div#zoekgrafiek-en-slider.row",
+		  "div#grafiek-slider.col-12",
+		  "div[data-root-id='dataroot19']",
+		  "div.bk-Column",
+		  "shadow-root",
+		  "div.bk-DateRangeSlider",
+		  "shadow-root",
+		  "div.noUi-target.noUi-ltr.noUi-horizontal.noUi-txt-dir-ltr"
+	  ],
+	  "style": [
+		"background-disabled: lightgrey",
+		"background-enabled: #F16996"
+	  ]
+	}
+
+	
+]
+
