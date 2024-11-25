@@ -220,4 +220,19 @@ function applyDynamicStyle(dataArray, mapping) {
 window.addEventListener('load', function() {
     setTimeout(loadJsonData, 2000); // Delay for 2 seconds (2000 milliseconds)
 });
+// Call the loadJsonData function after a delay of 2 seconds after the window is fully loaded
+window.addEventListener('load', function() {
+    const loadingOverlay = document.getElementById('loading-overlay');
+
+    // Display the spinner during loading
+    loadingOverlay.style.display = 'flex';
+
+    // Simulate a delay to showcase the spinner (or load your data)
+    setTimeout(() => {
+        loadJsonData(); // Your function to load JSON data
+
+        // Hide the spinner after loading is complete
+        loadingOverlay.style.display = 'none';
+    }, 2000); // Adjust the delay as necessary
+});
 
