@@ -29,10 +29,11 @@ class Config:
     ignore_qualifiers: bool = False
     language: str = "dutch"
     map_overlays: dict = field(default_factory=dict)
-    ports: list = field(default_factory=dict)
+    ports: list = field(default_factory=list)
     ssl_verify: bool = False
+    step_enumeration: dict = field(default_factory=dict)
     thematic_view: bool = False
-    thresholds: list = field(default_factory=list)
+    thresholds: dict = field(default_factory=dict)
     time_series_sampling: dict = field(default_factory=None)
     vertical_datum: str = "NAP"
     remove_duplicates: bool = False
@@ -52,6 +53,9 @@ class Config:
         self.graph_count = min(self.graph_count, MAX_GRAPH_COUNT)
         if not self.ports:
             self.ports = [5003]
+
+        for pattern in self.step_enumeration.keys():
+            self.step_enumeration[pattern] = {int(k): v for k,v in self.step_enumeration[pattern].items()}
 
     @staticmethod
     def __deserialize_values(config_dict):

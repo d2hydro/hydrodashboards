@@ -65,7 +65,8 @@ def toggle_view_time_series_controls(value=True):
     """Enable view period (used when first graph is loaded)."""
     view_period.disabled = value
     view_period.bar_color = "#e6e6e6"
-    download_time_series.disabled = value
+    download_time_series_csv.disabled = value
+    download_time_series_xls.disabled = value
     save_time_series.disabled = value
     history_search_time_series.disabled = value
     search_time_series.disabled = value
@@ -82,7 +83,8 @@ def toggle_download_button_on_sources(sources):
         else:
             disabled = False
     data.time_series_sets.max_events_visible = max_events_visible
-    download_time_series.disabled = disabled
+    download_time_series_csv.disabled = disabled
+    download_time_series_xls.disabled = disabled
     save_time_series.disabled = disabled
     history_search_time_series.disabled = disabled
     search_time_series.disabled = disabled
@@ -267,21 +269,35 @@ def update_location_options_on_search_input(attr, old, new):
             .reset_index()
             .to_dict(orient="list")
         )
-    elif len(old) >= 3:
-        options = data.locations._options
-        unselected_options = [
-            i
-            for i in data.locations._options
-            if i not in data.locations.selected_options
-        ]
-        data.locations.options = data.locations.selected_options + unselected_options
-        locations.labels = data.locations.labels
+    else:
+        data.locations.search_input = None
+        if len(old) >= 3:
+            unselected_options = [
+                i
+                for i in data.locations._options
+                if i not in data.locations.selected_options
+            ]
+            data.locations.options = data.locations.selected_options + unselected_options
+            locations.labels = data.locations.labels
+            
+            locations_source.data.update(
+                data.locations.app_df.loc[[i[0] for i in data.locations.options]]
+                .reset_index()
+                .to_dict(orient="list")
+            )
 
 
 def update_on_locations_selector(attr, old, new):
     """Update when values in locations filter are selected"""
     logger.debug(inspect.stack()[0][3])
 
+    # disable search if locations are selected
+    if len(new) > 0:
+        locations_layout[0].children[-1].disabled = True
+    else:
+        locations_layout[0].children[-1].disabled = False
+
+    # limit selected locations to max 10
     if len(new) > 10:
         setattr(locations, config.filter_selector, old)
 
@@ -298,6 +314,7 @@ def update_on_locations_selector(attr, old, new):
             actives = filters_widgets.get_filters_actives(filters, config.thematic_view)
             data.update_on_filter_select(actives)
             data.parameters.limit_options_on_search_input()
+            parameters.active = []
             parameters.active = data.parameters.active
             parameters.labels = data.parameters.labels
             parameters.disabled = True
@@ -449,23 +466,24 @@ def start_time_series_loader():
 def update_time_series_view():
     """Update time_series and stop time_fig_loader"""
     global time_series_sources  # we update the global variable time_series_sources
-
-    logger.debug(inspect.stack()[0][3])
+    logger.debug(inspect.stack()[0][3])  # Log the function name
     data.update_time_series()
 
     if data.time_series_sets.any_active:
         # update time_series_layout (top figures)
-        parameter_groups = data.parameters.get_groups()
+        parameter_groups = data.parameters.get_groups()   
         group_y_labels = data.parameters.get_y_labels(config.vertical_datum)
         time_series_groups = data.time_series_sets.by_parameter_groups(
             parameter_groups, active_only=True
         )
+        
         threshold_groups = data.threshold_groups(time_series_groups)
 
         if config.thresholds:
             thresholds_active = thresholds_button.active
         else:
             thresholds_active = False
+
         time_series_sources = time_figure_widget.create_time_figures(
             time_figure_layout=time_figure_layout,
             time_series_groups=time_series_groups,
@@ -476,7 +494,9 @@ def update_time_series_view():
             press_up_event=press_up_event,
             renderers_on_change=[("visible", set_visible_labels)],
             sample_config=config.time_series_sampling,
+            step_enumeration=config.step_enumeration
         )
+
 
         # update search_time_series
         search_time_series.options = data.time_series_sets.active_labels
@@ -485,6 +505,9 @@ def update_time_series_view():
 
         # add_search time_series
         _time_series = data.time_series_sets.get_by_label(search_time_series.value)
+
+        step_mode = any(pattern in search_time_series.value for pattern in config.step_enumeration.keys())
+        
         time_figure_widget.search_fig(
             search_time_figure_layout,
             time_series=_time_series,
@@ -494,6 +517,7 @@ def update_time_series_view():
             color=time_series_sources[search_time_series.value]["color"],
             search_source=search_source,
             sample_config=config.time_series_sampling,
+            step_mode=step_mode
         )
 
         _scale_graphs.disabled = True
@@ -502,6 +526,7 @@ def update_time_series_view():
         toggle_view_time_series_controls(value=False)
         sources = [i["source"] for i in time_series_sources.values()]
         toggle_download_button_on_sources(sources)
+        
         # update app status
         app_status.text = data.app_status(html_type=HTML_TYPE)
     else:
@@ -517,9 +542,12 @@ def update_time_series_view():
     app_status.text = data.app_status(html_type=HTML_TYPE)
 
 
+
 def update_on_search_time_series_value(attrname, old, new):
     """Update source of search_time_figure when search_time_series_value changes"""
     logger.debug(inspect.stack()[0][3])
+    # Determine if step_mode should be True based on keywords in search_time_series.value
+    step_mode = any(pattern in search_time_series.value for pattern in config.step_enumeration.keys())
 
     # change search time_series
     time_figure_widget.search_fig(
@@ -531,6 +559,7 @@ def update_on_search_time_series_value(attrname, old, new):
         color=time_series_sources[search_time_series.value]["color"],
         search_source=search_source,
         sample_config=config.time_series_sampling,
+        step_mode=step_mode
     )
 
 
@@ -612,17 +641,34 @@ def set_visible_labels(attr, old, new):
     app_status.text = data.app_status(html_type=HTML_TYPE)
 
 
-def start_timeseries_downloader():
-    """Start the timeseries downloading process."""
+""" def start_timeseries_downloader():
     logger.debug(inspect.stack()[0][3])
 
     # get all data in sourced
     update_time_series_sources()
 
     # trigger jscript downloading process
-    _download_time_series.disabled = not _download_time_series.disabled
+    _download_time_series.disabled = not _download_time_series.disabled """
 
+def start_timeseries_downloader():
+    """Start the timeseries downloading process for XLS."""
+    logger.debug(inspect.stack()[0][3])
 
+    # get all data in sourced
+    update_time_series_sources()
+
+    # trigger JavaScript downloading process for XLS
+    _download_time_series_xls.disabled = not _download_time_series_xls.disabled
+
+def start_csv_downloader():
+    """Start the timeseries downloading process for CSV."""
+    logger.debug(inspect.stack()[0][3])
+
+    # get all data in sourced
+    update_time_series_sources()
+
+    # trigger JavaScript downloading process for CSV
+    _download_time_series_csv.disabled = not _download_time_series_csv.disabled
 """
 We read the config
 """
@@ -733,9 +779,26 @@ search_time_figure_layout = time_figure_widget.empty_layout(name="search_time_fi
 # all buttons
 
 #  download data
-download_time_series = download_widget.make_button(on_click=start_timeseries_downloader)
+""" download_time_series = download_widget.make_button(on_click=start_timeseries_downloader)
 
 _download_time_series = download_widget.make_ghost_button(
+    time_figure_layout=time_figure_layout,
+    disclaimer_file=config.disclaimer_file,
+    graph_count=config.graph_count,
+) """
+
+
+# download data
+download_time_series_xls = download_widget.make_button(on_click=start_timeseries_downloader)
+download_time_series_csv = download_widget.make_button(on_click=start_csv_downloader)
+
+_download_time_series_xls = download_widget.make_ghost_button_xls(
+    time_figure_layout=time_figure_layout,
+    disclaimer_file=config.disclaimer_file,
+    graph_count=config.graph_count,
+)
+
+_download_time_series_csv = download_widget.make_ghost_button_csv(
     time_figure_layout=time_figure_layout,
     disclaimer_file=config.disclaimer_file,
     graph_count=config.graph_count,
@@ -774,19 +837,18 @@ filters_layout = filters_widgets.finish_filters(
 )
 curdoc().add_root(filters_layout)
 
-search_input = update_location_options_on_search_input
+# search_input = update_location_options_on_search_input
 
 locations_layout = filters_widgets.finish_filter(
-    locations, search_input=None, reset_button=True
+    locations, search_input=update_location_options_on_search_input, reset_button=True
 )
 curdoc().add_root(
     column(locations_layout, name="locations", sizing_mode="stretch_width")
 )
 
 
-search_input = update_parameter_options_on_search_input
 parameters_layout = filters_widgets.finish_filter(
-    parameters, search_input=search_input, reset_button=True
+    parameters, search_input=update_parameter_options_on_search_input, reset_button=True
 )
 curdoc().add_root(
     column(parameters_layout, name="parameters", sizing_mode="stretch_width")
@@ -798,14 +860,42 @@ curdoc().add_root(
     column(update_graph, name="update_graph", sizing_mode="stretch_width")
 )
 
-curdoc().add_root(
+""" curdoc().add_root(
     column(
         download_time_series, name="download_time_series", sizing_mode="stretch_width"
+    )
+)"""
+
+curdoc().add_root(
+    column(save_time_series, name="save_time_series", sizing_mode="stretch_width")
+) 
+
+curdoc().add_root(
+    column(
+        download_time_series_xls, name="download_time_series_xls", sizing_mode="stretch_width"
     )
 )
 
 curdoc().add_root(
-    column(save_time_series, name="save_time_series", sizing_mode="stretch_width")
+    column(
+        download_time_series_csv, name="download_time_series_csv", sizing_mode="stretch_width"
+    )
+)
+
+curdoc().add_root(
+    column(
+        _download_time_series_xls,
+        name="download_time_series_dummy_xls",
+        sizing_mode="stretch_width",
+    )
+)
+
+curdoc().add_root(
+    column(
+        _download_time_series_csv,
+        name="download_time_series_dummy_csv",
+        sizing_mode="stretch_width",
+    )
 )
 
 # map-figure layout
@@ -845,13 +935,13 @@ curdoc().add_root(
     column(_scale_graphs, name="scale_graphs_dummy", sizing_mode="stretch_width")
 )
 
-curdoc().add_root(
+""" curdoc().add_root(
     column(
         _download_time_series,
         name="download_time_series_dummy",
         sizing_mode="stretch_width",
     )
-)
+) """
 
 curdoc().title = config.title
 

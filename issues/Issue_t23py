@@ -1,0 +1,38 @@
+#%%
+# import all from main that is needed for reproduction
+from hydrodashboards.bokeh.main import (
+    filters,
+    locations_layout,
+    filters_layout,
+    parameters,
+    locations,
+    data,
+)
+
+
+# # choose a theme by index
+thema = 'Oppervlaktewater'
+filters[0].active = [filters[0].labels.index(thema)]
+# # choose filter by filter_ids
+filter = 'Stuw'
+filters[1].active = [filters[1].labels.index(filter)]
+
+
+locations_layout[0].children[-1].value = "dool"
+
+# # choose locations by location_ids
+# location_ids = ['NL34.HL.PbGW0075']
+# locations.active = find_indices(data.locations, location_ids)
+
+# # choose parameter by parameter_ids
+# parameter_ids = ['STIJGHTE [m] [NAP] [GW] * gevalideerd']
+# parameters.active = find_indices(data.parameters, parameter_ids)
+
+# # load data
+# load_data()
+
+# # if un-expected outcome, raise an AssertionError that is to be fixed
+# assert data.locations.value == location_ids
+
+
+# %%

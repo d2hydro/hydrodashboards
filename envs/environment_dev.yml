@@ -2,7 +2,6 @@ name: bokeh
 
 channels:
   - conda-forge
-  - defaults
 
 dependencies:
   - python=3.10.5
@@ -18,6 +17,7 @@ dependencies:
   - mkdocs-material
   - geopandas=0.12.2
   - requests
+  - schedule
   - pytest
   - pytest-cov
   - pytest-black

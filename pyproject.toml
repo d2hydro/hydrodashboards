@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hydrodashboards"
+description = "Dashboards for Hydro Data"
+readme = "README.md"
+authors = [
+    { name = "Daniel Tollenaar", email = "daniel@d2hydro.nl" },
+]
+license = { text = "MIT" }
+
+dependencies = [
+   "aiohttp",
+   "nest-asyncio",
+   "pandas",
+   "geopandas",
+   "requests",
+   "bokeh==2.4.3"
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+tests = ["pytest"]
+
+[tool.flake8]
+max-line-length = 120
+max-complexity = 10
+
+[tool.setuptools]
+zip-safe = true
+
+[tool.setuptools.dynamic]
+version = { attr = "hydrodashboards.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["hydrodashboards"]
+
+[tool.setuptools.package-data]
+hydrodashboards = [
+   "config.json",
+   "theme.yaml",
+   "*.css",
+   "*.png",
+   "*.svg",
+   "*.js",
+   "*.map",
+   "*.html"
+   ]
+
+[project.urls]
+Source = "https://github.com/d2hydro/hydrodashboards"

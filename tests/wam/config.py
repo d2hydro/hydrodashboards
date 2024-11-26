@@ -8,13 +8,12 @@ WAM_CONFIG_JSON = DATA_DIR / "wam_config.json"
 
 
 # %% here we overwrite the default (WAM) config with WIK
-
+def set_config(config_file):
+    bokeh.set_config_json(config_file)
+    bokeh.delete_cache()
 
 def wik_config():
-    bokeh.set_config_json(WIK_CONFIG_JSON)
-    bokeh.delete_cache()
-
+    set_config(WIK_CONFIG_JSON)
 
 def wam_config():
-    bokeh.set_config_json(WAM_CONFIG_JSON)
-    bokeh.delete_cache()
+    set_config(WAM_CONFIG_JSON)
