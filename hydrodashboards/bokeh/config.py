@@ -26,6 +26,7 @@ class Config:
     graph_count: int = 2
     headers_full_history: list = field(default_factory=list)
     history_period: int = 3650
+    ignore_qualifiers: bool = False
     language: str = "dutch"
     map_overlays: dict = field(default_factory=dict)
     ports: list = field(default_factory=list)

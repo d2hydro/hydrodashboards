@@ -34,12 +34,16 @@ class Parameters(Filter):
         )
 
     def id_from_ts_header(self, header):
-        return concat_fews_parameter_ids(header.parameter_id, header.qualifier_id)
+        if self.ignore_qualifiers:
+            qualifier_ids = None
+        else:
+            qualifier_ids = header.qualifier_id
+        return concat_fews_parameter_ids(header.parameter_id, qualifier_ids)
 
     def name_from_ts_header(self, header):
         parameter_id = header.parameter_id
         parameter_name = self._fews_parameters.at[parameter_id, "name"]
-        if header.qualifier_id is not None:
+        if (header.qualifier_id is not None) & (not self.ignore_qualifiers):
             qualifier_names = [
                 self._fews_qualifiers.at[i, "name"] for i in header.qualifier_id
             ]
