@@ -91,7 +91,8 @@ class Data:
             pi_parameters=self._fews_root_parameters,
             pi_qualifiers=self._fews_qualifiers,
         )
-
+        self.parameters.ignore_qualifiers = config.ignore_qualifiers
+            
         self.time_series_sets = TimeSeriesSets()
 
     """
