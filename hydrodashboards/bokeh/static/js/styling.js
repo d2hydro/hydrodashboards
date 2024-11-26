@@ -133,6 +133,19 @@ function applyDynamicStyle(dataArray, mapping) {
 
         // Apply styles to found elements
         currentElements.forEach(currentElement => {
+            if (currentElement.classList.contains('flatpickr-input')) {
+                if (currentElement._flatpickr) { // Ensure it's a Flatpickr instance
+
+                    // Change input type to "date"
+                    currentElement.setAttribute('type', 'date');
+
+                    // Find the sibling input with the class `bk-input bk-input form-control input` and set it to hidden
+                    const siblingInputs = currentElement.parentElement.querySelectorAll('.bk-input.bk-input.form-control.input');
+                    siblingInputs.forEach(siblingInput => {
+                        siblingInput.setAttribute('type', 'hidden');
+                    });
+                }
+            }
             // Check if the element is .noUi-target
             if (currentElement.classList.contains('noUi-target')) {
                 console.log('noUi-target element found:', currentElement);
