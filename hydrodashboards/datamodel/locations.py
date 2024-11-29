@@ -47,6 +47,10 @@ class Locations(Filter):
         self.title = locations_title[self.language]
         self.name = "locations"
 
+        # drop duplicates if any that may occur probably due to idmapping at FEWS-API side
+        if self.locations.index.duplicated().any():
+            self.locations = self.locations[~self.locations.index.duplicated()]
+
     @property
     def map_locations(self):
         map_locations = self.app_df.reset_index().to_dict(orient="list")

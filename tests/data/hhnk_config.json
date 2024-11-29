@@ -1,0 +1,44 @@
+{
+  "bounds":  [
+    100500,
+    486900,
+    150150,
+    577550
+  ],
+  "exclude_pars": [
+    "Dummy"
+  ],
+  "fews_parallel": false,
+  "fews_url": "http://localhost:8080/FewsWebServices/rest/fewspiservice/v1",
+  "filter_dimensions": [
+    {
+      "items": 4,
+      "long_names": false
+    },
+    {
+      "items": 5,
+      "long_names": false
+    },
+    {
+      "items": 5,
+      "long_names": true
+    },
+    {
+      "items": 4,
+      "long_names": true
+    }
+  ],
+  "history_period": 10000,
+  "ignore_qualifiers": true,
+  "language": "dutch",
+  "log_dir": "./logs",
+  "root_filter": "HHNK_DASHBOARD_WEB",
+  "ssl_verify": false,
+  "thematic_view": false,
+  "thresholds": [],
+  "time_series_sampling": {
+      "method": "random_sample",
+      "max_samples": 20000
+  },
+  "title": "HHNK Portaal"
+}
