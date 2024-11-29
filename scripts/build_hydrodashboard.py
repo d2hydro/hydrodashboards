@@ -135,6 +135,7 @@ def bokeh(
     else:
         html = html.replace("{{thresholds_button}}", "")
 
+    html = html.replace("wam/", f"{app_dir.name}/")
     index_html = templates_dir / "index.html"
     index_html.write_text(html)
 
@@ -152,7 +153,7 @@ def bokeh(
     # map_options_width = int(map_options_left - 10)
     base_css.write_text(
         template_css.read_text()
-        .replace("{{app}}", f"{app_dir.name}")
+        .replace("{{app}}", f"{app_dir.name}").replace("wam/", f"{app_dir.name}/")
         )
 
     
@@ -180,7 +181,7 @@ def bokeh(
 
     # write data-json to app directory
     data_json = css_dir / "data.json"
-    data_json.write_text((templates_css_dir / "data.json").read_text())
+    data_json.write_text((templates_css_dir / "data.json").read_text().replace("wam/", f"{app_dir.name}/"))
 
     # write icons
     icons_dir = static_dir / "icons"
@@ -191,6 +192,11 @@ def bokeh(
     js_dir = static_dir / "js"
     js_src_dir = HYDRODASHBOARDS_DIR.joinpath("bokeh", "static", "js")
     shutil.copytree(js_src_dir, js_dir)
+    styling_js = js_dir / "styling.js"
+    if styling_js.exists():
+        styling_js_text = styling_js.read_text()
+        styling_js.unlink()
+        styling_js.write_text(styling_js_text.replace("wam/", f"{app_dir.name}/"))
 
     # %% copy fewspy to local-folder
     fewspy_src = Path(fewspy.__file__).parent
