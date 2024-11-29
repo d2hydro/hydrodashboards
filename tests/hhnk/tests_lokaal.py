@@ -1,11 +1,12 @@
-#%%
-from config import hhnk_config
+# %%
+from config import hhnk_lokaal_config
 
 # %% here we overwrite the default (WAM) config with WIK
-hhnk_config()
+hhnk_lokaal_config()
 
 # %% now we import main (will be initialized for WIK)
 from hydrodashboards.bokeh.main import config, filters, data, locations, parameters
+
 
 # %% select gemalen
 def test_select_gemalen():

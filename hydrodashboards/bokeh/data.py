@@ -92,7 +92,7 @@ class Data:
             pi_qualifiers=self._fews_qualifiers,
         )
         self.parameters.ignore_qualifiers = config.ignore_qualifiers
-            
+
         self.time_series_sets = TimeSeriesSets()
 
     """
@@ -136,7 +136,7 @@ class Data:
             self._fews_root_locations = self._fews_api.get_locations(
                 filter_id=self.config.root_filter,
                 attributes=self.config.location_attributes,
-                remove_duplicates=self.config.remove_duplicates
+                remove_duplicates=self.config.remove_duplicates,
             )
             self._root_cache.set_data(self._fews_root_locations, "_fews_root_locations")
 
@@ -180,9 +180,12 @@ class Data:
     def _get_fews_ts(self, indices=None, request_type="headers"):
         ## function used to bypass FEWS_BUGS["qualifier_ids"]
         def include_header(i):
-            parameter_id = concat_fews_parameter_ids(
-                i.header.parameter_id, i.header.qualifier_id
-            )
+            if self.config.ignore_qualifiers:
+                parameter_id = i.header.parameter_id
+            else:
+                parameter_id = concat_fews_parameter_ids(
+                    i.header.parameter_id, i.header.qualifier_id
+                )
             return parameter_id in self.parameters.value
 
         only_headers = False
@@ -258,9 +261,12 @@ class Data:
 
     def _properties_from_fews_ts_headers(self, fews_time_series):
         def property_generator(header):
-            parameter = concat_fews_parameter_ids(
-                header.parameter_id, header.qualifier_id
-            )
+            if self.config.ignore_qualifiers:
+                parameter = header.parameter_id
+            else:
+                parameter = concat_fews_parameter_ids(
+                    header.parameter_id, header.qualifier_id
+                )
             parameter_name = next(
                 i[1] for i in self.parameters.options if i[0] == parameter
             )
@@ -306,9 +312,12 @@ class Data:
         if not fews_ts_set.empty:
             for fews_ts in fews_ts_set.time_series:
                 location_id = fews_ts.header.location_id
-                parameter_id = concat_fews_parameter_ids(
-                    fews_ts.header.parameter_id, fews_ts.header.qualifier_id
-                )
+                if self.config.ignore_qualifiers:
+                    parameter_id = fews_ts.header.parameter_id
+                else:
+                    parameter_id = concat_fews_parameter_ids(
+                        fews_ts.header.parameter_id, fews_ts.header.qualifier_id
+                    )
                 if (location_id, parameter_id) in self.time_series_sets.indices:
                     ts_idx = self.time_series_sets.indices.index(
                         (location_id, parameter_id)
@@ -412,13 +421,19 @@ class Data:
 
         # drop headers without a location_id that is retrieve by get_locations
         if headers_df["location_id"].isna().any():
-            self.logger.warning(f"filter id:name {filter_id}:{filter_name} contains location is not returned by get_locations")
+            self.logger.warning(
+                f"filter id:name {filter_id}:{filter_name} contains location is not returned by get_locations"
+            )
             headers_df.dropna(subset="location_id", inplace=True)
 
         # drop headers with location_names that are not defined
         if headers_df["location_name"].isna().any():
-            no_names = headers_df[headers_df["location_name"].isna()]["location_id"].to_list()
-            self.logger.warning(f"filter id:name {filter_id}:{filter_name} contains location_ids without location_name that are removed: {no_names}")
+            no_names = headers_df[headers_df["location_name"].isna()][
+                "location_id"
+            ].to_list()
+            self.logger.warning(
+                f"filter id:name {filter_id}:{filter_name} contains location_ids without location_name that are removed: {no_names}"
+            )
             headers_df.dropna(subset="location_name", inplace=True)
 
         locations = self.locations.options_from_headers_df(headers_df)
