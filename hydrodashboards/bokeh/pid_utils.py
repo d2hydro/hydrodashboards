@@ -79,10 +79,30 @@ def terminate(pid: int, create_timestamp=None) -> bool:
     return terminated
 
 
-def terminate_bokeh() -> bool:
+def terminate_bokeh(ports: list) -> bool:
+    # get all pids associated with list of ports
+    port_pids = list(
+        set([i.pid for i in psutil.net_connections() if i.laddr.port in ports])
+    )
     pids = []
+
     for process in psutil.process_iter():
+        # process should have name bokeh.exe
         if process.name() == "bokeh.exe":
-            pids += [process.pid]
-            process.terminate()
+            # check if the python-process is associated with the port
+            child_processes = process.children(recursive=True)
+            child_processes_pids = [i.pid for i in child_processes]
+
+            # if a sub_process_pid is in port_pids we are to terminate that process
+            if any((i in port_pids for i in child_processes_pids)):
+                # update all to be terminated processes
+                pids += [process.pid] + child_processes_pids
+
+                # terminate bokeh
+                process.terminate()
+
+                # terminate child-processes
+                for process in child_processes:
+                    process.terminate()
+
     return all((not running(i) for i in pids))

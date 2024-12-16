@@ -15,11 +15,12 @@ HYDRODASHBOARDS_DIR = Path(hydrodashboards.__file__).parent
 CONFIG_FILE = Path(hydrodashboards.__file__).parent.joinpath("bokeh", "config.json")
 VERSION = hydrodashboards.__version__
 
-cmd_activate =r"""rem setting environment to python installation
+cmd_activate = r"""rem setting environment to python installation
 SET VIRTUAL_ENV={virtual_env}
 SET PATH=%VIRTUAL_ENV%;%VIRTUAL_ENV%\Library\mingw-w64\bin;%VIRTUAL_ENV%\Library\usr\bin;%VIRTUAL_ENV%\Library\bin;%VIRTUAL_ENV%\Scripts;%VIRTUAL_ENV%\bin;%PATH%
 SET PROJ_LIB=%VIRTUAL_ENV%\Library\share\proj
 """
+
 
 def main():
     args = get_args()
@@ -29,12 +30,12 @@ def main():
         css_file=args.css_file,
         virtual_env=args.virtual_env,
         app_port=args.app_port,
-        bokeh_secret_key=args.bokeh_secret_key
+        bokeh_secret_key=args.bokeh_secret_key,
+        nginx_port=args.nginx_port,
     )
 
 
 def reverse_bokeh_select(virtual_env: Union[str, Path]):
-
     # strings to replace
     original = 't||s?t&&!s?"append":!t&&s?"intersect":t&&s?"subtract"'
     new = 't||s?!t&&s?"append":t&&!s?"intersect":t&&s?"subtract"'
@@ -72,6 +73,7 @@ def bokeh(
     virtual_env: Optional[str | Path] = None,
     bokeh_secret_key: Optional[str] = None,
     app_port: int = 5003,
+    nginx_port: int | None = None,
 ):
     """
     Build a Bokeh dashboard
@@ -111,7 +113,7 @@ def bokeh(
     config_json.write_text(config_file.read_text())
 
     config = Config.from_json(config_json)
-    
+
     # %% copy config-file
     if config_file is None:
         config_file = CONFIG_FILE
@@ -124,9 +126,7 @@ def bokeh(
     templates_dir = app_dir / "templates"
     templates_dir.mkdir()
 
-    template_html = HYDRODASHBOARDS_DIR.joinpath(
-        "bokeh", "templates", "index.html"
-    )
+    template_html = HYDRODASHBOARDS_DIR.joinpath("bokeh", "templates", "index.html")
 
     html = template_html.read_text()
     html = html.replace("{{app}}", f"{app_dir.name}")
@@ -153,10 +153,10 @@ def bokeh(
     # map_options_width = int(map_options_left - 10)
     base_css.write_text(
         template_css.read_text()
-        .replace("{{app}}", f"{app_dir.name}").replace("wam/", f"{app_dir.name}/")
-        )
+        .replace("{{app}}", f"{app_dir.name}")
+        .replace("wam/", f"{app_dir.name}/")
+    )
 
-    
     app_css_str = None
 
     # read from supplied css-file
@@ -164,13 +164,15 @@ def bokeh(
         css_file = Path(css_file)
         if css_file.exists():
             css_file = None
-            print(f"css_file {css_file} does not exists (ignored)")          
-    
+            print(f"css_file {css_file} does not exists (ignored)")
+
     # read from default in repos
     if css_file is None:
         css_file = templates_css_dir / f"{app_dir.name}.css"
         if not css_file.exists():
-            print(f"css_file {css_file} does not exists in template-dir, we'll copy wam.css")   
+            print(
+                f"css_file {css_file} does not exists in template-dir, we'll copy wam.css"
+            )
             css_file = templates_css_dir / "wam.css"
     app_css_str = css_file.read_text()
 
@@ -178,10 +180,13 @@ def bokeh(
     app_css = css_dir / "custom.css"
     app_css.write_text(app_css_str)
 
-
     # write data-json to app directory
     data_json = css_dir / "data.json"
-    data_json.write_text((templates_css_dir / "data.json").read_text().replace("wam/", f"{app_dir.name}/"))
+    data_json.write_text(
+        (templates_css_dir / "data.json")
+        .read_text()
+        .replace("wam/", f"{app_dir.name}/")
+    )
 
     # write icons
     icons_dir = static_dir / "icons"
@@ -220,15 +225,16 @@ def bokeh(
     for src in list(bokeh_src.glob("*.*")):
         dst = None
         if src.name in [
-                "data.py",
-                "main.py",
-                "theme.yaml",
-                "config.py",
-                "build_cache.py",
-                "time_series_cache.py",
-                "log_utils.py",
-                "pid_utils.py",
-                "__init__.py"]:
+            "data.py",
+            "main.py",
+            "theme.yaml",
+            "config.py",
+            "build_cache.py",
+            "time_series_cache.py",
+            "log_utils.py",
+            "pid_utils.py",
+            "__init__.py",
+        ]:
             dst = app_dir.joinpath(src.name)
         else:
             dst = bokeh_dir.joinpath(src.name)
@@ -239,13 +245,12 @@ def bokeh(
     # copy __init__.py
     hydrodashboards_dir.joinpath("__init__.py").write_text(f'__version__ = "{VERSION}"')
 
-
     # %% write serve_bokeh.bat
     if virtual_env is None:
         virtual_env = VIRTUAL_ENV
 
     activate_env = cmd_activate.format(virtual_env=virtual_env)
-    
+
     if bokeh_secret_key is not None:
         activate_env += f"""
 rem set bokeh secret key
@@ -257,13 +262,12 @@ set BOKEH_SIGN_SESSIONS=true"""
 rem serve {app_dir.name}
 python.exe serve_hydrodashboard.py -app_dir {app_dir.name}
 """)
-    
+
     app_dir.parent.joinpath("test_app.bat").write_text(f"""{activate_env}
 
 rem serve {app_dir.name}
-bokeh serve {app_dir.name}
+bokeh serve {app_dir.name} --port {int(app_port)} --allow-websocket-origin=*
 """)
-    
 
     app_dir.parent.joinpath("build_cache.bat").write_text(f"""{activate_env}
 
@@ -280,15 +284,49 @@ chdir ./{app_dir.name}
 python time_series_cache.py
 chdir ../
 """)
-# %% serve_hydrodashboard.py
+    # %% serve_hydrodashboard.py
     scripts_dir = Path(virtual_env) / "scripts"
     import sys
-    sys.path.append(str(scripts_dir))    
+
+    sys.path.append(str(scripts_dir))
     import serve_hydrodashboard
+
     serve_hydrodashboard_py = Path(serve_hydrodashboard.__file__)
     app_dir.parent.joinpath("serve_hydrodashboard.py").write_text(
         serve_hydrodashboard_py.read_text()
+    )
+
+    # %% write nginx_config
+    if nginx_port is not None:
+        nginx_config_file = app_dir.parent.joinpath("nginx", "conf", "nginx.conf")
+        upstream_app_str = "\n    ".join(
+            [f"server 127.0.0.1:{i};" for i in config.ports]
         )
+
+        nginx_config_file.write_text(f"""
+events {{}}
+                                
+http {{
+    upstream {app_dir.name} {{
+    least_conn;
+    {upstream_app_str}
+    }}
+    server{{
+    listen {nginx_port};
+    location / {{
+        proxy_pass http://{app_dir.name};
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_http_version 1.1;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $host:$server_port;
+        proxy_buffering off;
+        }}
+    }}
+}}
+""")
+
 
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -327,6 +365,12 @@ def get_args() -> argparse.Namespace:
         help="Port to serve the app. Default is 5003",
         type=int,
         default=5003,
+    )
+    parser.add_argument(
+        "-nginx_port",
+        help="If specified an nginx.conf will be written with nginx port. Default is False",
+        type=int,
+        default=None,
     )
 
     return parser.parse_args()
