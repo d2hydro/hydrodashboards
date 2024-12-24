@@ -32,6 +32,7 @@ def main():
         app_port=args.app_port,
         bokeh_secret_key=args.bokeh_secret_key,
         nginx_port=args.nginx_port,
+        exclude_packages=args.exclude_packages,
     )
 
 
@@ -74,6 +75,7 @@ def bokeh(
     bokeh_secret_key: Optional[str] = None,
     app_port: int = 5003,
     nginx_port: int | None = None,
+    exclude_packages: bool = False,
 ):
     """
     Build a Bokeh dashboard
@@ -89,6 +91,7 @@ def bokeh(
             Python-environment in which the app will be launched. If None, the app will
             use the environment where this function is running. Defaults to None.
         app_port (int, optional): Port to use for the Bokeh-app. Defaults to 5003.
+        exclude_packages (bool, optional): Exclude hydrodashboards and fewspy packages. Defaults to False
 
     Returns:
         None.
@@ -204,14 +207,16 @@ def bokeh(
         styling_js.write_text(styling_js_text.replace("wam/", f"{app_dir.name}/"))
 
     # %% copy fewspy to local-folder
-    fewspy_src = Path(fewspy.__file__).parent
-    fewspy_dir = app_dir / "fewspy"
-    shutil.copytree(fewspy_src, fewspy_dir)
+    if not exclude_packages:
+        print("copy packages")
+        fewspy_src = Path(fewspy.__file__).parent
+        fewspy_dir = app_dir / "fewspy"
+        shutil.copytree(fewspy_src, fewspy_dir)
 
-    # %% copy hydrodashboards to local-folder
-    datamodel_src = HYDRODASHBOARDS_DIR.joinpath("datamodel")
-    datamodel_dir = app_dir.joinpath("hydrodashboards", "datamodel")
-    shutil.copytree(datamodel_src, datamodel_dir)
+        # %% copy hydrodashboards to local-folder
+        datamodel_src = HYDRODASHBOARDS_DIR.joinpath("datamodel")
+        datamodel_dir = app_dir.joinpath("hydrodashboards", "datamodel")
+        shutil.copytree(datamodel_src, datamodel_dir)
 
     # %% provide hydrodashboards folder
     bokeh_src = HYDRODASHBOARDS_DIR.joinpath("bokeh")
@@ -299,6 +304,7 @@ chdir ../
     # %% write nginx_config
     if nginx_port is not None:
         nginx_config_file = app_dir.parent.joinpath("nginx", "conf", "nginx.conf")
+        nginx_config_file.parent.mkdir(parents=True, exist_ok=True)
         upstream_app_str = "\n    ".join(
             [f"server 127.0.0.1:{i};" for i in config.ports]
         )
@@ -368,10 +374,16 @@ def get_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "-nginx_port",
-        help="If specified an nginx.conf will be written with nginx port. Default is False",
+        help="If specified an nginx.conf will be written with nginx port. Default is None",
         type=int,
         default=None,
     )
+    parser.add_argument(
+        "-exclude_packages",
+        help="Exclude hydrodashboards and fewspy packages. Defaults to False",
+        action="store_true",
+    )
+    parser.set_defaults(exclude_packages=False)
 
     return parser.parse_args()
 
