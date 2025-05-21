@@ -1274,12 +1274,14 @@ input[type=checkbox]{
 }
 
 #grafiek_upper::-webkit-scrollbar-button {
-    background-color: white;
+    background-color: rgb(241, 105, 150);
     height: 14px;
     width: 14px;
 }
 
-
+#grafiek_upper::-webkit-scrollbar-button:hover {
+    background-color: rgb(220, 85, 130);
+}
 
 #zoekgrafiek-bar{
 	background: #F8F9FA;
