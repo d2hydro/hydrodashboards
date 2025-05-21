@@ -29,8 +29,13 @@ def make_search_period(data, on_change):
 
 
 def update_period(search_period, search_start, search_end):
-    search_period.children[0].value = search_start.strftime("%Y-%m-%d")
-    search_period.children[1].value = search_end.strftime("%Y-%m-%d")
+    if search_start < search_end:
+        try:
+            search_period.children[0].value = search_start.strftime("%Y-%m-%d")
+            search_period.children[1].value = search_end.strftime("%Y-%m-%d")
+        except ValueError:
+            search_period.children[1].value = search_end.strftime("%Y-%m-%d")
+            search_period.children[0].value = search_start.strftime("%Y-%m-%d")
 
 
 def make_button(on_click=None):

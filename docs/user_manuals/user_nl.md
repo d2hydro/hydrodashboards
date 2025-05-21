@@ -54,6 +54,13 @@ Actie:
 - De data voor de locatie en parameter in de beschikbare periode wordt geladen
 - De grafiek wordt getoond
 
+
+**Let op(!)**
+
+Wanneer u meer dan 2 parameters met een verschillende grootheid/eenheid heeft geselecteerd (hieronder hoogte [m], temperatuur [T] en geleidendheid [-]), worden er maximaal 2 direct getoond op uw scherm. Voor de overige grafieken scrolt u naar beneden met de scrollbar (zie 7 in onderstaande figuur)
+
+![](images/multiple_graphs_nl.png "laden grafiek")
+
 **Vervolgacties**: U kunt nu de onder andere:
 
 - [Downloaden van de grafieken](#grafieken-downloaden)

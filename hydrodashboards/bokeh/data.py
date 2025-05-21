@@ -237,7 +237,7 @@ class Data:
                 qualifier_ids,
             ) = self._fews_locators_from_indices(indices)
             start_time = self.periods.history_start
-            end_time = self.periods.search_end
+            end_time = self.periods.now
 
         result = self._fews_api.get_time_series(
             filter_id=self.config.root_filter,
