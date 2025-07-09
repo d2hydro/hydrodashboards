@@ -20,6 +20,7 @@ requests = "*"
 bokeh = "*"
 dash = "*"
 dash-leaflet = "*"
+ipykernel = "*"
 
 [pypi-dependencies]
 dash-resizable-panels = "*"
