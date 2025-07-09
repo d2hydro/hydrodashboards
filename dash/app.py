@@ -6,7 +6,6 @@ from pathlib import Path
 from flask import send_file
 import plotly.express as px
 import pandas as pd
-import dash_split_pane
 from dash_resizable_panels import PanelGroup, Panel, PanelResizeHandle
 
 # WMTS-service URL en laagnaam

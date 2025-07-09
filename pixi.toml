@@ -1,0 +1,25 @@
+[project]
+name = "hydrodashboards"
+version = "0.6.2"
+description = "Dashboards for HydroData"
+channels = ["conda-forge"]
+platforms = ["win-64"]
+readme = "README.md"
+license = "MIT"
+license-file = "LICENSE"
+
+[tasks]
+dash = "python dash\\app.py"
+
+[dependencies]
+aiohttp = "*"
+nest-asyncio = "*"
+pandas = "*"
+geopandas = "*"
+requests = "*"
+bokeh = "*"
+dash = "*"
+dash-leaflet = "*"
+
+[pypi-dependencies]
+dash-resizable-panels = "*"
