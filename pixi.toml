@@ -10,6 +10,7 @@ license-file = "LICENSE"
 
 [tasks]
 dash = "python dash\\app.py"
+dash_ng = "python dash\\app_NG.py"
 
 [dependencies]
 aiohttp = "*"
@@ -18,9 +19,17 @@ pandas = "*"
 geopandas = "*"
 requests = "*"
 bokeh = "*"
+fastapi = "*"
 dash = "*"
 dash-leaflet = "*"
+dash-extensions = "*"
 ipykernel = "*"
+fiona = "*"
+shapely = "*"
+pyproj = "*"
+ribasim = "==2025.4.0"
+pyarrow = ">=10.0.1"
 
 [pypi-dependencies]
-dash-resizable-panels = "*"
+dash-resizable-panels ="*"
+dash-split-pane = "*"
