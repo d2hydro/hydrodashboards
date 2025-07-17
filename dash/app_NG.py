@@ -48,7 +48,8 @@ basin_nodes_geojson = json.loads(gdf_basin_nodes.to_json())
 
 basin_style = assign("""
 function(feature, ctx) {
-    const value = feature.properties.precipitation || 0;
+    const precip = ctx.hideout.precip || {};
+    const value = precip[feature.properties.node_id] || 0;
     let color = 'white';
     if (value > 10) color = '#08306b';
     else if (value > 5) color = '#2171b5';
@@ -104,7 +105,7 @@ app.layout = html.Div(style={"height": "95vh", "display": "flex", "flexDirection
 
                 # Pane met lage zIndex voor neerslag-laag
                 dl.Pane(name="precipitationPane", style={"zIndex": 210}),
-                dl.Pane(name="linkClickPane", style={"zIndex": 600}),
+                
 
                 dl.GeoJSON(
                     id="geojson-basins",
@@ -119,8 +120,7 @@ app.layout = html.Div(style={"height": "95vh", "display": "flex", "flexDirection
                     id="geojson-links-click",
                     data=links_geojson,
                     style=assign("function(f,c){return {color:'transparent',weight:20,opacity:0};}"),
-                    options={"interactive": True},
-                    pane="linkClickPane"
+                    options={"interactive": True}
                 ),
 
                 dl.GeoJSON(
@@ -184,25 +184,19 @@ app.layout = html.Div(style={"height": "95vh", "display": "flex", "flexDirection
 
 # ───────────────────────────────────────────────────────────────────────────────
 @app.callback(
-    Output("geojson-basins", "data"),
+    Output("geojson-basins", "hideout"),
     Output("time-slider", "value"),
     Input("play-interval", "n_intervals"),
     State("precipitation-data", "data"),
     State("time-slider", "value")
 )
-def update_basin_precip(n, precip_data, index):
+def update_precip_hideout(n, precip_data, index):
     times = list(precip_data.keys())
     if index >= len(times):
         return dash.no_update, 0
     t = times[index]
     values = precip_data[t]
-    new_features = []
-    for f in basin_area_geojson["features"]:
-        f_new = f.copy()
-        nid = f["properties"]["node_id"]
-        f_new["properties"]["precipitation"] = values.get(nid, 0)
-        new_features.append(f_new)
-    return {"type": "FeatureCollection", "features": new_features}, index + 1
+    return {"basins": [], "precip": values}, index + 1
 
 @app.callback(
     Output("play-interval", "disabled"),

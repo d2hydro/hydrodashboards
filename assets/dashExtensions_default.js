@@ -57,7 +57,7 @@ window.dashExtensions = Object.assign({}, window.dashExtensions, {
         function4: function(f, c) {
             return {
                 color: 'transparent',
-                weight: 10,
+                weight: 20,
                 opacity: 0
             };
         },
