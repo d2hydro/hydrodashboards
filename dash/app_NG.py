@@ -102,13 +102,16 @@ app.layout = html.Div(style={"height": "95vh", "display": "flex", "flexDirection
             dl.Map(id="map", center=[52.75, 4.9], zoom=10, style={"height": "100%"}, children=[
                 dl.TileLayer(),
 
-                # Verplaatst naar onderaan: precipitation laag (geojson-basins)
+                # Pane met lage zIndex voor neerslag-laag
+                dl.Pane(name="precipitationPane", style={"zIndex": 210}),
+
                 dl.GeoJSON(
                     id="geojson-basins",
                     data=basin_area_geojson,
                     hideout={"basins": []},
                     style=basin_style,
-                    options={"interactive": False}
+                    options={"interactive": False},
+                    pane="precipitationPane"
                 ),
 
                 dl.GeoJSON(
