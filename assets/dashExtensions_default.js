@@ -1,12 +1,21 @@
 window.dashExtensions = Object.assign({}, window.dashExtensions, {
     default: {
         function0: function(feature, ctx) {
-            return {
-                color: 'steelblue',
-                weight: 1,
-                fillOpacity: 0.1
-            };
-        },
+                const value = feature.properties.precipitation || 0;
+                let color = 'white';
+                if (value > 10) color = '#08306b';
+                else if (value > 5) color = '#2171b5';
+                else if (value > 1) color = '#6baed6';
+                else if (value > 0) color = '#c6dbef';
+                return {
+                    fillColor: color,
+                    color: 'grey',
+                    weight: 1,
+                    fillOpacity: 0.8
+                };
+            }
+
+            ,
         function1: function(feature, ctx) {
             const sel = ctx.hideout.pumps || [];
             const z = ctx.hideout.zoom || 10;
@@ -45,12 +54,11 @@ window.dashExtensions = Object.assign({}, window.dashExtensions, {
                 weight: weight
             };
         },
-        function4: function(feature, ctx) {
+        function4: function(f, c) {
             return {
                 color: 'transparent',
                 weight: 10,
-                opacity: 0,
-                fillOpacity: 0
+                opacity: 0
             };
         },
         function5: function(feature, latlng) {

@@ -175,6 +175,13 @@ window.dashExtensions = Object.assign({}, window.dashExtensions, {
                 weight: 10,
                 opacity: 0
             };
+        },
+        function16: function(f, c) {
+            return {
+                color: 'transparent',
+                weight: 20,
+                opacity: 0
+            };
         }
     }
 });

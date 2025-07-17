@@ -104,6 +104,7 @@ app.layout = html.Div(style={"height": "95vh", "display": "flex", "flexDirection
 
                 # Pane met lage zIndex voor neerslag-laag
                 dl.Pane(name="precipitationPane", style={"zIndex": 210}),
+                dl.Pane(name="linkClickPane", style={"zIndex": 600}),
 
                 dl.GeoJSON(
                     id="geojson-basins",
@@ -117,8 +118,9 @@ app.layout = html.Div(style={"height": "95vh", "display": "flex", "flexDirection
                 dl.GeoJSON(
                     id="geojson-links-click",
                     data=links_geojson,
-                    style=assign("function(f,c){return {color:'transparent',weight:10,opacity:0};}"),
-                    options={"interactive": True}
+                    style=assign("function(f,c){return {color:'transparent',weight:20,opacity:0};}"),
+                    options={"interactive": True},
+                    pane="linkClickPane"
                 ),
 
                 dl.GeoJSON(
