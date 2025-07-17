@@ -71,8 +71,10 @@ function(feature, ctx){
     return {color: color, fillColor: color, radius: radius};
 }
 """)
-link_style = assign("""function(feature, ctx){ const selected = ctx.hideout.selected_link === feature.properties.link_id; const cat = feature.properties.meta_categorie || ""; const color = selected ? "yellow" : (cat.toLowerCase() === "hoofdwater" ? "#003366" : "#66ccff"); const weight = selected ? 5 : (cat.toLowerCase() === "hoofdwater" ? 4 : 2.5); return {color: color, weight: weight}; }""")
-
+link_style = assign("""function(feature, ctx)
+    { const selected = ctx.hideout.selected_link === feature.properties.link_id; 
+    const cat = feature.properties.meta_categorie || ""; 
+    const color = selected ? "yellow" : (cat.toLowerCase() === "hoofdwater" ? "#003366" : "#66ccff"); const weight = selected ? 5 : (cat.toLowerCase() === "hoofdwater" ? 4 : 4); return {color: color, weight: weight}; }""")
 # ───────────────────────────────────────────────────────────────────────────────
 # RESULTAATDATA
 arrow_path = file_dir / "data/HollandsNoorderkwartier_parameterized_2025_6_8/results/basin.arrow"
@@ -100,12 +102,15 @@ app = DashProxy()
 app.layout = html.Div(style={"height": "95vh", "display": "flex", "flexDirection": "column"}, children=[
     html.Div(style={"flex": "1", "display": "flex", "flexDirection": "row"}, children=[
         html.Div(style={"flex": "1", "position": "relative"}, children=[
-            dl.Map(id="map", center=[52.75, 4.9], zoom=10, style={"height": "100%"}, children=[
+            dl.Map(id="map", center=[52.75, 4.9], 
+                   zoom=10, style={"height": "100%"}, 
+                   children=[
                 dl.TileLayer(),
 
                 # Pane met lage zIndex voor neerslag-laag
                 dl.Pane(name="precipitationPane", style={"zIndex": 210}),
-                
+                dl.Pane(name="basinNodePane", style={"zIndex": 9999}),
+                dl.Pane(name="linkPane", style={"zIndex": 220}),
 
                 dl.GeoJSON(
                     id="geojson-basins",
@@ -117,18 +122,12 @@ app.layout = html.Div(style={"height": "95vh", "display": "flex", "flexDirection
                 ),
 
                 dl.GeoJSON(
-                    id="geojson-links-click",
-                    data=links_geojson,
-                    style=assign("function(f,c){return {color:'transparent',weight:20,opacity:0};}"),
-                    options={"interactive": True}
-                ),
-
-                dl.GeoJSON(
                     id="geojson-links",
                     data=links_geojson,
                     style=link_style,
-                    options={"interactive": False},
-                    hideout={"selected_link": None}
+                    options={"interactive": True},
+                    hideout={"selected_link": None},
+                    pane="linkPane"
                 ),
 
                 dl.GeoJSON(
@@ -148,7 +147,7 @@ app.layout = html.Div(style={"height": "95vh", "display": "flex", "flexDirection
                     style=basin_node_style,
                     pointToLayer=assign("function(feature, latlng){return L.circleMarker(latlng,{fillOpacity:0.8});}"),
                     options={"interactive": True},
-                    pane="markerPane"
+                    pane="basinNodePane"
                 ),
             ]),
 
@@ -210,9 +209,14 @@ def toggle_play(play, pause):
         raise PreventUpdate
     return ctx.triggered[0]["prop_id"].split(".")[0] != "play-button"
 
+def store_selected_link(cd):
+    if not cd or "properties" not in cd or "link_id" not in cd["properties"]:
+        raise PreventUpdate
+    return cd["properties"]["link_id"]
+
 @app.callback(
     Output("selected-link", "data"),
-    Input("geojson-links-click", "clickData")
+    Input("geojson-links", "clickData")
 )
 def store_selected_link(cd):
     if not cd or "properties" not in cd or "link_id" not in cd["properties"]:
@@ -228,7 +232,7 @@ def update_link_hideout(selected_link):
 
 @app.callback(
     Output("link-flow", "figure"),
-    Input("geojson-links-click", "clickData")
+    Input("geojson-links", "clickData")
 )
 def update_link_graph(cd):
     if not cd or "properties" not in cd or "link_id" not in cd["properties"]:
@@ -279,4 +283,4 @@ def update_basin_graphs(cd, current_hideout):
     return fig_fluxes, fig_level, new_hideout
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)

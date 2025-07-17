@@ -49,20 +49,13 @@ window.dashExtensions = Object.assign({}, window.dashExtensions, {
             const selected = ctx.hideout.selected_link === feature.properties.link_id;
             const cat = feature.properties.meta_categorie || "";
             const color = selected ? "yellow" : (cat.toLowerCase() === "hoofdwater" ? "#003366" : "#66ccff");
-            const weight = selected ? 5 : (cat.toLowerCase() === "hoofdwater" ? 4 : 2.5);
+            const weight = selected ? 5 : (cat.toLowerCase() === "hoofdwater" ? 4 : 4);
             return {
                 color: color,
                 weight: weight
             };
         },
-        function4: function(f, c) {
-            return {
-                color: 'transparent',
-                weight: 20,
-                opacity: 0
-            };
-        },
-        function5: function(feature, latlng) {
+        function4: function(feature, latlng) {
             return L.circleMarker(latlng, {
                 fillOpacity: 0.8
             });
