@@ -15,7 +15,6 @@ model = Model.read(model_path)
 
 # ───────────────────────────────────────────────────────────────────────────────
 # DATA
-
 gdf_pumps = model.pump.node.df.copy().to_crs(epsg=4326).reset_index()
 gdf_pumps["node_id"] = gdf_pumps["node_id"].astype(str)
 gdf_pumps["name"] = gdf_pumps.get("name", gdf_pumps["node_id"])
@@ -47,7 +46,18 @@ basin_area_geojson = json.loads(gdf_basin_area.to_json())
 pumps_geojson = json.loads(gdf_pumps.to_json())
 basin_nodes_geojson = json.loads(gdf_basin_nodes.to_json())
 
-basin_style = assign("""function(feature, ctx){ return {color:'steelblue', weight:1, fillOpacity:0.1}; }""")
+basin_style = assign("""
+function(feature, ctx) {
+    const value = feature.properties.precipitation || 0;
+    let color = 'white';
+    if (value > 10) color = '#08306b';
+    else if (value > 5) color = '#2171b5';
+    else if (value > 1) color = '#6baed6';
+    else if (value > 0) color = '#c6dbef';
+    return {fillColor: color, color: 'grey', weight: 1, fillOpacity: 0.8};
+}
+""")
+
 pump_style = assign("""function(feature, ctx){ const sel = ctx.hideout.pumps || []; const z = ctx.hideout.zoom || 10; const scale = z < 9 ? 0.4 : z < 11 ? 0.7 : 1.0; const selected = sel.includes(feature.properties.node_id); const radius = selected ? 6 * scale : 4 * scale; const color = selected ? 'red' : 'green'; return {color: color, fillColor: color, radius: radius}; }""")
 basin_node_style = assign("""
 function(feature, ctx){
@@ -69,6 +79,13 @@ df_basin_result = feather.read_feather(arrow_path)
 df_basin_result["node_id"] = df_basin_result["node_id"].astype(str)
 df_basin_result["time"] = pd.to_datetime(df_basin_result["time"])
 
+# Maak tijdserie voor visualisatie
+unique_times = df_basin_result["time"].sort_values().unique()
+precipitation_series = {
+    str(t): df_basin_result[df_basin_result["time"] == t].set_index("node_id")["precipitation"].to_dict()
+    for t in unique_times
+}
+
 flow_arrow_path = file_dir / "data/HollandsNoorderkwartier_parameterized_2025_6_8/results/flow.arrow"
 df_link_result = feather.read_feather(flow_arrow_path)
 df_link_result["link_id"] = df_link_result["link_id"].astype(int)
@@ -78,45 +95,122 @@ df_link_result["time"] = pd.to_datetime(df_link_result["time"])
 # LAYOUT
 app = DashProxy()
 
-app.layout = html.Div(style={"height": "90vh", "display": "flex", "flexDirection": "row"}, children=[
-    html.Div(style={"flex": "1", "position": "relative"}, children=[
-        dl.Map(id="map", center=[52.75, 4.9], zoom=10, style={"height": "100%"}, children=[
-            dl.TileLayer(),
-            dl.GeoJSON(id="geojson-basins", data=basin_area_geojson, hideout={"basins": []}, style=basin_style, options={"interactive": False}),
-            
-            dl.GeoJSON(id="geojson-links-click", data=links_geojson,
-                       style=assign("function(feature, ctx){ return {color: 'transparent', weight: 10, opacity: 0, fillOpacity: 0}; }"),
-                       options={"interactive": True}, zoomToBoundsOnClick=False),
-            dl.GeoJSON(id="geojson-links", data=links_geojson, style=link_style,
-                       options={"interactive": False}, hideout={"selected_link": None}),
-            dl.GeoJSON(id="geojson-pumps", data=pumps_geojson,
-                       hideout={"pumps": [], "zoom": 10}, style=pump_style,
-                       pointToLayer=assign("function(feature, latlng){return L.circleMarker(latlng,{fillOpacity:0.8});}"),
-                       options={"interactive": True},
-                       children=[dl.Popup(id="popup-pump")]),
-            dl.GeoJSON(id="geojson-basin-nodes", data=basin_nodes_geojson,
-                       hideout={"basin_nodes": [], "zoom": 10}, style=basin_node_style,
-                       pointToLayer=assign("function(feature, latlng){return L.circleMarker(latlng,{fillOpacity:0.8});}"),
-                       options={"interactive": True}, pane="markerPane"),
+
+app.layout = html.Div(style={"height": "95vh", "display": "flex", "flexDirection": "column"}, children=[
+    html.Div(style={"flex": "1", "display": "flex", "flexDirection": "row"}, children=[
+        html.Div(style={"flex": "1", "position": "relative"}, children=[
+            dl.Map(id="map", center=[52.75, 4.9], zoom=10, style={"height": "100%"}, children=[
+                dl.TileLayer(),
+
+                # Verplaatst naar onderaan: precipitation laag (geojson-basins)
+                dl.GeoJSON(
+                    id="geojson-basins",
+                    data=basin_area_geojson,
+                    hideout={"basins": []},
+                    style=basin_style,
+                    options={"interactive": False}
+                ),
+
+                dl.GeoJSON(
+                    id="geojson-links-click",
+                    data=links_geojson,
+                    style=assign("function(f,c){return {color:'transparent',weight:10,opacity:0};}"),
+                    options={"interactive": True}
+                ),
+
+                dl.GeoJSON(
+                    id="geojson-links",
+                    data=links_geojson,
+                    style=link_style,
+                    options={"interactive": False},
+                    hideout={"selected_link": None}
+                ),
+
+                dl.GeoJSON(
+                    id="geojson-pumps",
+                    data=pumps_geojson,
+                    hideout={"pumps": [], "zoom": 10},
+                    style=pump_style,
+                    pointToLayer=assign("function(feature, latlng){return L.circleMarker(latlng,{fillOpacity:0.8});}"),
+                    options={"interactive": True},
+                    children=[dl.Popup(id="popup-pump")]
+                ),
+
+                dl.GeoJSON(
+                    id="geojson-basin-nodes",
+                    data=basin_nodes_geojson,
+                    hideout={"basin_nodes": [], "zoom": 10},
+                    style=basin_node_style,
+                    pointToLayer=assign("function(feature, latlng){return L.circleMarker(latlng,{fillOpacity:0.8});}"),
+                    options={"interactive": True},
+                    pane="markerPane"
+                ),
+            ]),
+
+            html.Div(style={"position": "absolute", "top": "10px", "left": "10px", "width": "320px", "background": "rgba(255,255,255,0.9)", "padding": "15px", "borderRadius": "6px", "boxShadow": "0 2px 8px rgba(0,0,0,0.3)", "zIndex": "1000"}, children=[
+                html.H4("Selecteer Pompen"),
+                dcc.Dropdown(id="pump-dropdown", options=[{"label": row["name"], "value": row["node_id"]} for _, row in gdf_pumps.iterrows()], value=[], multi=True),
+                html.H4("Selecteer Basins"),
+                dcc.Dropdown(id="bas-dropdown", options=[{"label": row["name"], "value": row["node_id"]} for _, row in gdf_basin_area.iterrows()], value=[], multi=True),
+            ]),
+
+            html.Div(style={"position": "absolute", "bottom": "20px", "left": "10px", "zIndex": "1000", "background": "rgba(255,255,255,0.8)", "padding": "10px", "borderRadius": "5px"}, children=[
+                html.Div("Legenda: Neerslag (mm/u)"),
+                html.Div(style={"height": "10px", "width": "200px", "background": "linear-gradient(to right, white, #c6dbef, #6baed6, #2171b5, #08306b)"}),
+                html.Br(),
+                dcc.Slider(id="time-slider", min=0, max=len(unique_times)-1, step=1, value=0, tooltip={"always_visible": True}),
+                html.Button("Play", id="play-button"),
+                html.Button("Pause", id="pause-button"),
+                dcc.Interval(id="play-interval", interval=1000, n_intervals=0, disabled=True)
+            ])
         ]),
-        html.Div(style={"position": "absolute", "top": "10px", "left": "10px", "width": "320px", "background": "rgba(255,255,255,0.9)", "padding": "15px", "borderRadius": "6px", "boxShadow": "0 2px 8px rgba(0,0,0,0.3)", "zIndex": "1000"}, children=[
-            html.H4("Selecteer Pompen"),
-            dcc.Dropdown(id="pump-dropdown", options=[{"label": row["name"], "value": row["node_id"]} for _, row in gdf_pumps.iterrows()], value=[], multi=True),
-            html.H4("Selecteer Basins"),
-            dcc.Dropdown(id="bas-dropdown", options=[{"label": row["name"], "value": row["node_id"]} for _, row in gdf_basin_area.iterrows()], value=[], multi=True),
-        ]),
-    ]),
-    html.Div(style={"flex": "0 0 35%", "padding": "10px"}, children=[
-        dcc.Graph(id="basin-timeseries", style={"height": "30vh"}),
-        dcc.Graph(id="basin-level", style={"height": "30vh"}),
-        dcc.Graph(id="link-flow", style={"height": "30vh"}),
-        dcc.Store(id="sel-pumps", data=[]),
-        dcc.Store(id="sel-basins", data=[]),
-        dcc.Store(id="selected-link", data=None),
+
+        html.Div(style={"flex": "0 0 35%", "padding": "10px"}, children=[
+            dcc.Graph(id="basin-timeseries", style={"height": "30vh"}),
+            dcc.Graph(id="basin-level", style={"height": "30vh"}),
+            dcc.Graph(id="link-flow", style={"height": "30vh"}),
+            dcc.Store(id="sel-pumps", data=[]),
+            dcc.Store(id="sel-basins", data=[]),
+            dcc.Store(id="selected-link", data=None),
+            dcc.Store(id="precipitation-data", data=precipitation_series)
+        ])
     ])
 ])
 
 # ───────────────────────────────────────────────────────────────────────────────
+@app.callback(
+    Output("geojson-basins", "data"),
+    Output("time-slider", "value"),
+    Input("play-interval", "n_intervals"),
+    State("precipitation-data", "data"),
+    State("time-slider", "value")
+)
+def update_basin_precip(n, precip_data, index):
+    times = list(precip_data.keys())
+    if index >= len(times):
+        return dash.no_update, 0
+    t = times[index]
+    values = precip_data[t]
+    new_features = []
+    for f in basin_area_geojson["features"]:
+        f_new = f.copy()
+        nid = f["properties"]["node_id"]
+        f_new["properties"]["precipitation"] = values.get(nid, 0)
+        new_features.append(f_new)
+    return {"type": "FeatureCollection", "features": new_features}, index + 1
+
+@app.callback(
+    Output("play-interval", "disabled"),
+    Input("play-button", "n_clicks"),
+    Input("pause-button", "n_clicks"),
+    prevent_initial_call=True
+)
+def toggle_play(play, pause):
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        raise PreventUpdate
+    return ctx.triggered[0]["prop_id"].split(".")[0] != "play-button"
+
 @app.callback(
     Output("selected-link", "data"),
     Input("geojson-links-click", "clickData")
