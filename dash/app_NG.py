@@ -137,7 +137,6 @@ app.layout = html.Div(style={"height": "95vh", "display": "flex", "flexDirection
                     style=pump_style,
                     pointToLayer=assign("function(feature, latlng){return L.circleMarker(latlng,{fillOpacity:0.8});}"),
                     options={"interactive": True},
-                    children=[dl.Popup(id="popup-pump")]
                 ),
 
                 dl.GeoJSON(
@@ -245,6 +244,33 @@ def update_link_graph(cd):
         "data": [{"x": df_sel["time"], "y": df_sel["flow_rate"], "type": "scatter", "name": f"Flow {link_id}"}],
         "layout": {"title": f"Flow over link {link_id}", "xaxis": {"title": "Tijd"}, "yaxis": {"title": "Debiet (m³/s)"}, "margin": {"l": 60, "r": 10, "t": 40, "b": 40}},
     }
+
+
+@app.callback(
+    Output("pump-dropdown", "value"),
+    Input("geojson-pumps", "clickData"),
+    State("pump-dropdown", "value")
+)
+def update_selected_pumps(feature, current_selection):
+    if not feature or "properties" not in feature:
+        raise PreventUpdate
+    node_id = feature["properties"]["node_id"]
+    current_selection = current_selection or []
+    if node_id in current_selection:
+        # Deselecteer bij opnieuw klikken
+        return [nid for nid in current_selection if nid != node_id]
+    else:
+        # Voeg toe aan selectie
+        return current_selection + [node_id]
+    
+@app.callback(
+    Output("geojson-pumps", "hideout"),
+    Input("pump-dropdown", "value"),
+    State("geojson-pumps", "hideout")
+)
+def update_pump_hideout(selected, current_hideout):
+    return {"pumps": selected, "zoom": current_hideout.get("zoom", 10)}
+
 
 @app.callback(
     Output("basin-timeseries", "figure"),

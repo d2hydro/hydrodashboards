@@ -148,3 +148,4 @@ src/hydrodashboards/bokeh/static/css/styles.css
 docs/doc_images.pptx
 doc_images.pptx
 apps/vullingsgraad/data/*
+apps/vullingsgraad_dash/data/*

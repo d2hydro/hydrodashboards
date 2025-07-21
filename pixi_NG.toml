@@ -11,8 +11,6 @@ license-file = "LICENSE"
 [tasks]
 dash = "python dash\\app.py"
 dash_ng = "python dash\\app_NG.py"
-vullingsgraad_bokeh = "bokeh serve apps\\vullingsgraad"
-vullingsgraad_dash = "python apps\\vullingsgraad_dash\\app.py"
 
 [dependencies]
 aiohttp = "*"
@@ -24,7 +22,6 @@ bokeh = "*"
 fastapi = "*"
 dash = "*"
 dash-leaflet = "*"
-dash-extensions = "*"
 ipykernel = "*"
 fiona = "*"
 shapely = "*"
@@ -35,5 +32,4 @@ pyarrow = ">=10.0.1"
 [pypi-dependencies]
 dash-resizable-panels ="*"
 dash-split-pane = "*"
-bokeh-helpers = { path = "bokeh-helpers", editable = true }
-
+dash-extensions = "*"
