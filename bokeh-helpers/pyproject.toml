@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools >= 68.0"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "bokeh-helpers"
+requires-python = ">= 3.9"
+version = "2024.1"
+authors = [
+  {name = "Daniel Tollenaar", email = "daniel@d2hydro.nl"},
+  {name = "Wietse van Gerwen", email = "w.vangerwen@hhnk.nl"},
+]
+license = {text = "MIT License"}
+readme = "README.md"
+
+[tool.setuptools]
+packages = ["bokeh_helpers"]

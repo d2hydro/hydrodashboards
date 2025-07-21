@@ -11,6 +11,7 @@ license-file = "LICENSE"
 [tasks]
 dash = "python dash\\app.py"
 dash_ng = "python dash\\app_NG.py"
+vullingsgraad_bokeh = "bokeh serve apps\\vullingsgraad"
 
 [dependencies]
 aiohttp = "*"
@@ -33,3 +34,4 @@ pyarrow = ">=10.0.1"
 [pypi-dependencies]
 dash-resizable-panels ="*"
 dash-split-pane = "*"
+bokeh-helpers = { path = "bokeh-helpers", editable = true }

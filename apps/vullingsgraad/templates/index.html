@@ -1,0 +1,39 @@
+{% extends base %}
+{% block postamble %}
+<style>
+   {% include 'css/base.css' %}
+</style>
+<script>
+   {% include 'js/dragbar.js' %}
+   {% include 'js/mapopt.js' %}
+</script>
+{% endblock %}
+{% block preamble %}
+<link rel="icon" type="image/x-icon" href="vullingsgraad/static/icons/favicon.ico">
+<body onresize="ResetColumnSizes()">
+   <div id="grid-container" onmouseup="EndDrag()" onmousemove="OnDrag(event)">
+      <div id="kaart">
+         {{ embed(roots.map_figure) }}
+         <div id ="button_leg_bar" >
+            <button onclick="popMapLegend()" class="maplayer_icon" id="maplayer_icon" aria-hidden="true">
+            </button>
+         </div>
+         <div class="map_opt" id="map_opt">
+            {{ embed(roots.map_options) }}
+         </div>
+         <div class="locations_select" id="locations_select">
+            {{ embed(roots.select_kaartvariabele) }}
+            {{ embed(roots.select_peilgebied) }}
+         </div>
+      </div>
+      <div id="kaartdragbar" onmousedown="StartKaartDrag()"></div>
+      <div id="xrange">  {{ embed(roots.select_xrange) }}</div>
+      <div id="grafiek1">  {{ embed(roots.fig_vullingsgraad) }}</div>
+      <div id="grafiek2">  {{ embed(roots.fig_berging) }}</div>
+      <div id="grafiek3">  {{ embed(roots.fig_wlvl) }} </div>
+      <div id="play_button">  {{ embed(roots.play_button) }} </div>
+      <div id="date_time_picker">  {{ embed(roots.date_time_picker) }} </div>
+      <div id="empty_cell"></div>
+   </div>
+</body>
+{% endblock %}
