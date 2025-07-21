@@ -217,7 +217,7 @@ app.layout = html.Div([
                 updatemode="mouseup",
                 included=True,
                 tooltip={"placement": "bottom", "always_visible": False},
-                marks=none
+                marks=None
             ),
         ], style={
             "position": "relative",
