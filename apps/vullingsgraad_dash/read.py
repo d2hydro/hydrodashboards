@@ -3,6 +3,7 @@ from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
+import json
 
 
 def get_xs_ys(geometry, as_int=True):
@@ -15,7 +16,10 @@ def get_xs_ys(geometry, as_int=True):
 
 
 def read_peilgebieden(
-    file_path: str, code_col: str, as_int: bool = True, simplify_tolerance: int = None, columns: list = []
+    file_path: str,
+    code_col: str,
+    geometry_precision: float = 0.000006,
+    columns: list = [],
 ) -> pd.DataFrame:
     """schrijf/lees peilgebieden in/uit een arrow-file voor bokeh
 
@@ -37,14 +41,13 @@ def read_peilgebieden(
     """
 
     # make file Path if not already
-    if not isinstance(file_path, Path):
-        file_path = Path(file_path)
+    file_path = Path(file_path)
 
     # read arrow-file if exists, otherwise make one.
     arrow_file = file_path.with_suffix(".arrow")
 
     if arrow_file.exists():
-        df = pd.read_feather(arrow_file)  # , dtype_backend="pyarrow")
+        gdf = gpd.read_feather(arrow_file)  # , dtype_backend="pyarrow")
     else:
         gdf = gpd.read_file(file_path, engine="pyogrio")
         df_csv = pd.read_csv(file_path.with_suffix(".csv"))
@@ -60,38 +63,18 @@ def read_peilgebieden(
             axis=1,
             inplace=True,
         )
-        # gdf = gdf[gdf["has_mpn"].notna()]  # Filter pgb where calculation available
-        gdf["geometry"] = gdf.buffer(0.1)  # Buffer so we get less geoms when exploding
+        gdf["geometry"] = gdf.buffer(0.1).buffer(
+            -0.1
+        )  # Buffer so we get less geoms when exploding
+        gdf.to_crs(epsg=4326, inplace=True)
+        gdf["geometry"] = gdf.geometry.set_precision(geometry_precision)
         gdf = gdf[[code_col] + columns + ["geometry"]].explode(index_parts=False)
-        xs = []
-        ys = []
-        for row in gdf.itertuples():
-            # read (simplified) geometry
-            if simplify_tolerance is not None:
-                geometry = row.geometry.simplify(tolerance=simplify_tolerance)
-            else:
-                geometry = row.geometry
+        gdf.rename(columns={code_col: "location_id"}, inplace=True)
 
-            # get exterior
-            exterior_xs, exterior_ys = get_xs_ys(geometry.exterior)
-
-            # get holes
-            xs_ys = [get_xs_ys(i) for i in geometry.interiors]
-            holes_xs = [i[0] for i in xs_ys]
-            holes_ys = [i[1] for i in xs_ys]
-
-            # store xs ys in list
-            xs += [[[exterior_xs] + holes_xs]]
-            ys += [[[exterior_ys] + holes_ys]]
-
-        df = gdf[[code_col] + columns]
-        df.rename(columns={code_col: "location_id"}, inplace=True)
-        df.loc[:, "xs"] = xs
-        df.loc[:, "ys"] = ys
         # store dataframe
-        df.to_feather(arrow_file)
+        gdf.to_feather(arrow_file)
 
-    return df
+    return json.loads(gdf.to_json())
 
 
 def read_mpn_locs(file_path):
@@ -110,7 +93,13 @@ if __name__ == "__main__":
 
     file = peilgebieden_gpkg
     code_col = "CODE"
-    columns = ["naam", "streefpeil", "inundatiepeil", "berging_bij_inundatiepeil", "peil_bij_nul_berging"]
+    columns = [
+        "naam",
+        "streefpeil",
+        "inundatiepeil",
+        "berging_bij_inundatiepeil",
+        "peil_bij_nul_berging",
+    ]
     simplify_tolerance = None
 
     read_peilgebieden(file, code_col, simplify_tolerance, columns)
