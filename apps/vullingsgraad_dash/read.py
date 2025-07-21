@@ -17,9 +17,9 @@ def get_xs_ys(geometry, as_int=True):
 
 def read_peilgebieden(
     file_path: str,
-    code_col: str,
+    code_col: str = "CODE",
     geometry_precision: float = 0.000006,
-    columns: list = [],
+    columns: list = ["naam"],
 ) -> pd.DataFrame:
     """schrijf/lees peilgebieden in/uit een arrow-file voor bokeh
 
@@ -68,13 +68,18 @@ def read_peilgebieden(
         )  # Buffer so we get less geoms when exploding
         gdf.to_crs(epsg=4326, inplace=True)
         gdf["geometry"] = gdf.geometry.set_precision(geometry_precision)
-        gdf = gdf[[code_col] + columns + ["geometry"]].explode(index_parts=False)
+        gdf = gdf[[code_col] + columns + ["geometry"]]
         gdf.rename(columns={code_col: "location_id"}, inplace=True)
 
+        gdf.loc[gdf["naam"].isna(), "naam"] = "naamloos"
         # store dataframe
         gdf.to_feather(arrow_file)
 
-    return json.loads(gdf.to_json())
+    # get options
+    options_df = gdf[["location_id", "naam"]].copy()
+    options_df.rename(columns={"location_id": "value", "naam": "label"}, inplace=True)
+
+    return json.loads(gdf.to_json()), options_df.to_dict(orient="records")
 
 
 def read_mpn_locs(file_path):
