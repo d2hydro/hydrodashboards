@@ -158,10 +158,14 @@ app.layout = html.Div([
                 eventHandlers=dict(
                     click=assign("""
                         function(e){
-                            return e.target.feature.properties;
+                            if(e && e.target && e.target.feature && e.target.feature.properties && e.target.feature.properties.location_id){
+                                return e.target.feature.properties;
+                            }
+                            return {};  // Of null
                         }
                     """)
-                )
+                ),
+
             ),
         ]
     ),
