@@ -4,8 +4,6 @@ from dash import html, dcc, Output, Input, State, ALL, ctx
 import dash_leaflet as dl
 import pandas as pd
 import pyarrow.dataset as ds
-import pyarrow.compute as pc
-import pyarrow as pa
 from read import read_peilgebieden, read_mpn_locs
 from dash_extensions.javascript import assign
 from pyproj import Transformer
@@ -18,6 +16,57 @@ from flask_caching import Cache
 from functools import wraps, lru_cache
 
 # ------------------------------------------------------------
+# Timer helpers
+# ------------------------------------------------------------
+def timer_print(msg, t0):
+    print(f"[TIMER] {msg} - {time.perf_counter() - t0:.3f} s")
+
+def timed_inner(name):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            t0 = time.perf_counter()
+            out = f(*args, **kwargs)
+            timer_print(f"  --> Binnen {name}", t0)
+            return out
+        return wrapper
+    return decorator
+
+def timed_callback(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        t0 = time.perf_counter()
+        output_ids = get_callback_output_ids()
+        print(f"[CALLBACK] {', '.join(output_ids)} triggered by {ctx.triggered_id}")
+        result = f(*args, **kwargs)
+        dt = time.perf_counter() - t0
+        print(f"[TIMING] Callback {f.__name__} duurde {dt:.3f} s")
+        return result
+    return wrapper
+
+def get_callback_output_ids():
+    try:
+        v = getattr(ctx, "outputs_list", None)
+        if not v:
+            return ["?"]
+        if isinstance(v, str):
+            return [v]
+        if isinstance(v, dict):
+            return [str(v.get("id", "?"))]
+        if isinstance(v, (list, tuple)):
+            out = []
+            for item in v:
+                if isinstance(item, dict):
+                    out.append(str(item.get("id", "?")))
+                else:
+                    out.append(str(item))
+            return out if out else ["?"]
+        return [str(v)]
+    except Exception as e:
+        print("Error in get_callback_output_ids:", e)
+        return ["?"]
+
+# ------------------------------------------------------------
 # App en cache setup
 # ------------------------------------------------------------
 app = dash.Dash(__name__)
@@ -27,29 +76,18 @@ cache = Cache(app.server, config={
     "CACHE_DEFAULT_TIMEOUT": 3600
 })
 
-def timed_callback(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        t0 = time.perf_counter()
-        result = f(*args, **kwargs)
-        dt = time.perf_counter() - t0
-        print(f"[TIMING] Callback {f.__name__} duurde {dt:.3f} s")
-        return result
-    return wrapper
-
 # ------------------------------------------------------------
-# Geodata en datasets laden
+# Geodata en datasets laden + PREFILTERS
 # ------------------------------------------------------------
-timer_start = time.time()
-
-# Kaart bounds transformeren naar WGS84
+timer0 = time.perf_counter()
 xmin, ymin, xmax, ymax = 100500, 486900, 150150, 577550
 transformer = Transformer.from_crs(28992, 4326, always_xy=True)
 lon_sw, lat_sw = transformer.transform(xmin, ymin)
 lon_ne, lat_ne = transformer.transform(xmax, ymax)
 leaflet_bounds = [[lat_sw, lon_sw], [lat_ne, lon_ne]]
+timer_print("CRS transformatie (kaart bounds)", timer0)
 
-# Peilgebieden inladen
+timer1 = time.perf_counter()
 geojson_data, options = read_peilgebieden(
     file_path="d:/repositories/hydrodashboards/apps/vullingsgraad_dash/data/peilgebieden_cso_combi.shp",
     code_col="CODE",
@@ -62,33 +100,42 @@ for feat in geojson_data["features"]:
         "weight": 0.3,
         "fillOpacity": 0.3
     }
-print("TIJD: shapefile/geodata ingelezen in", round(time.time() - timer_start, 2), "s")
+    # Zet expliciet location_id!
+    if "CODE" in feat["properties"]:
+        feat["properties"]["location_id"] = str(feat["properties"]["CODE"])
 
-# Keuzeopties dropdown
 location_options = []
 seen = set()
 for opt in options:
     lbl, val = opt.get("label"), opt.get("value")
     if lbl and val and val not in seen:
         seen.add(val)
-        location_options.append({"label": f"{lbl} ({val})", "value": val})
+        location_options.append({"label": f"{lbl} ({val})", "value": str(val)})
+timer_print("Dropdown opties opgebouwd", timer1)
 
-# Datasets laden
-ds_vg = ds.dataset("d:/repositories/hydrodashboards/apps/vullingsgraad_dash/data/vullingsgraad.arrow", format="feather")
-ds_vul = ds.dataset("d:/repositories/hydrodashboards/apps/vullingsgraad_dash/data/vulling.arrow", format="feather")
-df_locs_mpn = read_mpn_locs("d:/repositories/hydrodashboards/apps/vullingsgraad_dash/data/mpn_locations.arrow")
-ds_wlvl_mpn = ds.dataset("d:/repositories/hydrodashboards/apps/vullingsgraad_dash/data/waterstand_meetpunt.arrow", format="feather")
-ds_wlvl_pgb = ds.dataset("d:/repositories/hydrodashboards/apps/vullingsgraad_dash/data/waterstand_pgb.arrow", format="feather")
+VG_DF = ds.dataset("d:/repositories/hydrodashboards/apps/vullingsgraad_dash/data/vullingsgraad.arrow", format="feather").to_table().to_pandas()
+VG_DF["datetime"] = pd.to_datetime(VG_DF["datetime"])
+VUL_DF = ds.dataset("d:/repositories/hydrodashboards/apps/vullingsgraad_dash/data/vulling.arrow", format="feather").to_table().to_pandas()
+VUL_DF["datetime"] = pd.to_datetime(VUL_DF["datetime"])
 
-# Tijdas maken
-timer_start = time.time()
-dt_vg = ds_vg.to_table(columns=["datetime"])
-dt_vul = ds_vul.to_table(columns=["datetime"])
-all_dt_arrow = pc.unique(pa.concat_tables([dt_vg, dt_vul])["datetime"])
-all_datetimes = sorted(pd.to_datetime(all_dt_arrow.to_pylist()))
+LOC_MPN_DF = read_mpn_locs("d:/repositories/hydrodashboards/apps/vullingsgraad_dash/data/mpn_locations.arrow")
+WLVL_MPN_DF = ds.dataset("d:/repositories/hydrodashboards/apps/vullingsgraad_dash/data/waterstand_meetpunt.arrow", format="feather").to_table().to_pandas()
+WLVL_PGB_DF = ds.dataset("d:/repositories/hydrodashboards/apps/vullingsgraad_dash/data/waterstand_pgb.arrow", format="feather").to_table().to_pandas()
+timer_print("Alle Arrow/Feather datasets als pandas ingeladen", timer1)
+
+all_dt_arrow = pd.concat([VG_DF["datetime"], VUL_DF["datetime"]]).drop_duplicates()
+all_datetimes = sorted(pd.to_datetime(all_dt_arrow))
 datum_to_index = {i: dt for i, dt in enumerate(all_datetimes)}
 index_to_datum = {pd.Timestamp(dt): i for i, dt in enumerate(all_datetimes)}
-print("TIJD: tijdas opgebouwd in", round(time.time() - timer_start, 2), "s")
+
+# ===== Prefilter: alles in dicts =====
+VG_DF_dict = {k: g.reset_index(drop=True) for k, g in VG_DF.groupby("location_id")}
+VUL_DF_dict = {k: g.reset_index(drop=True) for k, g in VUL_DF.groupby("location_id")}
+lege_vg_df = pd.DataFrame({"datetime": all_datetimes, "value": [None]*len(all_datetimes)})
+lege_vul_df = pd.DataFrame({"datetime": all_datetimes, "value": [None]*len(all_datetimes)})
+mpn_per_peilgebied = {k: g.reset_index(drop=True) for k, g in LOC_MPN_DF.groupby("peilgebied_combi_attr")}
+wlvl_per_mpn = {k: g.reset_index(drop=True) for k, g in WLVL_MPN_DF.groupby("location_id")}
+wlvl_per_pgb = {k: g.reset_index(drop=True) for k, g in WLVL_PGB_DF.groupby("location_id")}
 
 kaartvariabelen = [
     {"label": "vullingsgraad [%]", "value": "vullingsgraad"},
@@ -128,10 +175,7 @@ function(feature, context){
 
 def get_marker_icon(selected=False):
     url = "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/"
-    if selected:
-        icon_url = url + "marker-icon-yellow.png"
-    else:
-        icon_url = url + "marker-icon-blue.png"
+    icon_url = url + ("marker-icon-yellow.png" if selected else "marker-icon-blue.png")
     return {
         "iconUrl": icon_url,
         "iconSize": [25, 41],
@@ -150,17 +194,19 @@ def_layout = {
     "flexDirection": "column", "gap": "10px", "minHeight": 0
 }
 
+# ---------- DEFAULTS VOOR DIRECTE INIT ------------
 default_index = 0
 default_dt = datum_to_index[default_index]
+default_var = "vullingsgraad"
+default_pgb = location_options[0]["value"]
 initial_label = default_dt.strftime("%Y-%m-%d %H:%M")
-initial_stylemap = {}
+
+# ---------------------------------------------------
 
 # ------------------------------------------------------------
 # Layout
 # ------------------------------------------------------------
 app.layout = html.Div([
-
-    # Sidebar / besturing
     html.Div([
         html.Label([
             "kaartvariabele: ",
@@ -169,10 +215,11 @@ app.layout = html.Div([
         dcc.Dropdown(
             id="kaartvariabele-dropdown",
             options=kaartvariabelen,
-            value="vullingsgraad",
+            value=default_var,
             clearable=False,
             style={"width": "240px", "marginBottom": "8px"}
         ),
+        dcc.Store(id="hovered-trace", data=None),
         dcc.Store(id="selected-mpn-id", data=None),
         html.Label([
             "peilgebied: ",
@@ -181,16 +228,16 @@ app.layout = html.Div([
         dcc.Dropdown(
             id="pgb-dropdown",
             options=location_options,
+            value=default_pgb,   # <-- Default selection!
             placeholder="Selecteer peilgebied",
             clearable=True,
             style={"width": "240px"}
-        ),
+        )
     ], style={
         "position": "absolute", "top": "10px", "left": "10px", "zIndex": 1002,
         "background": "rgba(220,240,255,1)", "borderRadius": "8px", "padding": "10px"
     }),
 
-    # Grafiek rechtsboven
     html.Div([
         dcc.Loading(
             id="graph-loading",
@@ -207,7 +254,6 @@ app.layout = html.Div([
         )
     ], style=def_layout),
 
-    # Kaart
     dl.Map(
         center=[(lat_sw + lat_ne) / 2, (lon_sw + lon_ne) / 2],
         bounds=leaflet_bounds,
@@ -219,23 +265,19 @@ app.layout = html.Div([
             dl.GeoJSON(
                 id="geojson-pgb",
                 data=geojson_data,
-                hideout=initial_stylemap,
                 options={
                     "style": style_handle,
                     "interactive": True,
                     "bubblingMouseEvents": True,
-                    "selected": None,
+                    "selected": default_pgb,  # <-- Default selected!
                 },
                 hoverStyle={"weight": 2, "color": "yellow", "dashArray": ""},
                 children=[dl.Tooltip(id="geojson-tooltip")],
-                eventHandlers={
-                    "click": assign("function(e){return e?.target?.feature?.properties||{};}")
-                }
+                eventHandlers={"click": assign("function(e){return e?.target?.feature?.properties||{};}")}
             ),
         ]
     ),
 
-    # Tijdslider & minigrafiek onderin
     html.Div([
         dcc.Store(id="is-playing", data=False),
         html.Button(id="playpause-button", n_clicks=0, style={"width": "72px"}),
@@ -264,24 +306,29 @@ app.layout = html.Div([
 ])
 
 # ------------------------------------------------------------
-# Callbacks
+# Callbacks (ALLES via dict lookups!)
 # ------------------------------------------------------------
 
 @lru_cache(maxsize=128)
+@timed_inner("get_kaartdata_for_datetime")
 def get_kaartdata_for_datetime(dt, kaartvariabele):
     dt = pd.Timestamp(dt)
-    arrow_dt = pa.scalar(dt)
     if kaartvariabele == "vullingsgraad":
-        tb = ds_vg.to_table(filter=(ds.field('datetime') == arrow_dt), columns=["location_id", "value"])
+        data_dict = VG_DF_dict
         kleur_fn = kleur_bij_vullingsgraad
     else:
-        tb = ds_vul.to_table(filter=(ds.field('datetime') == arrow_dt), columns=["location_id", "value"])
+        data_dict = VUL_DF_dict
         kleur_fn = kleur_bij_vulling
-    ids = tb["location_id"].to_pylist()
-    vals = tb["value"].to_pylist()
     return {
-        loc: {"fillColor": kleur_fn(val), "color": "#666", "weight": 0.3, "fillOpacity": 1, kaartvariabele: val}
-        for loc, val in zip(ids, vals)
+        loc: {
+            "fillColor": kleur_fn(
+                df.loc[df["datetime"] == dt, "value"].iloc[0]
+            ) if not df.empty and (df["datetime"] == dt).any() else "gray",
+            "color": "#666", "weight": 0.3, "fillOpacity": 1,
+            kaartvariabele: df.loc[df["datetime"] == dt, "value"].iloc[0]
+                if not df.empty and (df["datetime"] == dt).any() else None
+        }
+        for loc, df in data_dict.items()
     }
 
 @app.callback(
@@ -291,22 +338,18 @@ def get_kaartdata_for_datetime(dt, kaartvariabele):
     Input("tijdslider", "value"),
     Input("pgb-dropdown", "value"),
     Input("kaartvariabele-dropdown", "value"),
-    prevent_initial_call=True
+    # GEEN prevent_initial_call=True hier!
 )
 def update_stylemap(idx, sel, var):
-    try:
-        if idx is None or int(idx) not in datum_to_index or not sel or not var:
-            raise PreventUpdate
-        dt = datum_to_index[int(idx)]
-        stylemap = get_kaartdata_for_datetime(dt, var)
-        label = dt.strftime("%Y-%m-%d %H:%M")
-        options = {"style": style_handle, "selected": sel, "interactive": True, "bubblingMouseEvents": True}
-        return stylemap, label, options
-    except PreventUpdate:
-        raise
-    except Exception as e:
-        print(f"[ERROR] update_stylemap: {e}", file=sys.stderr)
+    t0 = time.perf_counter()
+    if idx is None or int(idx) not in datum_to_index or not sel or not var:
         raise PreventUpdate
+    dt = datum_to_index[int(idx)]
+    stylemap = get_kaartdata_for_datetime(dt, var)
+    label = dt.strftime("%Y-%m-%d %H:%M")
+    options = {"style": style_handle, "selected": sel, "interactive": True, "bubblingMouseEvents": True}
+    timer_print("update_stylemap callback", t0)
+    return stylemap, label, options
 
 @app.callback(
     Output("pgb-dropdown", "value"),
@@ -314,6 +357,8 @@ def update_stylemap(idx, sel, var):
     prevent_initial_call=True
 )
 def select_dropdown_on_click(clickData):
+    if not clickData or "properties" not in clickData or "location_id" not in clickData["properties"]:
+        raise PreventUpdate
     return clickData["properties"]["location_id"]
 
 @app.callback(
@@ -343,98 +388,103 @@ def update_tooltip(feature, idx, var):
 )
 @timed_callback
 def update_and_highlight_combined(sel, var, selected_mpn_id):
+    t0 = time.perf_counter()
     if not sel:
         raise PreventUpdate
-    ckey = f"combined_{sel}"
+    ckey = f"combined_{sel}_{selected_mpn_id}"
     fig = cache.get(ckey)
-    if fig is None:
-        tb = ds_vg.to_table(filter=(ds.field('location_id') == sel), columns=["datetime", "value"])
-        df_vg = pd.DataFrame({"datetime": pd.to_datetime(tb['datetime'].to_pylist()), "vullingsgraad": tb['value'].to_pylist()})
-        tb = ds_vul.to_table(filter=(ds.field('location_id') == sel), columns=["datetime", "value"])
-        df_vul = pd.DataFrame({"datetime": pd.to_datetime(tb['datetime'].to_pylist()), "vulling": tb['value'].to_pylist()})
-        tb = ds_wlvl_pgb.to_table(filter=(ds.field('location_id') == sel), columns=["datetime", "value"])
-        df_pgb = pd.DataFrame({"datetime": pd.to_datetime(tb['datetime'].to_pylist()), "waarde": tb['value'].to_pylist()})
-        mpn_ids = df_locs_mpn.loc[df_locs_mpn['peilgebied_combi_attr'] == sel, 'location_id'].tolist()
-        tb_all = ds_wlvl_mpn.to_table(filter=ds.field('location_id').isin(mpn_ids), columns=["location_id", "datetime", "value"]).to_pandas()
-        tb_all['datetime'] = pd.to_datetime(tb_all['datetime'])
-        fig = make_subplots(rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.06,
-                            subplot_titles=["Vullingsgraad [%]", "Vulling [mm]", "Waterstand [mNAP]"])
-        fig.add_trace(go.Scatter(x=df_vg.datetime, y=df_vg.vullingsgraad, line=dict(color='blue', width=2), showlegend=False), row=1, col=1)
-        for y0, y1, colc in [(0, 25, 'rgba(120,200,120,0.4)'), (25, 50, 'rgba(255,255,100,0.4)'), (50, 75, 'rgba(255,200,100,0.4)'), (75, 100, 'rgba(255,100,100,0.4)')]:
-            fig.add_shape(type='rect', xref='x1', yref='y1', x0=df_vg.datetime.min(), x1=df_vg.datetime.max(), y0=y0, y1=y1,
-                          fillcolor=colc, line_width=0, layer='below', row=1, col=1)
-        fig.add_trace(go.Scatter(x=df_vul.datetime, y=df_vul.vulling, line=dict(color='royalblue', width=2), showlegend=False), row=2, col=1)
-        for y0, y1, colc in [(0, 10, '#ffffff'), (10, 20, '#b4d3e7'), (20, 30, '#72b2d7'), (30, 40, '#3e91c4'), (40, 60, '#1c5fa5')]:
-            fig.add_shape(type='rect', xref='x2', yref='y2', x0=df_vul.datetime.min(), x1=df_vul.datetime.max(), y0=y0, y1=y1,
-                          fillcolor=colc, line_width=0, layer='below', row=2, col=1)
-        cache.set(ckey, fig)
-        print(f"CACHE MISS combined for {sel}")
-    else:
-        print(f"CACHE HIT combined for {sel}")
+    if fig is not None:
+        print(f"CACHE HIT combined for {sel} / {selected_mpn_id}")
+        timer_print("update_and_highlight_combined totaal", t0)
+        return fig
+    print(f"CACHE MISS combined for {sel} / {selected_mpn_id}")
 
-    # Waterstand-meetpunten en peilgebied
-    mpn_ids = df_locs_mpn.loc[df_locs_mpn['peilgebied_combi_attr'] == sel, 'location_id'].tolist()
-    tb_all = ds_wlvl_mpn.to_table(filter=ds.field('location_id').isin(mpn_ids), columns=["location_id", "datetime", "value"]).to_pandas()
-    tb_all['datetime'] = pd.to_datetime(tb_all['datetime'])
-    tb_all = tb_all.sort_values(['location_id', 'datetime'])
-
-    if selected_mpn_id and str(selected_mpn_id) in [str(mid) for mid in mpn_ids]:
-        # Eerst grijs, dan blauw, dan geselecteerd
-        for mid, grp in tb_all.groupby('location_id'):
-            if str(mid) == str(selected_mpn_id): continue
-            naam = df_locs_mpn.loc[df_locs_mpn.location_id == mid, 'naam'].iat[0]
-            fig.add_trace(go.Scattergl(
-                x=grp.datetime, y=grp.value / 1000, mode='lines',
+    df_vg = VG_DF_dict.get(sel, lege_vg_df)
+    df_vul = VUL_DF_dict.get(sel, lege_vul_df)
+    df_pgb = wlvl_per_pgb.get(sel, pd.DataFrame(columns=["datetime", "value"]))
+    mpn_ids = mpn_per_peilgebied.get(sel, pd.DataFrame(columns=["location_id"]))["location_id"].tolist()
+    traces = []
+    if selected_mpn_id and selected_mpn_id in wlvl_per_mpn:
+        for mid in mpn_ids:
+            if mid == selected_mpn_id: continue
+            grp = wlvl_per_mpn.get(mid, pd.DataFrame(columns=["datetime", "value"]))
+            naam = LOC_MPN_DF.loc[LOC_MPN_DF.location_id == mid, 'naam'].iat[0] if not LOC_MPN_DF.empty else ""
+            traces.append(go.Scattergl(x=grp["datetime"], y=grp["value"]/1000, mode='lines',
                 line=dict(color='grey', width=1), opacity=0.7,
-                hovertemplate='datum: %{x|%Y-%m-%d %H:%M}<br>waarde: %{y:.3f}<br>naam: ' + naam + '<extra></extra>',
-                showlegend=False
-            ), row=3, col=1)
-        tb = ds_wlvl_pgb.to_table(filter=(ds.field('location_id') == sel), columns=["datetime", "value"])
-        df_pgb = pd.DataFrame({"datetime": pd.to_datetime(tb['datetime'].to_pylist()), "waarde": tb['value'].to_pylist()})
+                hovertemplate=f'datum: %{{x|%Y-%m-%d %H:%M}}<br>waarde: %{{y:.3f}}<br>naam: {naam}<extra></extra>'))
         if not df_pgb.empty:
-            fig.add_trace(go.Scattergl(
-                x=df_pgb.datetime, y=df_pgb.waarde / 1000, mode='lines',
+            traces.append(go.Scattergl(
+                x=df_pgb["datetime"], y=df_pgb["value"]/1000, mode='lines',
                 line=dict(color='royalblue', width=3),
-                hovertemplate='datum: %{x|%Y-%m-%d %H:%M}<br>waarde: %{y:.3f}<br>naam: Peilgebied<extra></extra>',
-                showlegend=False
-            ), row=3, col=1)
-        grp = tb_all[tb_all['location_id'] == selected_mpn_id]
+                name=f"Meetpunt {naam}",
+                hovertemplate='datum: %{x|%Y-%m-%d %H:%M}<br>waarde: %{y:.3f}<br>naam: Peilgebied<extra></extra>'
+            ))
+        grp = wlvl_per_mpn.get(selected_mpn_id, pd.DataFrame(columns=["datetime", "value"]))
         if not grp.empty:
-            naam = df_locs_mpn.loc[df_locs_mpn.location_id == selected_mpn_id, 'naam'].iat[0]
-            fig.add_trace(go.Scattergl(
-                x=grp.datetime, y=grp.value / 1000, mode='lines',
+            naam = LOC_MPN_DF.loc[LOC_MPN_DF.location_id == selected_mpn_id, 'naam'].iat[0]
+            traces.append(go.Scattergl(
+                x=grp["datetime"], y=grp["value"]/1000, mode='lines',
                 line=dict(color='#e7e427', width=3), opacity=1,
-                hovertemplate='datum: %{x|%Y-%m-%d %H:%M}<br>waarde: %{y:.3f}<br>naam: ' + naam + '<extra></extra>',
-                showlegend=False
-            ), row=3, col=1)
+                hovertemplate=f'datum: %{{x|%Y-%m-%d %H:%M}}<br>waarde: %{{y:.3f}}<br>naam: {naam}<extra></extra>'
+            ))
     else:
-        # Geen selectie: alles grijs, dan blauw
-        for mid, grp in tb_all.groupby('location_id'):
-            naam = df_locs_mpn.loc[df_locs_mpn.location_id == mid, 'naam'].iat[0]
-            fig.add_trace(go.Scattergl(
-                x=grp.datetime, y=grp.value / 1000, mode='lines',
+        for mid in mpn_ids:
+            grp = wlvl_per_mpn.get(mid, pd.DataFrame(columns=["datetime", "value"]))
+            naam = LOC_MPN_DF.loc[LOC_MPN_DF.location_id == mid, 'naam'].iat[0] if not LOC_MPN_DF.empty else ""
+            traces.append(go.Scattergl(x=grp["datetime"], y=grp["value"]/1000, mode='lines',
                 line=dict(color='grey', width=1), opacity=0.7,
-                hovertemplate='datum: %{x|%Y-%m-%d %H:%M}<br>waarde: %{y:.3f}<br>naam: ' + naam + '<extra></extra>',
-                showlegend=False
-            ), row=3, col=1)
-        tb = ds_wlvl_pgb.to_table(filter=(ds.field('location_id') == sel), columns=["datetime", "value"])
-        df_pgb = pd.DataFrame({"datetime": pd.to_datetime(tb['datetime'].to_pylist()), "waarde": tb['value'].to_pylist()})
+                hovertemplate=f'datum: %{{x|%Y-%m-%d %H:%M}}<br>waarde: %{{y:.3f}}<br>naam: {naam}<extra></extra>'))
         if not df_pgb.empty:
-            fig.add_trace(go.Scattergl(
-                x=df_pgb.datetime, y=df_pgb.waarde / 1000, mode='lines',
+            traces.append(go.Scattergl(
+                x=df_pgb["datetime"], y=df_pgb["value"]/1000, mode='lines',
                 line=dict(color='royalblue', width=3),
-                hovertemplate='datum: %{x|%Y-%m-%d %H:%M}<br>waarde: %{y:.3f}<br>naam: Peilgebied<extra></extra>',
-                showlegend=False
-            ), row=3, col=1)
+                hovertemplate='datum: %{x|%Y-%m-%d %H:%M}<br>waarde: %{y:.3f}<br>naam: Peilgebied<extra></extra>'
+            ))
 
-    fig.update_yaxes(range=[0, 100], fixedrange=True, row=1, col=1)
-    fig.update_yaxes(range=[0, 60], fixedrange=True, row=2, col=1)
-    fig.update_yaxes(fixedrange=True, row=3, col=1)
-    fig.update_xaxes(title_text='Tijd', row=3, col=1)
+    fig = make_subplots(
+        rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.06,
+        subplot_titles=["Vullingsgraad [%]", "Vulling [mm]", "Waterstand [mNAP]"]
+    )
+
+    # BOVENSTE GRAFIEK MET ACHTERGRONDKLEUREN
+    fig.add_trace(go.Scatter(
+        x=df_vg["datetime"], y=df_vg["value"], line=dict(color='blue', width=2), showlegend=False
+    ), row=1, col=1)
+    for y0, y1, colc in [
+        (0, 25, 'rgba(120,200,120,0.4)'),
+        (25, 50, 'rgba(255,255,100,0.4)'),
+        (50, 75, 'rgba(255,200,100,0.4)'),
+        (75, 100, 'rgba(255,100,100,0.4)')
+    ]:
+        fig.add_shape(type='rect', xref='x1', yref='y1',
+                      x0=df_vg["datetime"].min(), x1=df_vg["datetime"].max(),
+                      y0=y0, y1=y1, fillcolor=colc, line_width=0, layer='below', row=1, col=1)
+
+    # TWEEDE GRAFIEK MET ACHTERGRONDKLEUREN
+    fig.add_trace(go.Scatter(
+        x=df_vul["datetime"], y=df_vul["value"], line=dict(color='royalblue', width=2), showlegend=False
+    ), row=2, col=1)
+    for y0, y1, colc in [
+        (0, 10, '#ffffff'),
+        (10, 20, '#b4d3e7'),
+        (20, 30, '#72b2d7'),
+        (30, 40, '#3e91c4'),
+        (40, 60, '#1c5fa5')
+    ]:
+        fig.add_shape(type='rect', xref='x2', yref='y2',
+                      x0=df_vul["datetime"].min(), x1=df_vul["datetime"].max(),
+                      y0=y0, y1=y1, fillcolor=colc, line_width=0, layer='below', row=2, col=1)
+
+    # DERDE GRAFIEK: WATERSTAND MEETPUNTEN
+    for tr in traces:
+        fig.add_trace(tr, row=3, col=1)
+
     fig.update_layout(
         height=900, margin=dict(l=40, r=10, t=60, b=40), plot_bgcolor='white',
         hovermode='closest', font=dict(size=13), showlegend=False
     )
+    cache.set(ckey, fig)
+    timer_print("update_and_highlight_combined totaal", t0)
     return fig
 
 @app.callback(
@@ -445,16 +495,29 @@ def update_and_highlight_combined(sel, var, selected_mpn_id):
     prevent_initial_call=True
 )
 @timed_callback
+
 def update_mini_timeseries(sel, var, idx):
+    t0 = time.perf_counter()
     if not sel:
         raise PreventUpdate
     mkey = f"mini_{sel}_{var}"
     mini = cache.get(mkey)
+    
     if mini is None:
-        ds_sel = ds_vg if var == 'vullingsgraad' else ds_vul
-        tb = ds_sel.to_table(filter=(ds.field('location_id') == sel), columns=['datetime', 'value'])
-        series = pd.Series(tb['value'].to_pylist(), index=pd.to_datetime(tb['datetime'].to_pylist()))
-        vals = [series.get(pd.Timestamp(dt), None) for dt in all_datetimes]
+        ds_sel = VG_DF_dict if var == 'vullingsgraad' else VUL_DF_dict
+        df = ds_sel.get(sel, lege_vg_df if var == "vullingsgraad" else lege_vul_df)
+        all_datetimes_dt = pd.to_datetime(all_datetimes)
+        if isinstance(df, pd.DataFrame) and not df.empty and "datetime" in df.columns:
+            df["datetime"] = pd.to_datetime(df["datetime"])
+            all_datetimes_dt = pd.to_datetime(all_datetimes)
+            df = df.drop_duplicates(subset=["datetime"])
+            df = df.set_index("datetime").reindex(all_datetimes_dt).reset_index()
+        else:
+            df = pd.DataFrame({
+                "datetime": pd.to_datetime(all_datetimes),
+                "value": [np.nan] * len(all_datetimes)
+            })
+        vals = df["value"].tolist()
         idx0 = int(idx)
         mini = go.Figure(go.Scatter(
             x=list(range(len(all_datetimes))),
@@ -466,10 +529,69 @@ def update_mini_timeseries(sel, var, idx):
                            xaxis=dict(visible=False, range=[0, len(all_datetimes) - 1], fixedrange=True),
                            yaxis=dict(visible=False, fixedrange=True))
         cache.set(mkey, mini)
-        print(f"CACHE MISS mini for {mkey}")
-    else:
-        print(f"CACHE HIT mini for {mkey}")
+    timer_print("update_mini_timeseries totaal", t0)
     return mini
+
+
+@app.callback(
+    Output("marker-mpn", "children"),
+    Input("pgb-dropdown", "value"),
+    Input("selected-mpn-id", "data"),
+)
+def update_mpn_markers(selected_location_id, selected_mpn_id):
+    t0 = time.perf_counter()
+    if not selected_location_id:
+        timer_print("update_mpn_markers callback (geen selectie)", t0)
+        raise PreventUpdate
+    points = mpn_per_peilgebied.get(selected_location_id)
+    if points is None or points.empty:
+        timer_print("update_mpn_markers callback (geen punten)", t0)
+        return []
+    coords = transformer.transform(points["x"].values, points["y"].values)
+    lons, lats = coords if isinstance(coords, tuple) else (coords[0], coords[1])
+    selected_str = str(selected_mpn_id) if selected_mpn_id is not None else None
+    markers = [
+        dl.Marker(
+            id={'type': 'mpn-marker', 'index': row.location_id},
+            position=[lat, lon],
+            n_clicks=0,
+            icon=get_marker_icon(str(row.location_id) == selected_str),
+            children=[
+                dl.Tooltip(row.naam),
+                dl.Popup(f"{row.naam} ({row.location_id})")
+            ]
+        )
+        for row, lat, lon in zip(points.itertuples(index=False), lats, lons)
+    ]
+    timer_print("update_mpn_markers callback", t0)
+    return markers
+
+@app.callback(
+    Output("selected-mpn-id", "data"),
+    Input({'type': 'mpn-marker', 'index': ALL}, "n_clicks"),
+    Input("pgb-dropdown", "value"),
+    State("selected-mpn-id", "data"),
+    prevent_initial_call=True
+)
+def set_or_reset_selected_mpn(marker_clicks, pgb_value, prev_selected):
+    t0 = time.perf_counter()
+    trig = ctx.triggered_id
+    if trig == "pgb-dropdown" and prev_selected is None:
+        raise PreventUpdate
+    if isinstance(trig, dict) and trig.get("type") == "mpn-marker":
+        mpn_id = trig["index"]
+        points = mpn_per_peilgebied.get(pgb_value, pd.DataFrame(columns=["location_id"]))
+        marker_ids = points["location_id"].tolist()
+        if mpn_id in marker_ids:
+            i = marker_ids.index(mpn_id)
+            if marker_clicks[i] > 0:
+                if prev_selected == mpn_id:
+                    timer_print("set_or_reset_selected_mpn callback (deselect)", t0)
+                    return None
+                timer_print("set_or_reset_selected_mpn callback (select)", t0)
+                return mpn_id
+    timer_print("set_or_reset_selected_mpn callback (PreventUpdate)", t0)
+    raise PreventUpdate
 
 @app.callback(Output("playpause-button", "children"), Input("is-playing", "data"))
 def set_playpause(is_playing):
@@ -499,57 +621,53 @@ def advance_slider(n, disabled, current):
         raise PreventUpdate
     return (current + 1) % len(all_datetimes)
 
-@app.callback(
-    Output("marker-mpn", "children"),
-    Input("pgb-dropdown", "value"),
-    Input("selected-mpn-id", "data"),
-)
-def update_mpn_markers(selected_location_id, selected_mpn_id):
-    if not selected_location_id:
-        return []
-    points = df_locs_mpn[df_locs_mpn["peilgebied_combi_attr"] == selected_location_id]
-    markers = []
-    for _, row in points.iterrows():
-        lon, lat = transformer.transform(row["x"], row["y"])
-        is_selected = (str(row["location_id"]) == str(selected_mpn_id))
-        markers.append(
-            dl.Marker(
-                id={'type': 'mpn-marker', 'index': row["location_id"]},
-                position=[lat, lon],
-                n_clicks=0,
-                icon=get_marker_icon(is_selected),
-                children=[
-                    dl.Tooltip(row["naam"]),
-                    dl.Popup(f"{row['naam']} ({row['location_id']})")
-                ]
-            )
-        )
-    return markers
+#Lijnen grafiek oplichten vai plotly.js
 
-@app.callback(
-    Output("selected-mpn-id", "data"),
-    Input({'type': 'mpn-marker', 'index': ALL}, "n_clicks"),
-    Input("pgb-dropdown", "value"),
-    State("selected-mpn-id", "data"),
-    prevent_initial_call=True
+app.clientside_callback(
+    """
+    function(hoverData) {
+            var dashDiv = document.getElementById('combined-graph');
+            if (!dashDiv) return window.dash_clientside.no_update;
+            var graphDiv = dashDiv.querySelector('.js-plotly-plot');
+            if (!graphDiv || !graphDiv.data) return window.dash_clientside.no_update;
+
+            let n_top = 0, n_mid = 1;
+            let highlight = -1;
+            if (hoverData && hoverData.points && hoverData.points.length > 0) {
+                let curveNumber = hoverData.points[0].curveNumber;
+                if (curveNumber >= n_top + n_mid) highlight = curveNumber;
+            }
+
+            let n = graphDiv.data.length;
+            let colors = [], widths = [];
+            for (let i = 0; i < n; i++) {
+                if (i < n_top + n_mid) {
+                    colors.push(null);
+                    widths.push(2);
+                } else if (i === highlight) {
+                    colors.push('#ffd700');
+                    widths.push(2);
+                } else {
+                    colors.push('grey');
+                    widths.push(1);
+                }
+            }
+            Plotly.restyle(graphDiv, {'line.color': colors, 'line.width': widths});
+
+            // Lijn naar voren halen:
+            // (alleen als highlight geldig en nog niet bovenop)
+            if (highlight >= n_top + n_mid && highlight !== n - 1) {
+                // Verplaats de trace naar het einde
+                Plotly.moveTraces(graphDiv, highlight, n - 1);
+            }
+
+            return window.dash_clientside.no_update;
+    }
+    """,
+    Output("hovered-trace", "data"),
+    Input("combined-graph", "hoverData"),
 )
-def set_or_reset_selected_mpn(marker_clicks, pgb_value, prev_selected):
-    trig = ctx.triggered_id
-    # Reset bij wisselen van peilgebied
-    if trig == "pgb-dropdown":
-        return None
-    # Marker click: select/deselect
-    if isinstance(trig, dict) and trig.get("type") == "mpn-marker":
-        mpn_id = trig["index"]
-        points = df_locs_mpn[df_locs_mpn["peilgebied_combi_attr"] == pgb_value]
-        marker_ids = points["location_id"].tolist()
-        if mpn_id in marker_ids:
-            i = marker_ids.index(mpn_id)
-            if marker_clicks[i] > 0:
-                if prev_selected == mpn_id:
-                    return None
-                return mpn_id
-    raise PreventUpdate
+
 
 # ------------------------------------------------------------
 # Run
