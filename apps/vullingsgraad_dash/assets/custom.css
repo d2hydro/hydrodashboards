@@ -1,0 +1,15 @@
+/* Verschuif plotly tooltip iets naar rechts/beneden */
+.js-plotly-tooltip {
+  margin-left: 25px !important;
+  margin-top: 15px !important;
+  pointer-events: none;
+  z-index: 9999 !important;
+}
+/* Zet cursor op pointer voor plotly traces in combined-graph */
+#combined-graph .main-svg .scatterlayer .trace {
+    cursor: pointer;
+}
+/* Zet cursor op pointer voor GeoJSON features op de kaart */
+.leaflet-interactive {
+    cursor: pointer !important;
+}

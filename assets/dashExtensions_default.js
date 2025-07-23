@@ -1,17 +1,22 @@
 window.dashExtensions = Object.assign({}, window.dashExtensions, {
     default: {
         function0: function(feature, context) {
-            const colors = context.hideout.colors || {};
-            const selected = context.hideout.selected;
-            const loc = feature.properties.location_id;
-            const base = feature.properties.style;
-            const style = colors[loc] || base;
-            if (selected && selected === loc) {
-                style.weight = 3;
-                style.color = 'blue';
+                const stylemap = context.hideout || {};
+                const loc = feature.properties.location_id;
+                const sel = context.selected;
+                let base = stylemap[loc] || feature.properties.style;
+                if (sel && loc === sel) {
+                    base = Object.assign({}, base, {
+                        weight: 3,
+                        color: '#e7e427'
+                    })
+                }
+                return base;
             }
-            return style;
-        }
 
+            ,
+        function1: function(e) {
+            return e?.target?.feature?.properties || {};
+        }
     }
 });
