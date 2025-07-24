@@ -1,4 +1,4 @@
-# %%
+# %% 
 import sys
 import time
 from functools import lru_cache, wraps
@@ -25,7 +25,6 @@ cache = Cache(
     app.server, config={"CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": 3600}
 )
 
-
 def timed_callback(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -34,9 +33,7 @@ def timed_callback(f):
         dt = time.perf_counter() - t0
         print(f"[TIMING] Callback {f.__name__} duurde {dt:.3f} s")
         return result
-
     return wrapper
-
 
 # ========== Geodata laden ==============
 timer_start = time.time()
@@ -110,7 +107,6 @@ kaartvariabelen = [
     {"label": "vulling [mm]", "value": "vulling"},
 ]
 
-
 # --------- Kleurfuncties ----------
 def kleur_bij_vullingsgraad(val):
     if pd.isna(val):
@@ -122,7 +118,6 @@ def kleur_bij_vullingsgraad(val):
     if val < 75:
         return "orange"
     return "red"
-
 
 def kleur_bij_vulling(val):
     if pd.isna(val):
@@ -136,7 +131,6 @@ def kleur_bij_vulling(val):
     if val < 40:
         return "#3182bd"
     return "#08519c"
-
 
 style_handle = assign("""
 function(feature, context){
@@ -176,7 +170,6 @@ default_pgb = location_options[0]["value"] if location_options else None
 initial_label = default_dt.strftime("%Y-%m-%d %H:%M")
 initial_kaartvariabele = "vullingsgraad"
 
-
 @lru_cache(maxsize=128)
 def get_kaartdata_for_datetime(dt, kaartvariabele):
     dt = pd.Timestamp(dt)
@@ -204,7 +197,6 @@ def get_kaartdata_for_datetime(dt, kaartvariabele):
         for loc, val in zip(ids, vals)
     }
 
-
 initial_stylemap = get_kaartdata_for_datetime(default_dt, initial_kaartvariabele)
 initial_options = {
     "style": style_handle,
@@ -214,7 +206,6 @@ initial_options = {
 }
 
 # ========== Layout ==========
-
 app.layout = html.Div(
     [
         html.Div(
@@ -302,6 +293,7 @@ app.layout = html.Div(
             )
         ], style=def_layout),
 
+        # MINI-TIJDSERIE LOS, BUITEN DE LOADER:
         html.Div(
             [
                 dcc.Store(id="is-playing", data=False),
@@ -355,7 +347,6 @@ app.layout = html.Div(
     ]
 )
 
-
 # ============= CALLBACKS =============
 @lru_cache(maxsize=128)
 def get_kaartdata_for_datetime(dt, kaartvariabele):
@@ -383,7 +374,6 @@ def get_kaartdata_for_datetime(dt, kaartvariabele):
         }
         for loc, val in zip(ids, vals)
     }
-
 
 @app.callback(
     Output("geojson-pgb", "hideout"),
@@ -414,7 +404,6 @@ def update_stylemap(idx, sel, var):
         print(f"[ERROR] update_stylemap: {e}", file=sys.stderr)
         raise PreventUpdate
 
-
 @app.callback(
     Output("pgb-dropdown", "value"),
     Input("geojson-pgb", "clickData"),
@@ -422,7 +411,6 @@ def update_stylemap(idx, sel, var):
 )
 def select_dropdown_on_click(clickData):
     return clickData["properties"]["location_id"]
-
 
 @app.callback(
     Output("geojson-tooltip", "children"),
@@ -442,18 +430,17 @@ def update_tooltip(feature, idx, var):
     txt = f"{val:.1f}%" if val is not None else "n.b."
     return f"naam: {naam} (code: {code}) — {txt}"
 
+# ========= NIEUW: Grote grafiek los, mini los =========
 
 @app.callback(
-    [Output("combined-graph", "figure"), Output("mini-tijdserie", "figure")],
+    Output("combined-graph", "figure"),
     [
         Input("pgb-dropdown", "value"),
         Input("kaartvariabele-dropdown", "value"),
-        Input("tijdslider", "value"),
     ],
 )
-
 @timed_callback
-def update_all(sel, var, idx):
+def update_combined_graph(sel, var):
     if not sel:
         raise PreventUpdate   
     ckey = f"combined_{sel}"
@@ -611,52 +598,55 @@ def update_all(sel, var, idx):
         print(f"CACHE MISS combined for {sel}")
     else:
         print(f"CACHE HIT combined for {sel}")
-    # mini
+    return fig
+
+@app.callback(
+    Output("mini-tijdserie", "figure"),
+    [
+        Input("pgb-dropdown", "value"),
+        Input("kaartvariabele-dropdown", "value"),
+        Input("tijdslider", "value"),
+    ],
+)
+def update_mini_graph(sel, var, idx):
+    if not sel:
+        raise PreventUpdate
     mkey = f"mini_{sel}_{var}"
     mini = cache.get(mkey)
-    if mini is None:
-        ds_sel = ds_vg if var == "vullingsgraad" else ds_vul
-        # correcte code
-        tb = ds_sel.to_table(
-            filter=(ds.field("location_id") == sel), columns=["datetime", "value"]
+    ds_sel = ds_vg if var == "vullingsgraad" else ds_vul
+    tb = ds_sel.to_table(
+        filter=(ds.field("location_id") == sel), columns=["datetime", "value"]
+    )
+    series = pd.Series(
+        tb["value"].to_pylist(), index=pd.to_datetime(tb["datetime"].to_pylist())
+    )
+    vals = [series.get(pd.Timestamp(dt), None) for dt in all_datetimes]
+    idx0 = int(idx) if idx is not None else 0
+    mini = go.Figure(
+        go.Scatter(
+            x=list(range(len(all_datetimes))),
+            y=vals,
+            mode="lines",
+            line=dict(width=2),
+            hoverinfo="skip",
+            showlegend=False,
         )
-        series = pd.Series(
-            tb["value"].to_pylist(), index=pd.to_datetime(tb["datetime"].to_pylist())
-        )
-
-        vals = [series.get(pd.Timestamp(dt), None) for dt in all_datetimes]
-        idx0 = int(idx)
-        mini = go.Figure(
-            go.Scatter(
-                x=list(range(len(all_datetimes))),
-                y=vals,
-                mode="lines",
-                line=dict(width=2),
-                hoverinfo="skip",
-                showlegend=False,
-            )
-        )
-        mini.add_vline(x=idx0, line_width=2, line_dash="dash")
-        mini.update_layout(
-            margin=dict(l=0, r=0, t=0, b=0),
-            height=50,
-            plot_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(
-                visible=False, range=[0, len(all_datetimes) - 1], fixedrange=True
-            ),
-            yaxis=dict(visible=False, fixedrange=True),
-        )
-        cache.set(mkey, mini)
-        print(f"CACHE MISS mini for {mkey}")
-    else:
-        print(f"CACHE HIT mini for {mkey}")
-    return fig, mini
-
+    )
+    mini.add_vline(x=idx0, line_width=2, line_dash="dash")
+    mini.update_layout(
+        margin=dict(l=0, r=0, t=0, b=0),
+        height=50,
+        plot_bgcolor="rgba(0,0,0,0)",
+        xaxis=dict(
+            visible=False, range=[0, len(all_datetimes) - 1], fixedrange=True
+        ),
+        yaxis=dict(visible=False, fixedrange=True),
+    )
+    return mini
 
 @app.callback(Output("playpause-button", "children"), Input("is-playing", "data"))
 def set_playpause(is_playing):
     return "⏸️ Pause" if is_playing else "▶️ Play"
-
 
 @app.callback(
     Output("is-playing", "data"),
@@ -667,11 +657,9 @@ def set_playpause(is_playing):
 def toggle_playpause(n, playing):
     return not playing if n else playing
 
-
 @app.callback(Output("interval", "disabled"), Input("is-playing", "data"))
 def toggle_interval(playing):
     return not playing
-
 
 @app.callback(
     Output("tijdslider", "value"),
@@ -683,7 +671,6 @@ def advance_slider(n, disabled, current):
     if disabled or current is None:
         raise PreventUpdate
     return (current + 1) % len(all_datetimes)
-
 
 @app.callback(
     Output("marker-mpn", "children"),
@@ -706,7 +693,6 @@ def update_mpn_markers(selected_location_id):
             )
         )
     return markers
-
 
 if __name__ == "__main__":
     app.run(debug=True)
