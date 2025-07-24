@@ -25,7 +25,6 @@ cache = Cache(
     app.server, config={"CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": 3600}
 )
 
-
 def timed_callback(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -37,14 +36,12 @@ def timed_callback(f):
 
     return wrapper
 
-
 def bounds_to_map(xmin, ymin, xmax, ymax):
     dx = xmax - xmin
     dy = ymax - ymin
     map_bounds = [[ymin, xmin], [ymax, xmin + 2 * dx]]
     map_center = [ymin + dy / 2, xmax + dx / 2]
     return map_bounds, map_center
-
 
 # ========== Geodata laden ==============
 timer_start = time.time()
@@ -112,7 +109,6 @@ kaartvariabelen = [
     {"label": "vulling [mm]", "value": "vulling"},
 ]
 
-
 # ========== Kleurfuncties ==========
 def kleur_bij_vullingsgraad(val):
     if pd.isna(val):
@@ -124,7 +120,6 @@ def kleur_bij_vullingsgraad(val):
     if val < 75:
         return "orange"
     return "red"
-
 
 def kleur_bij_vulling(val):
     if pd.isna(val):
@@ -138,7 +133,6 @@ def kleur_bij_vulling(val):
     if val < 40:
         return "#3182bd"
     return "#08519c"
-
 
 style_handle = assign("""
 function(feature, context){
@@ -178,7 +172,6 @@ default_pgb = location_options[0]["value"] if location_options else None
 initial_label = default_dt.strftime("%Y-%m-%d %H:%M")
 initial_kaartvariabele = "vullingsgraad"
 
-
 @lru_cache(maxsize=128)
 def get_kaartdata_for_datetime(dt, kaartvariabele):
     dt = pd.Timestamp(dt)
@@ -205,7 +198,6 @@ def get_kaartdata_for_datetime(dt, kaartvariabele):
         }
         for loc, val in zip(ids, vals)
     }
-
 
 initial_stylemap = get_kaartdata_for_datetime(default_dt, initial_kaartvariabele)
 initial_options = {
@@ -360,7 +352,6 @@ app.layout = html.Div(
     ]
 )
 
-
 # ============= CALLBACKS =============
 @lru_cache(maxsize=128)
 def get_kaartdata_for_datetime(dt, kaartvariabele):
@@ -388,7 +379,6 @@ def get_kaartdata_for_datetime(dt, kaartvariabele):
         }
         for loc, val in zip(ids, vals)
     }
-
 
 @app.callback(
     Output("geojson-pgb", "hideout"),
@@ -419,7 +409,6 @@ def update_stylemap(idx, sel, var):
         print(f"[ERROR] update_stylemap: {e}", file=sys.stderr)
         raise PreventUpdate
 
-
 @app.callback(
     Output("pgb-dropdown", "value"),
     Input("geojson-pgb", "clickData"),
@@ -427,7 +416,6 @@ def update_stylemap(idx, sel, var):
 )
 def select_dropdown_on_click(clickData):
     return clickData["properties"]["location_id"]
-
 
 @app.callback(
     Output("geojson-tooltip", "children"),
@@ -447,10 +435,7 @@ def update_tooltip(feature, idx, var):
     txt = f"{val:.1f}%" if val is not None else "n.b."
     return f"naam: {naam} (code: {code}) — {txt}"
 
-
-# ========= NIEUW: Grote grafiek los, mini los =========
-
-
+# ========= Grote grafiek los, mini los =========
 @app.callback(
     Output("combined-graph", "figure"),
     [
@@ -601,6 +586,50 @@ def update_combined_graph(sel, var):
                 row=3,
                 col=1,
             )
+        # ==== STREEFPEIL TOEVOEGEN ====
+        # Zoek streefpeil op in geojson_data
+        streefpeil = None
+        for feat in geojson_data["features"]:
+            if feat["properties"].get("location_id") == sel:
+                streefpeil = feat["properties"].get("streefpeil")
+                break
+        # Voeg streefpeil-lijn toe als laatste trace, label aan de linkerkant
+        if streefpeil is not None and pd.notnull(streefpeil):
+            if not df_pgb.empty:
+                x_vals = list(df_pgb["datetime"])
+            else:
+                x_vals = list(tb_all["datetime"].unique())
+                x_vals.sort()
+            if x_vals:
+                y_val = streefpeil / 1000
+                fig.add_trace(
+                    go.Scatter(
+                        x=x_vals,
+                        y=[y_val] * len(x_vals),
+                        mode="lines",
+                        line=dict(dash="dash", color="orange", width=2),
+                        name="Streefpeil",
+                        hoverinfo="text",
+                        hovertext=[f"Streefpeil: {y_val:.2f} mNAP"] * len(x_vals),
+                        showlegend=False,
+                    ),
+                    row=3,
+                    col=1,
+                )
+                fig.add_annotation(
+                    x=x_vals[0],
+                    y=y_val,
+                    xref="x3",
+                    yref="y3",
+                    text="streefpeil",
+                    font=dict(color="orange", size=13),
+                    showarrow=False,
+                    xanchor="left",
+                    yanchor="bottom",
+                    align="left",
+                    bgcolor="rgba(255,255,255,0.7)",
+                    borderpad=2,
+                )
         fig.update_yaxes(range=[0, 100], fixedrange=True, row=1, col=1)
         fig.update_yaxes(range=[0, 60], fixedrange=True, row=2, col=1)
         fig.update_yaxes(fixedrange=True, row=3, col=1)
@@ -618,7 +647,6 @@ def update_combined_graph(sel, var):
     else:
         print(f"CACHE HIT combined for {sel}")
     return fig
-
 
 @app.callback(
     Output("mini-tijdserie", "figure"),
@@ -662,11 +690,9 @@ def update_mini_graph(sel, var, idx):
     )
     return mini
 
-
 @app.callback(Output("playpause-button", "children"), Input("is-playing", "data"))
 def set_playpause(is_playing):
     return "⏸️ Pause" if is_playing else "▶️ Play"
-
 
 @app.callback(
     Output("is-playing", "data"),
@@ -677,11 +703,9 @@ def set_playpause(is_playing):
 def toggle_playpause(n, playing):
     return not playing if n else playing
 
-
 @app.callback(Output("interval", "disabled"), Input("is-playing", "data"))
 def toggle_interval(playing):
     return not playing
-
 
 @app.callback(
     Output("tijdslider", "value"),
@@ -693,7 +717,6 @@ def advance_slider(n, disabled, current):
     if disabled or current is None:
         raise PreventUpdate
     return (current + 1) % len(all_datetimes)
-
 
 @app.callback(
     Output("marker-mpn", "children"),
@@ -716,7 +739,6 @@ def update_mpn_markers(selected_location_id):
             )
         )
     return markers
-
 
 if __name__ == "__main__":
     app.run(debug=True)
