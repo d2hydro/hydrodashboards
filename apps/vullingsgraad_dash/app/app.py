@@ -608,6 +608,10 @@ def build_combined_figure(sel, var):
             font=dict(size=13),
             showlegend=False,
         )
+        x_min = df_vg.datetime.min()
+        x_max = df_vg.datetime.max()
+        for r in [1, 2, 3]:
+            fig.update_xaxes(range=[x_min, x_max], row=r, col=1, automargin=True)
         cache.set(ckey, fig)
         print(f"CACHE MISS combined for {sel}")
     else:
