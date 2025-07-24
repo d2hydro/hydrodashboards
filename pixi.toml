@@ -12,7 +12,7 @@ license-file = "LICENSE"
 dash = "python dash\\app.py"
 dash_ng = "python dash\\app_NG.py"
 vullingsgraad_bokeh = "bokeh serve apps\\vullingsgraad"
-vullingsgraad_dash = "python apps\\vullingsgraad_dash\\app.py"
+vullingsgraad_dash = "python apps\\vullingsgraad_dash\\app\\app.py"
 
 [dependencies]
 aiohttp = "*"

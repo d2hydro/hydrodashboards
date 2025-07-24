@@ -151,3 +151,4 @@ apps/vullingsgraad/data/*
 apps/vullingsgraad_dash/data/*
 apps/vullingsgraad_dash/assets/dashExtensions_default.js
 apps/vullingsgraad_dash/app/assets/dashExtensions_default.js
+assets/dashExtensions_default.js
