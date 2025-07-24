@@ -15,7 +15,6 @@ from dash.exceptions import PreventUpdate
 from dash_extensions.javascript import assign
 from flask_caching import Cache
 from plotly.subplots import make_subplots
-from pyproj import Transformer
 from read import read_mpn_locs, read_peilgebieden
 
 app = dash.Dash(__name__)
@@ -70,9 +69,6 @@ geojson_data, location_options, bounds = read_peilgebieden(
 
 # transformmeren van bounds uit peilgebieden naar map bounds en centrum
 map_bounds, map_center = bounds_to_map(*bounds)
-
-# transformer voor het toevoegen van meetpunten aan de kaart
-transformer = Transformer.from_crs(28992, 4326, always_xy=True)
 
 print("TIJD: shapefile/geodata ingelezen in", round(time.time() - timer_start, 2), "s")
 
@@ -703,18 +699,13 @@ def update_mpn_markers(selected_location_id):
     if not selected_location_id:
         return []
     points = df_locs_mpn[df_locs_mpn["peilgebied_combi_attr"] == selected_location_id]
-    markers = []
-    for _, row in points.iterrows():
-        lon, lat = transformer.transform(row["x"], row["y"])
-        markers.append(
-            dl.Marker(
-                position=[lat, lon],
-                children=[
-                    dl.Tooltip(row["naam"]),
-                    dl.Popup(f"{row['naam']} ({row['location_id']})"),
-                ],
-            )
+    markers = [
+        dl.Marker(
+            position=[i.geometry.y, i.geometry.x],
+            children=[dl.Tooltip(i.naam), dl.Popup(f"{i.naam} ({i.location_id})")],
         )
+        for i in points.itertuples()
+    ]
     return markers
 
 

@@ -96,12 +96,14 @@ def read_peilgebieden(
 
 
 def read_mpn_locs(file_path):
-    df_locs_mpn = pd.read_feather(file_path)  # ,  dtype_backend="pyarrow")
-    df_locs_mpn.reset_index(drop=False, inplace=True)
-    df_locs_mpn.rename(columns={"short_name": "naam"}, inplace=True)
-    df_locs_mpn.loc[:, "x"] = df_locs_mpn["x"].astype(float).astype(int)
-    df_locs_mpn.loc[:, "y"] = df_locs_mpn["y"].astype(float).astype(int)
-    return df_locs_mpn
+    df = pd.read_feather(file_path)  # ,  dtype_backend="pyarrow")
+    gdf = gpd.GeoDataFrame(df, geometry=gpd.GeoSeries.from_xy(df.x, df.y), crs=28992)
+    gdf.to_crs(4326, inplace=True)
+
+    gdf.reset_index(drop=False, inplace=True)
+    gdf.rename(columns={"short_name": "naam"}, inplace=True)
+
+    return gdf
 
 
 if __name__ == "__main__":
