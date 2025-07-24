@@ -20,6 +20,7 @@ def read_peilgebieden(
     code_col: str = "CODE",
     geometry_precision: float = 0.000006,
     columns: list = ["naam"],
+    style: dict | None = None,
 ) -> pd.DataFrame:
     """schrijf/lees peilgebieden in/uit een arrow-file voor bokeh
 
@@ -29,15 +30,17 @@ def read_peilgebieden(
         Verwijzing naar het peilgebiedenbestand
     code_col : str
         kolomnaam die als peilgebied-id ingelezen moet worden
-    as_int : bool, optional
-        optie om alle coordinaten af te ronden op integer, by default True
-    simplify_tolerance : int | None, optional
-        Optionele tolerantie voor het simplificeren van polygonen: https://shapely.readthedocs.io/en/stable/manual.html#object.simplify, by default None
+    geometry_precision: float
+        precisie waarmee x en y coordinaten moeten worden afgerond
+    columns: list
+        lijst met kolommen die we willen bewaren
+    style: dict, optioneel
+        dict met style die moet worden toegevoegd aan de geodataframe
 
     Returns
     -------
-    DataFrame
-        DataFrame voor bokeh ColumnDataSource met kolommen id, xs en ys
+    dict, DataFrame, np.ndarray
+        GeoJSON (dict) met peilgebieden, DataFrame met opties en numpy array met bounds
     """
 
     # make file Path if not already
@@ -75,11 +78,21 @@ def read_peilgebieden(
         # store dataframe
         gdf.to_feather(arrow_file)
 
+    # add style if given
+    if style is not None:
+        gdf["style"] = [style] * len(gdf)
+
     # get options
     options_df = gdf[["location_id", "naam"]].copy()
     options_df.rename(columns={"location_id": "value", "naam": "label"}, inplace=True)
+    options_df["label"] = options_df["label"] + " (" + options_df["value"] + ")"
+    options_df.sort_values(by="label", inplace=True)
 
-    return json.loads(gdf.to_json()), options_df.to_dict(orient="records")
+    return (
+        json.loads(gdf.to_json()),
+        options_df.to_dict(orient="records"),
+        gdf.total_bounds,
+    )
 
 
 def read_mpn_locs(file_path):

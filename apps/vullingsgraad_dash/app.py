@@ -1,4 +1,4 @@
-# %% 
+# %%
 import sys
 import time
 from functools import lru_cache, wraps
@@ -25,6 +25,7 @@ cache = Cache(
     app.server, config={"CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": 3600}
 )
 
+
 def timed_callback(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -33,17 +34,23 @@ def timed_callback(f):
         dt = time.perf_counter() - t0
         print(f"[TIMING] Callback {f.__name__} duurde {dt:.3f} s")
         return result
+
     return wrapper
+
+
+def bounds_to_map(xmin, ymin, xmax, ymax):
+    dx = xmax - xmin
+    dy = ymax - ymin
+    map_bounds = [[ymin, xmin], [ymax, xmin + 2 * dx]]
+    map_center = [ymin + dy / 2, xmax + dx / 2]
+    return map_bounds, map_center
+
 
 # ========== Geodata laden ==============
 timer_start = time.time()
-xmin, ymin, xmax, ymax = 100500, 486900, 150150, 577550
-transformer = Transformer.from_crs(28992, 4326, always_xy=True)
-lon_sw, lat_sw = transformer.transform(xmin, ymin)
-lon_ne, lat_ne = transformer.transform(xmax, ymax)
-leaflet_bounds = [[lat_sw, lon_sw], [lat_ne, lon_ne]]
 
-geojson_data, options = read_peilgebieden(
+# inlezen peilgebieden (GeoJSON) Locatie opties (DataFrame) en map bounds (numpy array) uit peilgebieden
+geojson_data, location_options, bounds = read_peilgebieden(
     file_path="d:/repositories/hydrodashboards/apps/vullingsgraad_dash/data/peilgebieden_cso_combi.shp",
     code_col="CODE",
     columns=[
@@ -53,24 +60,21 @@ geojson_data, options = read_peilgebieden(
         "berging_bij_inundatiepeil",
         "peil_bij_nul_berging",
     ],
-)
-for feat in geojson_data["features"]:
-    feat["properties"]["style"] = {
+    style={
         "fillColor": "gray",
         "color": "#666",
         "weight": 0.3,
         "fillOpacity": 0.3,
-    }
-print("TIJD: shapefile/geodata ingelezen in", round(time.time() - timer_start, 2), "s")
+    },
+)
 
-location_options = []
-seen = set()
-for opt in options:
-    lbl = opt.get("label")
-    val = opt.get("value")
-    if lbl and val and val not in seen:
-        seen.add(val)
-        location_options.append({"label": f"{lbl} ({val})", "value": val})
+# transformmeren van bounds uit peilgebieden naar map bounds en centrum
+map_bounds, map_center = bounds_to_map(*bounds)
+
+# transformer voor het toevoegen van meetpunten aan de kaart
+transformer = Transformer.from_crs(28992, 4326, always_xy=True)
+
+print("TIJD: shapefile/geodata ingelezen in", round(time.time() - timer_start, 2), "s")
 
 # ===== Laad Arrow tijdseries, bepaal tijdas =====
 ds_vg = ds.dataset(
@@ -94,6 +98,7 @@ ds_wlvl_pgb = ds.dataset(
 )
 
 timer_start = time.time()
+
 dt_vg = ds_vg.to_table(columns=["datetime"])
 dt_vul = ds_vul.to_table(columns=["datetime"])
 all_dt_arrow = pc.unique(pa.concat_tables([dt_vg, dt_vul])["datetime"])
@@ -107,7 +112,8 @@ kaartvariabelen = [
     {"label": "vulling [mm]", "value": "vulling"},
 ]
 
-# --------- Kleurfuncties ----------
+
+# ========== Kleurfuncties ==========
 def kleur_bij_vullingsgraad(val):
     if pd.isna(val):
         return "gray"
@@ -118,6 +124,7 @@ def kleur_bij_vullingsgraad(val):
     if val < 75:
         return "orange"
     return "red"
+
 
 def kleur_bij_vulling(val):
     if pd.isna(val):
@@ -131,6 +138,7 @@ def kleur_bij_vulling(val):
     if val < 40:
         return "#3182bd"
     return "#08519c"
+
 
 style_handle = assign("""
 function(feature, context){
@@ -150,7 +158,7 @@ def_layout = {
     "top": "10px",
     "right": "10px",
     "bottom": "10px",
-    "width": "480px",
+    "width": "50%",
     "height": "calc(100vh - 32px)",
     "background": "white",
     "borderRadius": "5px",
@@ -169,6 +177,7 @@ default_dt = datum_to_index[default_index]
 default_pgb = location_options[0]["value"] if location_options else None
 initial_label = default_dt.strftime("%Y-%m-%d %H:%M")
 initial_kaartvariabele = "vullingsgraad"
+
 
 @lru_cache(maxsize=128)
 def get_kaartdata_for_datetime(dt, kaartvariabele):
@@ -196,6 +205,7 @@ def get_kaartdata_for_datetime(dt, kaartvariabele):
         }
         for loc, val in zip(ids, vals)
     }
+
 
 initial_stylemap = get_kaartdata_for_datetime(default_dt, initial_kaartvariabele)
 initial_options = {
@@ -255,8 +265,9 @@ app.layout = html.Div(
             },
         ),
         dl.Map(
-            center=[(lat_sw + lat_ne) / 2, (lon_sw + lon_ne) / 2],
-            bounds=leaflet_bounds,
+            center=map_center,
+            zoom=10,
+            bounds=map_bounds,
             style={"height": "100vh", "width": "100%"},
             preferCanvas=True,
             children=[
@@ -277,22 +288,24 @@ app.layout = html.Div(
                 ),
             ],
         ),
-        html.Div([
-            dcc.Loading(
-                id="graph-loading",
-                type="circle",
-                children=[
-                    dcc.Graph(
-                        id="combined-graph",
-                        config={"displayModeBar": True, "scrollZoom": True},
-                        style={"height": "100%", "minHeight": 0}
-                    )
-                ],
-                color="#e7e427",
-                fullscreen=False
-            )
-        ], style=def_layout),
-
+        html.Div(
+            [
+                dcc.Loading(
+                    id="graph-loading",
+                    type="circle",
+                    children=[
+                        dcc.Graph(
+                            id="combined-graph",
+                            config={"displayModeBar": True, "scrollZoom": True},
+                            style={"height": "100%", "minHeight": 0},
+                        )
+                    ],
+                    color="#e7e427",
+                    fullscreen=False,
+                )
+            ],
+            style=def_layout,
+        ),
         # MINI-TIJDSERIE LOS, BUITEN DE LOADER:
         html.Div(
             [
@@ -347,6 +360,7 @@ app.layout = html.Div(
     ]
 )
 
+
 # ============= CALLBACKS =============
 @lru_cache(maxsize=128)
 def get_kaartdata_for_datetime(dt, kaartvariabele):
@@ -374,6 +388,7 @@ def get_kaartdata_for_datetime(dt, kaartvariabele):
         }
         for loc, val in zip(ids, vals)
     }
+
 
 @app.callback(
     Output("geojson-pgb", "hideout"),
@@ -404,6 +419,7 @@ def update_stylemap(idx, sel, var):
         print(f"[ERROR] update_stylemap: {e}", file=sys.stderr)
         raise PreventUpdate
 
+
 @app.callback(
     Output("pgb-dropdown", "value"),
     Input("geojson-pgb", "clickData"),
@@ -411,6 +427,7 @@ def update_stylemap(idx, sel, var):
 )
 def select_dropdown_on_click(clickData):
     return clickData["properties"]["location_id"]
+
 
 @app.callback(
     Output("geojson-tooltip", "children"),
@@ -430,7 +447,9 @@ def update_tooltip(feature, idx, var):
     txt = f"{val:.1f}%" if val is not None else "n.b."
     return f"naam: {naam} (code: {code}) — {txt}"
 
+
 # ========= NIEUW: Grote grafiek los, mini los =========
+
 
 @app.callback(
     Output("combined-graph", "figure"),
@@ -442,7 +461,7 @@ def update_tooltip(feature, idx, var):
 @timed_callback
 def update_combined_graph(sel, var):
     if not sel:
-        raise PreventUpdate   
+        raise PreventUpdate
     ckey = f"combined_{sel}"
     fig = cache.get(ckey)
     if fig is None:
@@ -600,6 +619,7 @@ def update_combined_graph(sel, var):
         print(f"CACHE HIT combined for {sel}")
     return fig
 
+
 @app.callback(
     Output("mini-tijdserie", "figure"),
     [
@@ -637,16 +657,16 @@ def update_mini_graph(sel, var, idx):
         margin=dict(l=0, r=0, t=0, b=0),
         height=50,
         plot_bgcolor="rgba(0,0,0,0)",
-        xaxis=dict(
-            visible=False, range=[0, len(all_datetimes) - 1], fixedrange=True
-        ),
+        xaxis=dict(visible=False, range=[0, len(all_datetimes) - 1], fixedrange=True),
         yaxis=dict(visible=False, fixedrange=True),
     )
     return mini
 
+
 @app.callback(Output("playpause-button", "children"), Input("is-playing", "data"))
 def set_playpause(is_playing):
     return "⏸️ Pause" if is_playing else "▶️ Play"
+
 
 @app.callback(
     Output("is-playing", "data"),
@@ -657,9 +677,11 @@ def set_playpause(is_playing):
 def toggle_playpause(n, playing):
     return not playing if n else playing
 
+
 @app.callback(Output("interval", "disabled"), Input("is-playing", "data"))
 def toggle_interval(playing):
     return not playing
+
 
 @app.callback(
     Output("tijdslider", "value"),
@@ -671,6 +693,7 @@ def advance_slider(n, disabled, current):
     if disabled or current is None:
         raise PreventUpdate
     return (current + 1) % len(all_datetimes)
+
 
 @app.callback(
     Output("marker-mpn", "children"),
@@ -693,6 +716,7 @@ def update_mpn_markers(selected_location_id):
             )
         )
     return markers
+
 
 if __name__ == "__main__":
     app.run(debug=True)
