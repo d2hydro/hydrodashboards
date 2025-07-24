@@ -286,16 +286,21 @@ app.layout = html.Div(
                 ),
             ],
         ),
-        html.Div(
-            [
-                dcc.Graph(
-                    id="combined-graph",
-                    config={"displayModeBar": True, "scrollZoom": True},
-                    style={"height": "100%", "minHeight": 0}
-                )
-            ],
-         style=def_layout
-        ),
+        html.Div([
+            dcc.Loading(
+                id="graph-loading",
+                type="circle",
+                children=[
+                    dcc.Graph(
+                        id="combined-graph",
+                        config={"displayModeBar": True, "scrollZoom": True},
+                        style={"height": "100%", "minHeight": 0}
+                    )
+                ],
+                color="#e7e427",
+                fullscreen=False
+            )
+        ], style=def_layout),
 
         html.Div(
             [
@@ -446,12 +451,11 @@ def update_tooltip(feature, idx, var):
         Input("tijdslider", "value"),
     ],
 )
+
 @timed_callback
 def update_all(sel, var, idx):
     if not sel:
-        print('GEEN SEL!', flush=True)
-        return go.Figure(), go.Figure()
-    # Combined uit cache
+        raise PreventUpdate   
     ckey = f"combined_{sel}"
     fig = cache.get(ckey)
     if fig is None:
