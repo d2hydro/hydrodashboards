@@ -10,6 +10,7 @@ import plotly.graph_objs as go
 import pyarrow as pa
 import pyarrow.compute as pc
 import pyarrow.dataset as ds
+from pathlib import Path
 from dash import Input, Output, State, dcc, html
 from dash.exceptions import PreventUpdate
 from dash_extensions.javascript import assign
@@ -18,11 +19,14 @@ from plotly.subplots import make_subplots
 from read import read_mpn_locs, read_peilgebieden
 
 app = dash.Dash(__name__)
+app_dir = Path(__file__).parent
+data_dir = app_dir.parent.joinpath("data")
 
 # === caching
 cache = Cache(
     app.server, config={"CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": 3600}
 )
+
 
 def timed_callback(f):
     @wraps(f)
@@ -32,7 +36,9 @@ def timed_callback(f):
         dt = time.perf_counter() - t0
         print(f"[TIMING] Callback {f.__name__} duurde {dt:.3f} s")
         return result
+
     return wrapper
+
 
 def bounds_to_map(xmin, ymin, xmax, ymax):
     dx = xmax - xmin
@@ -41,10 +47,11 @@ def bounds_to_map(xmin, ymin, xmax, ymax):
     map_center = [ymin + dy / 2, xmax + dx / 2]
     return map_bounds, map_center
 
+
 # ========== Geodata laden ==============
 timer_start = time.time()
 geojson_data, location_options, bounds = read_peilgebieden(
-    file_path="d:/repositories/hydrodashboards/apps/vullingsgraad_dash/data/peilgebieden_cso_combi.shp",
+    file_path=data_dir.joinpath("peilgebieden_cso_combi.shp").as_posix(),
     code_col="CODE",
     columns=[
         "naam",
@@ -65,22 +72,20 @@ print("TIJD: shapefile/geodata ingelezen in", round(time.time() - timer_start, 2
 
 # ===== Laad Arrow tijdseries, bepaal tijdas =====
 ds_vg = ds.dataset(
-    "d:/repositories/hydrodashboards/apps/vullingsgraad_dash/data/vullingsgraad.arrow",
+    data_dir.joinpath("vullingsgraad.arrow"),
     format="feather",
 )
 ds_vul = ds.dataset(
-    "d:/repositories/hydrodashboards/apps/vullingsgraad_dash/data/vulling.arrow",
+    data_dir.joinpath("vulling.arrow"),
     format="feather",
 )
-df_locs_mpn = read_mpn_locs(
-    "d:/repositories/hydrodashboards/apps/vullingsgraad_dash/data/mpn_locations.arrow"
-)
+df_locs_mpn = read_mpn_locs(data_dir.joinpath("mpn_locations.arrow"))
 ds_wlvl_mpn = ds.dataset(
-    "d:/repositories/hydrodashboards/apps/vullingsgraad_dash/data/waterstand_meetpunt.arrow",
+    data_dir.joinpath("waterstand_meetpunt.arrow"),
     format="feather",
 )
 ds_wlvl_pgb = ds.dataset(
-    "d:/repositories/hydrodashboards/apps/vullingsgraad_dash/data/waterstand_pgb.arrow",
+    data_dir.joinpath("waterstand_pgb.arrow"),
     format="feather",
 )
 timer_start = time.time()
@@ -97,6 +102,7 @@ kaartvariabelen = [
     {"label": "vulling [mm]", "value": "vulling"},
 ]
 
+
 # ========== Kleurfuncties ==========
 def kleur_bij_vullingsgraad(val):
     if pd.isna(val):
@@ -108,6 +114,7 @@ def kleur_bij_vullingsgraad(val):
     if val < 75:
         return "orange"
     return "red"
+
 
 def kleur_bij_vulling(val):
     if pd.isna(val):
@@ -121,6 +128,7 @@ def kleur_bij_vulling(val):
     if val < 40:
         return "#3182bd"
     return "#08519c"
+
 
 style_handle = assign("""
 function(feature, context){
@@ -160,6 +168,7 @@ default_pgb = location_options[0]["value"] if location_options else None
 initial_label = default_dt.strftime("%Y-%m-%d %H:%M")
 initial_kaartvariabele = "vullingsgraad"
 
+
 @lru_cache(maxsize=128)
 def get_kaartdata_for_datetime(dt, kaartvariabele):
     dt = pd.Timestamp(dt)
@@ -186,6 +195,7 @@ def get_kaartdata_for_datetime(dt, kaartvariabele):
         }
         for loc, val in zip(ids, vals)
     }
+
 
 initial_stylemap = get_kaartdata_for_datetime(default_dt, initial_kaartvariabele)
 initial_options = {
@@ -279,7 +289,7 @@ app.layout = html.Div(
                     id="combined-graph",
                     config={"displayModeBar": True, "scrollZoom": True},
                     style={"height": "100%", "minHeight": 0},
-                )
+                ),
             ],
             style=def_layout,
         ),
@@ -338,6 +348,7 @@ app.layout = html.Div(
 
 # ============= CALLBACKS =============
 
+
 @app.callback(
     Output("geojson-pgb", "hideout"),
     Output("datum-label", "children"),
@@ -367,6 +378,7 @@ def update_stylemap(idx, sel, var):
         print(f"[ERROR] update_stylemap: {e}", file=sys.stderr)
         raise PreventUpdate
 
+
 @app.callback(
     Output("pgb-dropdown", "value"),
     Input("geojson-pgb", "clickData"),
@@ -374,6 +386,7 @@ def update_stylemap(idx, sel, var):
 )
 def select_dropdown_on_click(clickData):
     return clickData["properties"]["location_id"]
+
 
 @app.callback(
     Output("geojson-tooltip", "children"),
@@ -392,6 +405,7 @@ def update_tooltip(feature, idx, var):
     val = style.get(code, {}).get(var)
     txt = f"{val:.1f}%" if val is not None else "n.b."
     return f"naam: {naam} (code: {code}) — {txt}"
+
 
 # ========= Grote grafiek: BASIS in Store =========
 @app.callback(
@@ -600,6 +614,7 @@ def build_combined_figure(sel, var):
         print(f"CACHE HIT combined for {sel}")
     return fig.to_dict()
 
+
 # ========= Tweede callback: vline toevoegen op figuur =========
 @app.callback(
     Output("combined-graph", "figure"),
@@ -627,6 +642,7 @@ def add_vline_to_combined(fig_dict, idx):
             layer="above",
         )
     return fig
+
 
 @app.callback(
     Output("mini-tijdserie", "figure"),
@@ -668,9 +684,11 @@ def update_mini_graph(sel, var, idx):
     )
     return mini
 
+
 @app.callback(Output("playpause-button", "children"), Input("is-playing", "data"))
 def set_playpause(is_playing):
     return "⏸️ Pause" if is_playing else "▶️ Play"
+
 
 @app.callback(
     Output("is-playing", "data"),
@@ -681,9 +699,11 @@ def set_playpause(is_playing):
 def toggle_playpause(n, playing):
     return not playing if n else playing
 
+
 @app.callback(Output("interval", "disabled"), Input("is-playing", "data"))
 def toggle_interval(playing):
     return not playing
+
 
 @app.callback(
     Output("tijdslider", "value"),
@@ -695,6 +715,7 @@ def advance_slider(n, disabled, current):
     if disabled or current is None:
         raise PreventUpdate
     return (current + 1) % len(all_datetimes)
+
 
 @app.callback(
     Output("marker-mpn", "children"),

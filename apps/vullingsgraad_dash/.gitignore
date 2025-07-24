@@ -1,0 +1,5 @@
+# ignore data
+apps/vullingsgraad_dash/data/*
+
+# ignore dashExtensions_default.js as it's written by the app
+apps/vullingsgraad_dash/app/assets/dashExtensions_default.js
