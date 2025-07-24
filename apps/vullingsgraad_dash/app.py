@@ -559,7 +559,7 @@ def update_combined_graph(sel, var):
         for mid, grp in tb_all.groupby("location_id"):
             naam = df_locs_mpn.loc[df_locs_mpn.location_id == mid, "naam"].iat[0]
             fig.add_trace(
-                go.Scattergl(
+                go.Scatter(
                     x=grp.datetime,
                     y=grp.value / 1000,
                     mode="lines",
@@ -575,7 +575,7 @@ def update_combined_graph(sel, var):
             )
         if not df_pgb.empty:
             fig.add_trace(
-                go.Scattergl(
+                go.Scatter(
                     x=df_pgb.datetime,
                     y=df_pgb.waarde / 1000,
                     mode="lines",

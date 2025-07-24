@@ -74,7 +74,7 @@ def read_peilgebieden(
         gdf = gdf[[code_col] + columns + ["geometry"]]
         gdf.rename(columns={code_col: "location_id"}, inplace=True)
 
-        gdf.loc[gdf["naam"].isna(), "naam"] = "naamloos"
+        gdf.loc[gdf["naam"].isna(), "naam"] = ""
         # store dataframe
         gdf.to_feather(arrow_file)
 
