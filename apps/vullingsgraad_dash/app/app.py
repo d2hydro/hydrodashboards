@@ -1,6 +1,7 @@
 # %%
 import sys
 import time
+import json
 from functools import lru_cache, wraps
 
 import dash
@@ -18,9 +19,13 @@ from flask_caching import Cache
 from plotly.subplots import make_subplots
 from read import read_mpn_locs, read_peilgebieden
 
-app = dash.Dash(__name__)
+# Initialize Dash and set assets folder explicitly to the project-level assets
 app_dir = Path(__file__).parent
 data_dir = app_dir.parent.joinpath("data")
+
+project_root = app_dir.parents[2]  # C:\projects\hydrodashboards
+assets_dir = project_root / "assets"
+app = dash.Dash(__name__, assets_folder=str(assets_dir))
 
 # === caching
 cache = Cache(
@@ -80,6 +85,8 @@ ds_vul = ds.dataset(
     format="feather",
 )
 df_locs_mpn = read_mpn_locs(data_dir.joinpath("mpn_locations.arrow"))
+dd_locs_mpn_default = []
+
 ds_wlvl_mpn = ds.dataset(
     data_dir.joinpath("waterstand_meetpunt.arrow"),
     format="feather",
@@ -266,7 +273,14 @@ app.layout = html.Div(
             preferCanvas=True,
             children=[
                 dl.TileLayer(),
-                dl.LayerGroup(id="marker-mpn"),
+                dl.GeoJSON(
+                    data=json.loads(df_locs_mpn.to_json()),
+                    id="marker-mpn",
+                    filter=assign(
+                        "function(feature, context){return context.hideout.includes(feature.properties.peilgebied_combi_attr);}"
+                    ),
+                    hideout=dd_locs_mpn_default
+                ),
                 dl.GeoJSON(
                     id="geojson-pgb",
                     data=geojson_data,
@@ -534,6 +548,7 @@ def build_combined_figure(sel, var):
                     mode="lines",
                     line=dict(color="grey", width=1),
                     opacity=0.7,
+                    meta=mid,
                     hovertemplate="datum: %{x|%Y-%m-%d %H:%M}<br>waarde: %{y:.3f}<br>naam: "
                     + naam
                     + "<extra></extra>",
@@ -625,9 +640,10 @@ def build_combined_figure(sel, var):
     [
         Input("combined-fig-store", "data"),
         Input("tijdslider", "value"),
+        Input("marker-mpn", "hoverData")
     ],
 )
-def add_vline_to_combined(fig_dict, idx):
+def add_vline_to_combined(fig_dict, idx, selected_mpn):
     if fig_dict is None or idx is None:
         raise PreventUpdate
     fig = go.Figure(fig_dict)
@@ -645,6 +661,18 @@ def add_vline_to_combined(fig_dict, idx):
             line=dict(dash="dot", width=2, color="#bbbbbb"),  # lichtgrijs
             layer="above",
         )
+    #Highlight line for hovered marker
+    if selected_mpn and selected_mpn.get("properties") and selected_mpn["properties"].get("location_id"):
+        for tr in fig.data:
+            if getattr(tr, "meta", None):
+                if tr.meta == selected_mpn["properties"]["location_id"]:
+                    tr.line.color = "Orange"
+                    tr.line.width = 3
+                    tr.opacity = 1.0
+                else:
+                    tr.line.color = "#bbbbbb"
+                    tr.line.width = 2
+                    tr.opacity = 1.0
     return fig
 
 
@@ -720,24 +748,24 @@ def advance_slider(n, disabled, current):
         raise PreventUpdate
     return (current + 1) % len(all_datetimes)
 
-
 @app.callback(
-    Output("marker-mpn", "children"),
+    Output("marker-mpn", "hideout"),
     Input("pgb-dropdown", "value"),
 )
 def update_mpn_markers(selected_location_id):
     if not selected_location_id:
         return []
-    points = df_locs_mpn[df_locs_mpn["peilgebied_combi_attr"] == selected_location_id]
-    markers = [
-        dl.Marker(
-            position=[i.geometry.y, i.geometry.x],
-            children=[dl.Tooltip(i.naam), dl.Popup(f"{i.naam} ({i.location_id})")],
-        )
-        for i in points.itertuples()
-    ]
-    return markers
 
+    if "peilgebied_combi_attr" not in df_locs_mpn.columns:
+        return []
+
+    mask = df_locs_mpn["peilgebied_combi_attr"].astype(str) == str(selected_location_id)
+    points = df_locs_mpn[mask]
+
+    if points.empty:
+        return []
+
+    return points["peilgebied_combi_attr"].astype(str).dropna().unique().tolist()
 
 if __name__ == "__main__":
     app.run(debug=True)

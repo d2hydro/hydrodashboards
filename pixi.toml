@@ -29,6 +29,7 @@ shapely = "*"
 pyproj = "*"
 ribasim = "==2025.4.0"
 pyarrow = ">=10.0.1"
+pip = "*"
 
 [pypi-dependencies]
 dash-resizable-panels ="*"
