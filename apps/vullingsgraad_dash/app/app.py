@@ -212,156 +212,193 @@ initial_options = {
     "bubblingMouseEvents": True,
 }
 
+EMPTY_FIG = go.Figure()
+EMPTY_FIG.update_layout(
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    margin=dict(l=0, r=0, t=0, b=0),
+    xaxis=dict(visible=False),
+    yaxis=dict(visible=False),
+    showlegend=False,
+)
 # ========== Layout ==========
+from dash import html, dcc
+
 app.layout = html.Div(
     [
+        # <<< FULLSCREEN OVERLAY SPINNER >>>
+        html.Div(id="page-loader", children=html.Div(className="spinner"), style={"display": "block"}),
+
+        # <<< JE HUIDIGE APP-INHOUD >>>
         html.Div(
             [
-                html.Label(
-                    [
-                        "kaartvariabele: ",
-                        html.Span(
-                            "?",
-                            title="Selecteer de variabele die op de kaart moet worden getoond",
-                            style={"cursor": "help"},
-                        ),
-                    ],
-                    style={"fontSize": "13px"},
-                ),
-                dcc.Dropdown(
-                    id="kaartvariabele-dropdown",
-                    options=kaartvariabelen,
-                    value=initial_kaartvariabele,
-                    clearable=False,
-                    style={"width": "240px", "marginBottom": "8px"},
-                ),
-                html.Label(
-                    [
-                        "peilgebied: ",
-                        html.Span(
-                            "?",
-                            title="Selecteer een peilgebied waarvoor de grafieken moeten worden getoond",
-                            style={"cursor": "help"},
-                        ),
-                    ],
-                    style={"fontSize": "13px"},
-                ),
-                dcc.Dropdown(
-                    id="pgb-dropdown",
-                    options=location_options,
-                    value=default_pgb,
-                    placeholder="Selecteer peilgebied",
-                    clearable=True,
-                    style={"width": "240px"},
-                ),
-            ],
-            style={
-                "position": "absolute",
-                "top": "10px",
-                "left": "10px",
-                "zIndex": 1002,
-                "background": "rgba(220,240,255,1)",
-                "borderRadius": "8px",
-                "padding": "10px",
-            },
-        ),
-        dl.Map(
-            center=map_center,
-            zoom=10,
-            bounds=map_bounds,
-            style={"height": "100vh", "width": "100%"},
-            preferCanvas=True,
-            children=[
-                dl.TileLayer(),
-                dl.GeoJSON(
-                    data=json.loads(df_locs_mpn.to_json()),
-                    id="marker-mpn",
-                    filter=assign(
-                        "function(feature, context){return context.hideout.includes(feature.properties.peilgebied_combi_attr);}"
-                    ),
-                    hideout=dd_locs_mpn_default
-                ),
-                dl.GeoJSON(
-                    id="geojson-pgb",
-                    data=geojson_data,
-                    hideout=initial_stylemap,
-                    options=initial_options,
-                    hoverStyle={"weight": 2, "color": "yellow", "dashArray": ""},
-                    children=[dl.Tooltip(id="geojson-tooltip")],
-                    eventHandlers={
-                        "click": assign(
-                            "function(e){return e?.target?.feature?.properties||{};}"
-                        )
-                    },
-                ),
-            ],
-        ),
-        html.Div(
-            [
-                dcc.Store(id="combined-fig-store"),
-                dcc.Graph(
-                    id="combined-graph",
-                    config={"displayModeBar": True, "scrollZoom": True},
-                    style={"height": "100%", "minHeight": 0},
-                ),
-            ],
-            style=def_layout,
-        ),
-        html.Div(
-            [
-                dcc.Store(id="is-playing", data=False),
-                html.Button(id="playpause-button", n_clicks=0, style={"width": "72px"}),
-                html.Div(initial_label, id="datum-label", style={"fontWeight": "bold"}),
                 html.Div(
                     [
-                        dcc.Graph(
-                            id="mini-tijdserie",
-                            config={"displayModeBar": False},
-                            style={
-                                "height": "50px",
-                                "width": "350px",
-                                "position": "absolute",
-                                "top": 0,
-                                "left": "25px",
-                                "pointerEvents": "none",
-                            },
+                        html.Label(
+                            [
+                                "kaartvariabele: ",
+                                html.Span(
+                                    "?",
+                                    title="Selecteer de variabele die op de kaart moet worden getoond",
+                                    style={"cursor": "help"},
+                                ),
+                            ],
+                            style={"fontSize": "13px"},
                         ),
-                        dcc.Slider(
-                            id="tijdslider",
-                            min=0,
-                            max=len(all_datetimes) - 1,
-                            value=default_index,
-                            updatemode="mouseup",
+                        dcc.Dropdown(
+                            id="kaartvariabele-dropdown",
+                            options=kaartvariabelen,
+                            value=initial_kaartvariabele,
+                            clearable=False,
+                            style={"width": "240px", "marginBottom": "8px"},
+                        ),
+                        html.Label(
+                            [
+                                "peilgebied: ",
+                                html.Span(
+                                    "?",
+                                    title="Selecteer een peilgebied waarvoor de grafieken moeten worden getoond",
+                                    style={"cursor": "help"},
+                                ),
+                            ],
+                            style={"fontSize": "13px"},
+                        ),
+                        dcc.Dropdown(
+                            id="pgb-dropdown",
+                            options=location_options,
+                            value=default_pgb,
+                            placeholder="Selecteer peilgebied",
+                            clearable=True,
+                            style={"width": "240px"},
                         ),
                     ],
                     style={
-                        "position": "relative",
-                        "width": "400px",
-                        "height": "50px",
-                        "display": "inline-block",
+                        "position": "absolute",
+                        "top": "10px",
+                        "left": "10px",
+                        "zIndex": 1002,
+                        "background": "rgba(220,240,255,1)",
+                        "borderRadius": "8px",
+                        "padding": "10px",
                     },
                 ),
-            ],
-            style={
-                "position": "absolute",
-                "bottom": "10px",
-                "left": "10px",
-                "background": "rgba(255,255,255,0.9)",
-                "padding": "8px",
-                "borderRadius": "6px",
-                "zIndex": 1000,
-                "display": "flex",
-                "gap": "10px",
-                "alignItems": "center",
-            },
+                dl.Map(
+                    center=map_center,
+                    zoom=10,
+                    bounds=map_bounds,
+                    style={"height": "100vh", "width": "100%"},
+                    preferCanvas=True,
+                    children=[
+                        dl.TileLayer(),
+                        dl.GeoJSON(
+                            data=json.loads(df_locs_mpn.to_json()),
+                            id="marker-mpn",
+                            filter=assign(
+                                "function(feature, context){return context.hideout.includes(feature.properties.peilgebied_combi_attr);}"),
+                            hideout=dd_locs_mpn_default,
+                            eventHandlers={
+                                "click": assign("function(e){return e?.target?.feature?.properties||{};}")
+                            },
+                        ),
+                        dl.GeoJSON(
+                            id="geojson-pgb",
+                            data=geojson_data,
+                            hideout=initial_stylemap,
+                            options=initial_options,
+                            # hoverStyle eventueel weghalen als je helemaal geen hoveraccent wilt
+                            # hoverStyle={"weight": 2, "color": "yellow", "dashArray": ""},
+                            eventHandlers={
+                                "click": assign("function(e){return e?.target?.feature?.properties||{};}")
+                            },
+                        ),
+                    ],
+                ),
+                html.Div(
+                    [
+                        dcc.Store(id="combined-fig-store"),
+                        # Lokale spinner voor alleen de grote grafiek mag blijven
+                        dcc.Loading(
+                            id="loading-combined",
+                            type="default",
+                            children=[
+                                dcc.Graph(
+                                    id="combined-graph",
+                                    figure=EMPTY_FIG,
+                                    config={"displayModeBar": True, "scrollZoom": True},
+                                    style={"height": "100%", "minHeight": 0},
+                                )
+                            ],
+                        ),
+                    ],
+                    style=def_layout,
+                ),
+                html.Div(
+                    [
+                        dcc.Store(id="is-playing", data=False),
+                        html.Button(id="playpause-button", n_clicks=0, style={"width": "72px"}),
+                        html.Div(initial_label, id="datum-label", style={"fontWeight": "bold"}),
+                        html.Div(
+                            [
+                                dcc.Graph(
+                                    id="mini-tijdserie",
+                                    config={"displayModeBar": False},
+                                    style={
+                                        "height": "50px",
+                                        "width": "350px",
+                                        "position": "absolute",
+                                        "top": 0,
+                                        "left": "25px",
+                                        "pointerEvents": "none",
+                                    },
+                                ),
+                                dcc.Slider(
+                                    id="tijdslider",
+                                    min=0,
+                                    max=len(all_datetimes) - 1,
+                                    value=default_index,
+                                    updatemode="mouseup",
+                                ),
+                            ],
+                            style={
+                                "position": "relative",
+                                "width": "400px",
+                                "height": "50px",
+                                "display": "inline-block",
+                            },
+                        ),
+                    ],
+                    style={
+                        "position": "absolute",
+                        "bottom": "10px",
+                        "left": "10px",
+                        "background": "rgba(255,255,255,0.9)",
+                        "padding": "8px",
+                        "borderRadius": "6px",
+                        "zIndex": 1000,
+                        "display": "flex",
+                        "gap": "10px",
+                        "alignItems": "center",
+                    },
+                ),
+                dcc.Interval(id="interval", interval=1000, disabled=True),
+                html.Div(id="click-output"),
+            ]
         ),
-        dcc.Interval(id="interval", interval=1000, disabled=True),
-        html.Div(id="click-output"),
     ]
 )
 
-# ============= CALLBACKS =============
 
+# ============= CALLBACKS =============
+@app.callback(
+    Output("page-loader", "style"),
+    [Input("combined-fig-store", "data"),
+     Input("geojson-pgb", "hideout")],
+    prevent_initial_call=True,
+)
+def hide_page_loader(fig_dict, stylemap):
+    if not fig_dict or not stylemap:
+        raise PreventUpdate
+    return {"display": "none"}
 
 @app.callback(
     Output("geojson-pgb", "hideout"),
@@ -400,26 +437,6 @@ def update_stylemap(idx, sel, var):
 )
 def select_dropdown_on_click(clickData):
     return clickData["properties"]["location_id"]
-
-
-@app.callback(
-    Output("geojson-tooltip", "children"),
-    Input("geojson-pgb", "hoverData"),
-    State("tijdslider", "value"),
-    State("kaartvariabele-dropdown", "value"),
-    prevent_initial_call=True,
-)
-def update_tooltip(feature, idx, var):
-    if not feature:
-        return ""
-    props = feature["properties"]
-    code, naam = props.get("location_id"), props.get("naam")
-    dt = datum_to_index[int(idx)]
-    style = get_kaartdata_for_datetime(dt, var)
-    val = style.get(code, {}).get(var)
-    txt = f"{val:.1f}%" if val is not None else "n.b."
-    return f"naam: {naam} (code: {code}) — {txt}"
-
 
 # ========= Grote grafiek: BASIS in Store =========
 @app.callback(
@@ -652,7 +669,7 @@ def build_combined_figure(sel, var):
     [
         Input("combined-fig-store", "data"),
         Input("tijdslider", "value"),
-        Input("marker-mpn", "hoverData")
+        Input("marker-mpn", "clickData")
     ],
 )
 def add_vline_to_combined(fig_dict, idx, selected_mpn):

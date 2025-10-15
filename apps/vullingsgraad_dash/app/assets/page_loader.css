@@ -1,0 +1,27 @@
+/* Fullscreen overlay */
+#page-loader {
+  position: fixed;
+  inset: 0;                          /* top, right, bottom, left = 0 */
+  background: rgba(255, 255, 255, 0.92);
+  z-index: 20000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Simpele CSS spinner */
+#page-loader .spinner {
+  width: 64px;
+  height: 64px;
+  border: 6px solid #e0e0e0;
+  border-top: 6px solid #4285f4;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Verberg de "Loading.." tekst van dcc.Loading */
+.dash-loading .loading { font-size: 0 !important; }
