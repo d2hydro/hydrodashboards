@@ -13,6 +13,9 @@ dash = "python dash\\app.py"
 dash_ng = "python dash\\app_NG.py"
 vullingsgraad_bokeh = "bokeh serve apps\\vullingsgraad"
 vullingsgraad_dash = "python apps\\vullingsgraad_dash\\app\\app.py"
+vullingsgraad_dash_netcdf = "python apps\\vullingsgraad_dash\\app\\app_netcdf.py"
+fewspy-install-editable = "pip install --no-deps -e ../fewspy"
+
 
 [dependencies]
 aiohttp = "*"
@@ -25,10 +28,14 @@ fastapi = "*"
 dash = "*"
 ipykernel = "*"
 fiona = "*"
+netCDF4 = "*"
+lxml = "*"
+pip = "*"
 shapely = "*"
 pyproj = "*"
 ribasim = "==2025.4.0"
 pyarrow = ">=10.0.1"
+xarray = "*"
 
 [pypi-dependencies]
 dash-resizable-panels ="*"
