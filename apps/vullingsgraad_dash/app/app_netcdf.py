@@ -742,8 +742,8 @@ def add_vline_to_combined(fig_dict, idx, selected_mpn):
 def update_mini_graph(sel, var, idx):
     if not sel:
         raise PreventUpdate
-    if var == "vullingsgraad":
-        vals = []
+    #if var == "vullingsgraad":
+    vals = []
     idx0 = int(idx) if idx is not None else 0
     mini = go.Figure(
         go.Scatter(
