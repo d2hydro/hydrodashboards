@@ -172,7 +172,7 @@ def_layout = {
 }
 
 # ===== Standaardkeuzes bij opstarten =====
-default_index = 0
+default_index = len(all_datetimes) - 1  
 default_dt = all_datetimes[default_index]
 default_pgb = location_options[0]["value"] if location_options else None
 initial_label = default_dt.strftime("%Y-%m-%d %H:%M")
@@ -235,11 +235,17 @@ from dash import html, dcc
 
 app.layout = html.Div(
     [
-        # <<< FULLSCREEN OVERLAY SPINNER >>>
+            # <<< FULLSCREEN OVERLAY SPINNER >>>
         html.Div(
             id="page-loader",
-            children=html.Div(className="spinner"),
-            style={"display": "block"},
+            children=html.Div(
+                className="loader-inner",
+                children=[
+                    html.Div(className="spinner-ring"),
+                    html.Div("kaart en data loading", className="loader-text"),
+                ],
+            ),
+            style={"display": "block"},  # je bestaande callback zet dit naar {"display": "none"}
         ),
         # <<< JE HUIDIGE APP-INHOUD >>>
         html.Div(
@@ -369,6 +375,7 @@ app.layout = html.Div(
                                     min=0,
                                     max=len(all_datetimes) - 1,
                                     value=default_index,
+                                    marks=None,
                                     updatemode="mouseup",
                                 ),
                             ],
@@ -413,6 +420,7 @@ def hide_page_loader(fig_dict, stylemap):
     return {"display": "none"}
 
 
+
 @app.callback(
     Output("geojson-pgb", "hideout"),
     Output("datum-label", "children"),
@@ -424,14 +432,14 @@ def hide_page_loader(fig_dict, stylemap):
 )
 def update_stylemap(idx, sel, var):
     try:
-        if idx is None or idx not in all_datetimes or not sel or not var:
+        if idx is None or not sel or not var:
             raise PreventUpdate
-        dt = all_datetimes[int(idx)]
+        dt = all_datetimes[int(idx)]          # index -> Timestamp
         stylemap = get_kaartdata_for_datetime(dt, var)
         label = dt.strftime("%Y-%m-%d %H:%M")
         options = {
             "style": style_handle,
-            "selected": sel,
+            "selected": sel,                  # nodig voor highlight
             "interactive": True,
             "bubblingMouseEvents": True,
         }
@@ -441,6 +449,7 @@ def update_stylemap(idx, sel, var):
     except Exception as e:
         print(f"[ERROR] update_stylemap: {e}", file=sys.stderr)
         raise PreventUpdate
+
 
 
 @app.callback(
@@ -742,12 +751,37 @@ def add_vline_to_combined(fig_dict, idx, selected_mpn):
 def update_mini_graph(sel, var, idx):
     if not sel:
         raise PreventUpdate
-    #if var == "vullingsgraad":
-    vals = []
+
+    # Kies parameter-id passend bij dropdown
+    if var == "vullingsgraad":
+        parameter_id = "vullingsgraad"
+    else:
+        parameter_id = "vulling_mm"
+
+    # Haal 1 kolom tijdserie voor dit peilgebied op
+    try:
+        df = time_series_cache.get_time_series(
+            filter_id="VullingsgraadOutput",
+            parameter_id=parameter_id,
+            location_ids=[sel],
+        )
+    except Exception:
+        # Geen data? Dan leeg figuur met alleen de vline
+        df = pd.DataFrame()
+
+    # Maak een Series (kan leeg zijn)
+    if df is not None and not df.empty:
+        series = df.iloc[:, 0]  # eerste kolom
+        # Align op de gemeenschappelijke tijdas van de slider
+        vals = [series.get(ts, None) for ts in all_datetimes]
+    else:
+        vals = [None] * len(all_datetimes)
+
     idx0 = int(idx) if idx is not None else 0
+
     mini = go.Figure(
         go.Scatter(
-            x=[],
+            x=list(range(len(all_datetimes))),  # 0..N-1
             y=vals,
             mode="lines",
             line=dict(width=2),
@@ -758,12 +792,13 @@ def update_mini_graph(sel, var, idx):
     mini.add_vline(x=idx0, line_width=2, line_dash="dash", line_color="#bbbbbb")
     mini.update_layout(
         margin=dict(l=0, r=0, t=0, b=0),
-        height=50,
+        height=50,         
         plot_bgcolor="rgba(0,0,0,0)",
         xaxis=dict(visible=False, range=[0, len(all_datetimes) - 1], fixedrange=True),
         yaxis=dict(visible=False, fixedrange=True),
     )
     return mini
+
 
 
 @app.callback(Output("playpause-button", "children"), Input("is-playing", "data"))
