@@ -1,44 +1,32 @@
 # %%
+import json
 import sys
 import time
-import json
 from functools import lru_cache, wraps
+from pathlib import Path
 
 import dash
 import dash_leaflet as dl
 import pandas as pd
 import plotly.graph_objs as go
-import pyarrow as pa
-import pyarrow.compute as pc
-import pyarrow.dataset as ds
-from pathlib import Path
 from dash import Input, Output, State, dcc, html
 from dash.exceptions import PreventUpdate
 from dash_extensions.javascript import assign
+from fewspy.cache import TimeSeriesCache
 from flask_caching import Cache
 from plotly.subplots import make_subplots
 from read import read_mpn_locs, read_peilgebieden
-from fewspy.cache import TimeSeriesCache
-from typing import Optional
-import xarray as xr
-import numpy as np
-from datetime import datetime
-import threading
 
 # ====== PADEN ======
 app_dir = Path(__file__).parent
 data_dir = app_dir.parent.joinpath("data")
-project_root = app_dir.parents[2]
-assets_dir = project_root / "assets"
-
+assets_dir = app_dir / "assets"
 
 # Initialize Dash and set assets folder explicitly to the project-level assets
 app = dash.Dash(__name__, assets_folder=str(assets_dir))
 
 # === caching
-cache = Cache(
-    app.server, config={"CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": 3600}
-)
+cache = Cache(app.server, config={"CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": 3600})
 
 
 def timed_callback(f):
@@ -104,9 +92,7 @@ dd_locs_mpn_default = []
 #     format="feather",
 # )
 
-time_series_cache = TimeSeriesCache.from_manifest_file(
-    data_dir.joinpath("time_series", "manifest.json")
-)
+time_series_cache = TimeSeriesCache.from_manifest_file(data_dir.joinpath("time_series", "manifest.json"))
 
 timer_start = time.time()
 
@@ -323,11 +309,7 @@ app.layout = html.Div(
                                 "function(feature, context){return context.hideout.includes(feature.properties.peilgebied_combi_attr);}"
                             ),
                             hideout=dd_locs_mpn_default,
-                            eventHandlers={
-                                "click": assign(
-                                    "function(e){return e?.target?.feature?.properties||{};}"
-                                )
-                            },
+                            eventHandlers={"click": assign("function(e){return e?.target?.feature?.properties||{};}")},
                         ),
                         dl.GeoJSON(
                             id="geojson-pgb",
@@ -336,11 +318,7 @@ app.layout = html.Div(
                             options=initial_options,
                             # hoverStyle eventueel weghalen als je helemaal geen hoveraccent wilt
                             # hoverStyle={"weight": 2, "color": "yellow", "dashArray": ""},
-                            eventHandlers={
-                                "click": assign(
-                                    "function(e){return e?.target?.feature?.properties||{};}"
-                                )
-                            },
+                            eventHandlers={"click": assign("function(e){return e?.target?.feature?.properties||{};}")},
                         ),
                     ],
                 ),
@@ -366,9 +344,7 @@ app.layout = html.Div(
                 html.Div(
                     [
                         dcc.Store(id="is-playing", data=False),
-                        html.Button(
-                            id="playpause-button", n_clicks=0, style={"width": "72px"}
-                        ),
+                        html.Button(id="playpause-button", n_clicks=0, style={"width": "72px"}),
                         html.Div(
                             initial_label,
                             id="datum-label",
@@ -506,9 +482,7 @@ def build_combined_figure(sel, var):
             parameter_id="H.meting",
             location_ids=[sel],
         )
-        mpn_ids = df_locs_mpn.loc[
-            df_locs_mpn["peilgebied_combi_attr"] == sel, "location_id"
-        ].tolist()
+        mpn_ids = df_locs_mpn.loc[df_locs_mpn["peilgebied_combi_attr"] == sel, "location_id"].tolist()
         df_mpn = time_series_cache.get_time_series(
             filter_id="PeilgebiedWaterstandMeetpunt",
             parameter_id="H.meting",
@@ -598,9 +572,7 @@ def build_combined_figure(sel, var):
                 col=1,
             )
         for location_id in df_mpn.columns.get_level_values("location_id"):
-            naam = df_locs_mpn.loc[df_locs_mpn.location_id == location_id, "naam"].iat[
-                0
-            ]
+            naam = df_locs_mpn.loc[df_locs_mpn.location_id == location_id, "naam"].iat[0]
             fig.add_trace(
                 go.Scatter(
                     x=df_mpn.index,
@@ -847,6 +819,7 @@ def update_mpn_markers(selected_location_id):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.title = "Vullingsgraad"
+    app.run(port=5005, debug=True)
 
 # %%
