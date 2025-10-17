@@ -1,3 +1,4 @@
+
 # %%
 import json
 import sys
@@ -8,6 +9,7 @@ from pathlib import Path
 import dash
 import dash_leaflet as dl
 import pandas as pd
+import bisect
 import plotly.graph_objs as go
 from dash import Input, Output, State, dcc, html
 from dash.exceptions import PreventUpdate
@@ -231,7 +233,6 @@ EMPTY_FIG.update_layout(
     showlegend=False,
 )
 # ========== Layout ==========
-from dash import html, dcc
 
 app.layout = html.Div(
     [
@@ -309,14 +310,63 @@ app.layout = html.Div(
                     children=[
                         dl.TileLayer(),
                         dl.GeoJSON(
-                            data=json.loads(df_locs_mpn.to_json()),
                             id="marker-mpn",
-                            filter=assign(
-                                "function(feature, context){return context.hideout.includes(feature.properties.peilgebied_combi_attr);}"
-                            ),
+                            data=json.loads(df_locs_mpn.to_json()),
+
+                            filter=assign("""
+                                function(feature, context){
+                                    const ok = feature && feature.geometry && feature.geometry.type === "Point"
+                                        && Array.isArray(feature.geometry.coordinates)
+                                        && feature.geometry.coordinates.length === 2
+                                        && isFinite(feature.geometry.coordinates[0])
+                                        && isFinite(feature.geometry.coordinates[1]);
+                                    if (!ok) return false;
+                                    const list = context.hideout || [];
+                                    return Array.isArray(list) && list.includes(feature.properties.peilgebied_combi_attr);
+                                }
+                            """),
                             hideout=dd_locs_mpn_default,
-                            eventHandlers={"click": assign("function(e){return e?.target?.feature?.properties||{};}")},
+                            options={
+                                "pointToLayer": assign("""
+                                    function(feature, latlng){
+                                        return L.circleMarker(latlng, {
+                                            radius: 5,
+                                            fillColor: '#3388ff',
+                                            color: '#ffffff',
+                                            weight: 1,
+                                            opacity: 1,
+                                            fillOpacity: 1
+                                        });
+                                    }
+                                """),
+                                "bubblingMouseEvents": True,
+                            },
+                            eventHandlers={
+                                "click": assign("""
+                                    function(e){
+                                        const layer = e && (e.layer || e.sourceTarget || e.target);
+                                        const feat = layer && layer.feature;
+                                        const props = (feat && feat.properties) ? feat.properties : {};
+                                        const ll = e && e.latlng ? e.latlng : null;
+
+                                        // Debug: printen in browserconsole
+                                        console.log("[MPN] klik op meetpunt:");
+                                        console.log("  feature props:", props);
+                                        console.log("  lat/lng:", ll);
+
+                                        // Return object naar Python (nodig!)
+                                        return {
+                                            properties: props,
+                                            lat: ll.lat,
+                                            lng: ll.lng
+                                        };
+                                    }
+                                """)
+                            }
+                            ,
+
                         ),
+
                         dl.GeoJSON(
                             id="geojson-pgb",
                             data=geojson_data,
@@ -326,7 +376,10 @@ app.layout = html.Div(
                             # hoverStyle={"weight": 2, "color": "yellow", "dashArray": ""},
                             eventHandlers={"click": assign("function(e){return e?.target?.feature?.properties||{};}")},
                         ),
+                        dl.LayerGroup(id="mpn-click-layer"),
+                        dcc.Store(id="clicked-mpn-store", data=None),
                     ],
+                        
                 ),
                 html.Div(
                     [
@@ -336,12 +389,18 @@ app.layout = html.Div(
                             id="loading-combined",
                             type="default",
                             children=[
-                                dcc.Graph(
-                                    id="combined-graph",
-                                    figure=EMPTY_FIG,
-                                    config={"displayModeBar": True, "scrollZoom": True},
-                                    style={"height": "100%", "minHeight": 0},
-                                )
+                            dcc.Graph(
+                                id="combined-graph",
+                                figure=EMPTY_FIG,
+                                config={
+                                    "displayModeBar": True,
+                                    "scrollZoom": True,
+                                    # >>> maak shapes (dus jouw vlines) versleepbaar <<<
+                                    "edits": {"shapePosition": True}
+                                },
+                                style={"height": "100%", "minHeight": 0},
+                            ),
+
                             ],
                         ),
                     ],
@@ -400,6 +459,7 @@ app.layout = html.Div(
                         "alignItems": "center",
                     },
                 ),
+                
                 dcc.Interval(id="interval", interval=1000, disabled=True),
                 html.Div(id="click-output"),
             ]
@@ -409,6 +469,8 @@ app.layout = html.Div(
 
 
 # ============= CALLBACKS =============
+
+
 @app.callback(
     Output("page-loader", "style"),
     [Input("combined-fig-store", "data"), Input("geojson-pgb", "hideout")],
@@ -418,6 +480,67 @@ def hide_page_loader(fig_dict, stylemap):
     if not fig_dict or not stylemap:
         raise PreventUpdate
     return {"display": "none"}
+
+
+@app.callback(
+    Output("clicked-mpn-store", "data"),
+    Input("marker-mpn", "clickData"),
+    prevent_initial_call=True,
+)
+def store_clicked_mpn(cd):
+    print("[STORE] nieuwe klikdata opgeslagen:", cd)
+    return cd
+
+@app.callback(
+    Output("mpn-click-layer", "children"),
+    [Input("clicked-mpn-store", "data"), Input("pgb-dropdown", "value")],
+    prevent_initial_call=True,
+)
+def show_clicked_mpn_marker(cd, selected_pgb):
+    from dash import ctx
+
+    if ctx.triggered_id == "pgb-dropdown":
+        print("[DEBUG] dropdown wijziging → reset marker")
+        return []
+
+    if not cd:
+        raise PreventUpdate
+
+    props = cd.get("properties", {}) or {}
+    naam = props.get("naam") or "meetpunt"
+    mpn_id = props.get("location_id") or props.get("id") or "(onbekend id)"
+
+    lat = cd.get("lat")
+    lng = cd.get("lng")
+    if lat is None or lng is None:
+        coords = cd.get("geometry", {}).get("coordinates", [])
+        if len(coords) == 2:
+            lng, lat = coords
+
+    if lat is None or lng is None:
+        print("[FOUT] Geen lat/lng gevonden voor klik")
+        raise PreventUpdate
+
+    print(f"[MPN] klik op: {naam} ({mpn_id}) @ {lat:.5f}, {lng:.5f}")
+
+    marker = dl.Marker(
+        position=[lat, lng],
+        zIndexOffset=1000,
+        children=[
+            dl.Popup(
+                html.Div([
+                    html.B(naam),
+                    html.Br(),
+                    html.Span(f"ID: {mpn_id}")
+                ]),
+                autoPan=True,
+                closeOnClick=False,
+            ),
+        ],
+    )
+
+    return [marker]
+
 
 
 
@@ -823,14 +946,65 @@ def toggle_interval(playing):
 
 @app.callback(
     Output("tijdslider", "value"),
-    Input("interval", "n_intervals"),
-    State("interval", "disabled"),
-    State("tijdslider", "value"),
+    [
+        Input("interval", "n_intervals"),
+        Input("combined-graph", "relayoutData"),
+    ],
+    [
+        State("interval", "disabled"),
+        State("tijdslider", "value"),
+    ],
 )
-def advance_slider(n, disabled, current):
-    if disabled or current is None:
+def update_slider_from_interval_or_drag(n_intervals, relayoutData, disabled, current_idx):
+    # Bepaal welke input triggerde
+    ctx = dash.callback_context
+    if not ctx.triggered:
         raise PreventUpdate
-    return (current + 1) % len(all_datetimes)
+    trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
+
+    # Case 1: autoplay via interval
+    if trigger_id == "interval":
+        if disabled or current_idx is None:
+            raise PreventUpdate
+        return (int(current_idx) + 1) % len(all_datetimes)
+
+    # Case 2: vline in grote grafiek versleept
+    if trigger_id == "combined-graph":
+        if not relayoutData:
+            raise PreventUpdate
+
+        # Zoek een shapes[*].x0 of shapes[*].x1 update (line-shape verplaatst)
+        new_x = None
+        for k, v in relayoutData.items():
+            if k.startswith("shapes[") and (k.endswith("].x0") or k.endswith("].x1")):
+                new_x = v
+                break
+        if new_x is None:
+            # Zoom/pan e.d. negeren
+            raise PreventUpdate
+
+        # Naar dichtstbijzijnde index op je gemeenschappelijke tijdas
+        try:
+            ts = pd.to_datetime(new_x)
+        except Exception:
+            raise PreventUpdate
+
+        pos = bisect.bisect_left(all_datetimes, ts)
+        if pos <= 0:
+            nearest = 0
+        elif pos >= len(all_datetimes):
+            nearest = len(all_datetimes) - 1
+        else:
+            before = all_datetimes[pos - 1]
+            after = all_datetimes[pos]
+            nearest = pos if (after - ts) <= (ts - before) else (pos - 1)
+
+        if current_idx is not None and int(current_idx) == nearest:
+            raise PreventUpdate
+        return nearest
+
+    # Onbekende trigger → niets doen
+    raise PreventUpdate
 
 
 @app.callback(
@@ -857,4 +1031,4 @@ if __name__ == "__main__":
     app.title = "Vullingsgraad"
     app.run(port=5005, debug=True)
 
-# %%
+#%%
