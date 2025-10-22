@@ -1,4 +1,3 @@
-
 # %%
 import json
 import sys
@@ -37,9 +36,8 @@ def timed_callback(f):
         t0 = time.perf_counter()
         result = f(*args, **kwargs)
         dt = time.perf_counter() - t0
-        print(f"[TIMING] Callback {f.__name__} duurde {dt:.3f} s")
+        print(f"[TIMING] Callback {f.__name__} duurde {dt:.3f} s")
         return result
-
     return wrapper
 
 
@@ -67,42 +65,19 @@ geojson_data, location_options, bounds = read_peilgebieden(
         "fillColor": "gray",
         "color": "#666",
         "weight": 0.3,
-        "fillOpacity": 0.3,
+        "fillOpacity": 1,  # mag vol blijven; stapeling lossen we op met pane voor punten
     },
 )
 map_bounds, map_center = bounds_to_map(*bounds)
 print("TIJD: shapefile/geodata ingelezen in", round(time.time() - timer_start, 2), "s")
 
 # ===== Laad Arrow tijdseries, bepaal tijdas =====
-# ds_vg = ds.dataset(
-#     data_dir.joinpath("vullingsgraad.arrow"),
-#     format="feather",
-# )
-# ds_vul = ds.dataset(
-#     data_dir.joinpath("vulling.arrow"),
-#     format="feather",
-# )
 df_locs_mpn = read_mpn_locs(data_dir.joinpath("mpn_locations.arrow"))
 dd_locs_mpn_default = []
-
-# ds_wlvl_mpn = ds.dataset(
-#     data_dir.joinpath("waterstand_meetpunt.arrow"),
-#     format="feather",
-# )
-# ds_wlvl_pgb = ds.dataset(
-#     data_dir.joinpath("waterstand_pgb.arrow"),
-#     format="feather",
-# )
 
 time_series_cache = TimeSeriesCache.from_manifest_file(data_dir.joinpath("time_series", "manifest.json"))
 
 timer_start = time.time()
-
-# TODO: dit verwijderen wanneer time_series_cache.common_time_axis werkt
-# dt_vg = ds_vg.to_table(columns=["datetime"])
-# dt_vul = ds_vul.to_table(columns=["datetime"])
-# all_dt_arrow = pc.unique(pa.concat_tables([dt_vg, dt_vul])["datetime"])
-# all_datetimes = sorted(pd.to_datetime(all_dt_arrow.to_pylist()))
 all_datetimes = [pd.Timestamp(i) for i in time_series_cache.common_time_axis]
 datum_to_index = {i: dt for i, dt in enumerate(all_datetimes)}
 print("TIJD: tijdas opgebouwd in", round(time.time() - timer_start, 2), "s")
@@ -141,8 +116,6 @@ def kleur_bij_vulling(val):
 
 
 style_handle = assign("""
-
-
 function(feature, context){
     const stylemap = context.hideout || {};
     const loc = feature.properties.location_id;
@@ -174,9 +147,21 @@ def_layout = {
 }
 
 # ===== Standaardkeuzes bij opstarten =====
-default_index = len(all_datetimes) - 1  
+default_index = len(all_datetimes) - 1
 default_dt = all_datetimes[default_index]
 default_pgb = location_options[0]["value"] if location_options else None
+
+# Initieer marker hideout voor default pgb (zodat er direct punten door de filter komen)
+if default_pgb is not None and "peilgebied_combi_attr" in df_locs_mpn.columns:
+    dd_locs_mpn_default = (
+        df_locs_mpn.loc[
+            df_locs_mpn["peilgebied_combi_attr"].astype(str) == str(default_pgb),
+            "peilgebied_combi_attr",
+        ].astype(str).dropna().unique().tolist()
+    )
+else:
+    dd_locs_mpn_default = []
+
 initial_label = default_dt.strftime("%Y-%m-%d %H:%M")
 initial_kaartvariabele = "vullingsgraad"
 
@@ -208,14 +193,15 @@ def get_kaartdata_for_datetime(dt, kaartvariabele):
             "fillColor": kleur_fn(val),
             "color": "#666",
             "weight": 0.3,
-            "fillOpacity": 1,
+            "fillOpacity": 1,  # laat gerust op 1; pane van punten regelt stapeling
             kaartvariabele: val,
         }
         for loc, val in zip(ids, vals)
     }
 
-
 initial_stylemap = get_kaartdata_for_datetime(default_dt, initial_kaartvariabele)
+
+# Initiele options voor polygonen: géén pane → overlayPane (z≈400)
 initial_options = {
     "style": style_handle,
     "selected": default_pgb,
@@ -232,11 +218,11 @@ EMPTY_FIG.update_layout(
     yaxis=dict(visible=False),
     showlegend=False,
 )
-# ========== Layout ==========
 
+# ========== Layout ==========
 app.layout = html.Div(
     [
-            # <<< FULLSCREEN OVERLAY SPINNER >>>
+        # <<< FULLSCREEN OVERLAY SPINNER >>>
         html.Div(
             id="page-loader",
             children=html.Div(
@@ -246,8 +232,9 @@ app.layout = html.Div(
                     html.Div("kaart en data loading", className="loader-text"),
                 ],
             ),
-            style={"display": "block"},  # je bestaande callback zet dit naar {"display": "none"}
+            style={"display": "block"},
         ),
+
         # <<< JE HUIDIGE APP-INHOUD >>>
         html.Div(
             [
@@ -301,18 +288,29 @@ app.layout = html.Div(
                         "padding": "10px",
                     },
                 ),
+
                 dl.Map(
                     center=map_center,
                     zoom=10,
                     bounds=map_bounds,
                     style={"height": "100vh", "width": "100%"},
-                    preferCanvas=True,
+                    preferCanvas=True,  # blijft prima; pane van punten > polygonen
                     children=[
                         dl.TileLayer(),
+
+                        # POLYGONEN (blijven in overlayPane; géén pane meegeven)
+                        dl.GeoJSON(
+                            id="geojson-pgb",
+                            data=geojson_data,
+                            hideout=initial_stylemap,
+                            options=initial_options,
+                            eventHandlers={"click": assign("function(e){return e?.target?.feature?.properties||{};}")},
+                        ),
+
+                        # MEETPUNTEN (circleMarkers in markerPane, z≈600)
                         dl.GeoJSON(
                             id="marker-mpn",
                             data=json.loads(df_locs_mpn.to_json()),
-
                             filter=assign("""
                                 function(feature, context){
                                     const ok = feature && feature.geometry && feature.geometry.type === "Point"
@@ -322,11 +320,14 @@ app.layout = html.Div(
                                         && isFinite(feature.geometry.coordinates[1]);
                                     if (!ok) return false;
                                     const list = context.hideout || [];
-                                    return Array.isArray(list) && list.includes(feature.properties.peilgebied_combi_attr);
+                                    const attr = String(feature.properties?.peilgebied_combi_attr);
+                                    return Array.isArray(list) && list.includes(attr);
                                 }
                             """),
                             hideout=dd_locs_mpn_default,
                             options={
+                                "pane": "markerPane",  # <<< KEY: punten altijd boven overlayPane
+                                "onEachFeature": assign("function(f, layer){ if(layer && layer.bringToFront){ layer.bringToFront(); } }"),
                                 "pointToLayer": assign("""
                                     function(feature, latlng){
                                         return L.circleMarker(latlng, {
@@ -348,73 +349,50 @@ app.layout = html.Div(
                                         const feat = layer && layer.feature;
                                         const props = (feat && feat.properties) ? feat.properties : {};
                                         const ll = e && e.latlng ? e.latlng : null;
-
-                                        // Debug: printen in browserconsole
-                                        console.log("[MPN] klik op meetpunt:");
-                                        console.log("  feature props:", props);
-                                        console.log("  lat/lng:", ll);
-
-                                        // Return object naar Python (nodig!)
                                         return {
                                             properties: props,
-                                            lat: ll.lat,
-                                            lng: ll.lng
+                                            lat: ll?.lat,
+                                            lng: ll?.lng
                                         };
                                     }
                                 """)
-                            }
-                            ,
-
+                            },
                         ),
 
-                        dl.GeoJSON(
-                            id="geojson-pgb",
-                            data=geojson_data,
-                            hideout=initial_stylemap,
-                            options=initial_options,
-                            # hoverStyle eventueel weghalen als je helemaal geen hoveraccent wilt
-                            # hoverStyle={"weight": 2, "color": "yellow", "dashArray": ""},
-                            eventHandlers={"click": assign("function(e){return e?.target?.feature?.properties||{};}")},
-                        ),
+                        # Klik-marker (L.Marker → zit in markerPane, al boven polygonen)
                         dl.LayerGroup(id="mpn-click-layer"),
                         dcc.Store(id="clicked-mpn-store", data=None),
                     ],
-                        
                 ),
+
                 html.Div(
                     [
                         dcc.Store(id="combined-fig-store"),
-                        # Lokale spinner voor alleen de grote grafiek mag blijven
                         dcc.Loading(
                             id="loading-combined",
                             type="default",
                             children=[
-                            dcc.Graph(
-                                id="combined-graph",
-                                figure=EMPTY_FIG,
-                                config={
-                                    "displayModeBar": True,
-                                    "scrollZoom": True,
-                                    # >>> maak shapes (dus jouw vlines) versleepbaar <<<
-                                    "edits": {"shapePosition": True}
-                                },
-                                style={"height": "100%", "minHeight": 0},
-                            ),
-
+                                dcc.Graph(
+                                    id="combined-graph",
+                                    figure=EMPTY_FIG,
+                                    config={
+                                        "displayModeBar": True,
+                                        "scrollZoom": True,
+                                        "edits": {"shapePosition": True}
+                                    },
+                                    style={"height": "100%", "minHeight": 0},
+                                ),
                             ],
                         ),
                     ],
                     style=def_layout,
                 ),
+
                 html.Div(
                     [
                         dcc.Store(id="is-playing", data=False),
                         html.Button(id="playpause-button", n_clicks=0, style={"width": "72px"}),
-                        html.Div(
-                            initial_label,
-                            id="datum-label",
-                            style={"fontWeight": "bold"},
-                        ),
+                        html.Div(initial_label, id="datum-label", style={"fontWeight": "bold"}),
                         html.Div(
                             [
                                 dcc.Graph(
@@ -438,12 +416,7 @@ app.layout = html.Div(
                                     updatemode="mouseup",
                                 ),
                             ],
-                            style={
-                                "position": "relative",
-                                "width": "400px",
-                                "height": "50px",
-                                "display": "inline-block",
-                            },
+                            style={"position": "relative", "width": "400px", "height": "50px", "display": "inline-block"},
                         ),
                     ],
                     style={
@@ -459,7 +432,7 @@ app.layout = html.Div(
                         "alignItems": "center",
                     },
                 ),
-                
+
                 dcc.Interval(id="interval", interval=1000, disabled=True),
                 html.Div(id="click-output"),
             ]
@@ -469,8 +442,6 @@ app.layout = html.Div(
 
 
 # ============= CALLBACKS =============
-
-
 @app.callback(
     Output("page-loader", "style"),
     [Input("combined-fig-store", "data"), Input("geojson-pgb", "hideout")],
@@ -491,6 +462,7 @@ def store_clicked_mpn(cd):
     print("[STORE] nieuwe klikdata opgeslagen:", cd)
     return cd
 
+
 @app.callback(
     Output("mpn-click-layer", "children"),
     [Input("clicked-mpn-store", "data"), Input("pgb-dropdown", "value")],
@@ -498,11 +470,9 @@ def store_clicked_mpn(cd):
 )
 def show_clicked_mpn_marker(cd, selected_pgb):
     from dash import ctx
-
     if ctx.triggered_id == "pgb-dropdown":
         print("[DEBUG] dropdown wijziging → reset marker")
         return []
-
     if not cd:
         raise PreventUpdate
 
@@ -516,7 +486,6 @@ def show_clicked_mpn_marker(cd, selected_pgb):
         coords = cd.get("geometry", {}).get("coordinates", [])
         if len(coords) == 2:
             lng, lat = coords
-
     if lat is None or lng is None:
         print("[FOUT] Geen lat/lng gevonden voor klik")
         raise PreventUpdate
@@ -525,23 +494,16 @@ def show_clicked_mpn_marker(cd, selected_pgb):
 
     marker = dl.Marker(
         position=[lat, lng],
-        zIndexOffset=1000,
+        zIndexOffset=1000,  # Marker zit in markerPane en komt boven polygonen
         children=[
             dl.Popup(
-                html.Div([
-                    html.B(naam),
-                    html.Br(),
-                    html.Span(f"ID: {mpn_id}")
-                ]),
+                html.Div([html.B(naam), html.Br(), html.Span(f"ID: {mpn_id}")]),
                 autoPan=True,
                 closeOnClick=False,
             ),
         ],
     )
-
     return [marker]
-
-
 
 
 @app.callback(
@@ -557,12 +519,13 @@ def update_stylemap(idx, sel, var):
     try:
         if idx is None or not sel or not var:
             raise PreventUpdate
-        dt = all_datetimes[int(idx)]          # index -> Timestamp
+        dt = all_datetimes[int(idx)]
         stylemap = get_kaartdata_for_datetime(dt, var)
         label = dt.strftime("%Y-%m-%d %H:%M")
+        # >>> geen pane meegeven: polygonen blijven in overlayPane
         options = {
             "style": style_handle,
-            "selected": sel,                  # nodig voor highlight
+            "selected": sel,
             "interactive": True,
             "bubblingMouseEvents": True,
         }
@@ -572,7 +535,6 @@ def update_stylemap(idx, sel, var):
     except Exception as e:
         print(f"[ERROR] update_stylemap: {e}", file=sys.stderr)
         raise PreventUpdate
-
 
 
 @app.callback(
@@ -587,10 +549,8 @@ def select_dropdown_on_click(clickData):
 # ========= Grote grafiek: BASIS in Store =========
 @app.callback(
     Output("combined-fig-store", "data"),
-    [
-        Input("pgb-dropdown", "value"),
-        Input("kaartvariabele-dropdown", "value"),
-    ],
+    [Input("pgb-dropdown", "value"), 
+    Input("kaartvariabele-dropdown", "value")],
 )
 @timed_callback
 def build_combined_figure(sel, var):
@@ -622,10 +582,7 @@ def build_combined_figure(sel, var):
         )
 
         fig = make_subplots(
-            rows=3,
-            cols=1,
-            shared_xaxes=True,
-            vertical_spacing=0.06,
+            rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.06,
             subplot_titles=["Vullingsgraad [%]", "Vulling [mm]", "Waterstand [mNAP]"],
         )
         fig.add_trace(
@@ -635,22 +592,17 @@ def build_combined_figure(sel, var):
                 line=dict(color="blue", width=2),
                 showlegend=False,
             ),
-            row=1,
-            col=1,
+            row=1, col=1,
         )
         fig.add_trace(
             go.Scatter(
-                x=[],
-                y=[],
+                x=[], y=[],
                 mode="lines",
                 line=dict(color="Orange", width=3),
-                opacity=1.0,
-                hoverinfo="skip",
-                showlegend=False,
+                opacity=1.0, hoverinfo="skip", showlegend=False,
                 name="__highlight__",  # herkenbare naam
             ),
-            row=3,
-            col=1,
+            row=3, col=1,
         )
         for y0, y1, colc in [
             (0, 25, "rgba(120,200,120,0.4)"),
@@ -659,18 +611,10 @@ def build_combined_figure(sel, var):
             (75, 100, "rgba(255,100,100,0.4)"),
         ]:
             fig.add_shape(
-                type="rect",
-                xref="x1",
-                yref="y1",
-                x0=df_vg.index.min(),
-                x1=df_vg.index.max(),
-                y0=y0,
-                y1=y1,
-                fillcolor=colc,
-                line_width=0,
-                layer="below",
-                row=1,
-                col=1,
+                type="rect", xref="x1", yref="y1",
+                x0=df_vg.index.min(), x1=df_vg.index.max(),
+                y0=y0, y1=y1, fillcolor=colc, line_width=0, layer="below",
+                row=1, col=1,
             )
         fig.add_trace(
             go.Scatter(
@@ -679,8 +623,7 @@ def build_combined_figure(sel, var):
                 line=dict(color="royalblue", width=2),
                 showlegend=False,
             ),
-            row=2,
-            col=1,
+            row=2, col=1,
         )
         for y0, y1, colc in [
             (0, 10, "#ffffff"),
@@ -690,18 +633,10 @@ def build_combined_figure(sel, var):
             (40, 60, "#1c5fa5"),
         ]:
             fig.add_shape(
-                type="rect",
-                xref="x2",
-                yref="y2",
-                x0=df_vul.index.min(),
-                x1=df_vul.index.max(),
-                y0=y0,
-                y1=y1,
-                fillcolor=colc,
-                line_width=0,
-                layer="below",
-                row=2,
-                col=1,
+                type="rect", xref="x2", yref="y2",
+                x0=df_vul.index.min(), x1=df_vul.index.max(),
+                y0=y0, y1=y1, fillcolor=colc, line_width=0, layer="below",
+                row=2, col=1,
             )
         for location_id in df_mpn.columns.get_level_values("location_id"):
             naam = df_locs_mpn.loc[df_locs_mpn.location_id == location_id, "naam"].iat[0]
@@ -713,13 +648,10 @@ def build_combined_figure(sel, var):
                     line=dict(color="grey", width=1),
                     opacity=0.7,
                     meta=location_id,
-                    hovertemplate="datum: %{x|%Y-%m-%d %H:%M}<br>waarde: %{y:.3f}<br>naam: "
-                    + naam
-                    + "<extra></extra>",
+                    hovertemplate="datum: %{x|%Y-%m-%d %H:%M}<br>waarde: %{y:.3f}<br>naam: "+naam+"<extra></extra>",
                     showlegend=False,
                 ),
-                row=3,
-                col=1,
+                row=3, col=1,
             )
         if not df_pgb.empty:
             fig.add_trace(
@@ -731,8 +663,7 @@ def build_combined_figure(sel, var):
                     hovertemplate="datum: %{x|%Y-%m-%d %H:%M}<br>waarde: %{y:.3f}<br>naam: Peilgebied<extra></extra>",
                     showlegend=False,
                 ),
-                row=3,
-                col=1,
+                row=3, col=1,
             )
         streefpeil = None
         for feat in geojson_data["features"]:
@@ -743,52 +674,35 @@ def build_combined_figure(sel, var):
             if not df_pgb.empty:
                 x_vals = list(df_pgb.index)
             else:
-                x_vals = list(df_mpn.index.unique())
-                x_vals.sort()
+                x_vals = list(df_mpn.index.unique()); x_vals.sort()
             if x_vals:
                 y_val = streefpeil
                 fig.add_trace(
                     go.Scatter(
-                        x=x_vals,
-                        y=[y_val] * len(x_vals),
-                        mode="lines",
-                        line=dict(dash="dash", color="orange", width=2),
-                        name="Streefpeil",
-                        hoverinfo="text",
-                        hovertext=[f"Streefpeil: {y_val:.2f} mNAP"] * len(x_vals),
+                        x=x_vals, y=[y_val]*len(x_vals),
+                        mode="lines", line=dict(dash="dash", color="orange", width=2),
+                        name="Streefpeil", hoverinfo="text",
+                        hovertext=[f"Streefpeil: {y_val:.2f} mNAP"]*len(x_vals),
                         showlegend=False,
                     ),
-                    row=3,
-                    col=1,
+                    row=3, col=1,
                 )
                 fig.add_annotation(
-                    x=x_vals[0],
-                    y=y_val,
-                    xref="x3",
-                    yref="y3",
-                    text="streefpeil",
-                    font=dict(color="orange", size=13),
-                    showarrow=False,
-                    xanchor="left",
-                    yanchor="bottom",
-                    align="left",
-                    bgcolor="rgba(255,255,255,0.7)",
-                    borderpad=2,
+                    x=x_vals[0], y=y_val, xref="x3", yref="y3",
+                    text="streefpeil", font=dict(color="orange", size=13),
+                    showarrow=False, xanchor="left", yanchor="bottom",
+                    align="left", bgcolor="rgba(255,255,255,0.7)", borderpad=2,
                 )
         fig.update_yaxes(range=[0, 100], fixedrange=True, row=1, col=1)
         fig.update_yaxes(range=[0, 60], fixedrange=True, row=2, col=1)
         fig.update_yaxes(fixedrange=True, row=3, col=1)
         fig.update_xaxes(title_text="Tijd", row=3, col=1)
         fig.update_layout(
-            height=900,
-            margin=dict(l=40, r=10, t=60, b=40),
-            plot_bgcolor="white",
-            hovermode="closest",
-            font=dict(size=13),
+            height=900, margin=dict(l=40, r=10, t=60, b=40),
+            plot_bgcolor="white", hovermode="closest", font=dict(size=13),
             showlegend=False,
         )
-        x_min = df_vg.index.min()
-        x_max = df_vg.index.max()
+        x_min = df_vg.index.min(); x_max = df_vg.index.max()
         for r in [1, 2, 3]:
             fig.update_xaxes(range=[x_min, x_max], row=r, col=1, automargin=True)
         cache.set(ckey, fig)
@@ -801,127 +715,66 @@ def build_combined_figure(sel, var):
 # ========= Tweede callback: vline toevoegen op figuur =========
 @app.callback(
     Output("combined-graph", "figure"),
-    [
-        Input("combined-fig-store", "data"),
-        Input("tijdslider", "value"),
-        Input("marker-mpn", "clickData"),
-    ],
+    [Input("combined-fig-store", "data"), Input("tijdslider", "value"), Input("marker-mpn", "clickData")],
 )
 def add_vline_to_combined(fig_dict, idx, selected_mpn):
     if fig_dict is None or idx is None:
         raise PreventUpdate
-
     fig = go.Figure(fig_dict)
-
-    # vline(s)
     current_dt = all_datetimes[int(idx)]
     for xref in ["x1", "x2", "x3"]:
         fig.add_shape(
-            type="line",
-            x0=current_dt,
-            x1=current_dt,
-            y0=0,
-            y1=1,
-            xref=xref,
-            yref="paper",
-            line=dict(dash="dot", width=2, color="#bbbbbb"),
-            layer="above",
+            type="line", x0=current_dt, x1=current_dt, y0=0, y1=1,
+            xref=xref, yref="paper", line=dict(dash="dot", width=2, color="#bbbbbb"), layer="above",
         )
-
-    # 1) alles grauw maken (alle MPN-traces hebben meta == location_id)
     for tr in fig.data:
         if getattr(tr, "meta", None):
-            tr.line.color = "#bbbbbb"
-            tr.line.width = 2
-            tr.opacity = 1.0
-
-    # 2) highlight-trace zoeken (laatste met name == "__highlight__")
+            tr.line.color = "#bbbbbb"; tr.line.width = 2; tr.opacity = 1.0
     highlight_idx = None
     for i in range(len(fig.data) - 1, -1, -1):
         if getattr(fig.data[i], "name", None) == "__highlight__":
-            highlight_idx = i
-            break
-
-    # 3) geselecteerde serie in de highlight-trace projecteren
+            highlight_idx = i; break
     sel_id = selected_mpn and selected_mpn.get("properties", {}).get("location_id")
     x_sel, y_sel = [], []
     if sel_id:
         for tr in fig.data:
             if getattr(tr, "meta", None) == sel_id:
-                x_sel, y_sel = tr.x, tr.y
-                break
-
+                x_sel, y_sel = tr.x, tr.y; break
     if highlight_idx is not None:
-        fig.data[highlight_idx].x = x_sel
-        fig.data[highlight_idx].y = y_sel
-        # optioneel: boven pgb-lijn houden? Zet de highlight-trace helemaal als laatste:
-        data = list(fig.data)
-        hl = data.pop(highlight_idx)
-        data.append(hl)
-        fig.data = tuple(data)
-
+        fig.data[highlight_idx].x = x_sel; fig.data[highlight_idx].y = y_sel
+        data = list(fig.data); hl = data.pop(highlight_idx); data.append(hl); fig.data = tuple(data)
     return fig
 
 
 @app.callback(
     Output("mini-tijdserie", "figure"),
-    [
-        Input("pgb-dropdown", "value"),
-        Input("kaartvariabele-dropdown", "value"),
-        Input("tijdslider", "value"),
-    ],
+    [Input("pgb-dropdown", "value"), Input("kaartvariabele-dropdown", "value"), Input("tijdslider", "value")],
 )
 def update_mini_graph(sel, var, idx):
     if not sel:
         raise PreventUpdate
-
-    # Kies parameter-id passend bij dropdown
-    if var == "vullingsgraad":
-        parameter_id = "vullingsgraad"
-    else:
-        parameter_id = "vulling_mm"
-
-    # Haal 1 kolom tijdserie voor dit peilgebied op
+    parameter_id = "vullingsgraad" if var == "vullingsgraad" else "vulling_mm"
     try:
         df = time_series_cache.get_time_series(
-            filter_id="VullingsgraadOutput",
-            parameter_id=parameter_id,
-            location_ids=[sel],
+            filter_id="VullingsgraadOutput", parameter_id=parameter_id, location_ids=[sel],
         )
     except Exception:
-        # Geen data? Dan leeg figuur met alleen de vline
         df = pd.DataFrame()
-
-    # Maak een Series (kan leeg zijn)
     if df is not None and not df.empty:
-        series = df.iloc[:, 0]  # eerste kolom
-        # Align op de gemeenschappelijke tijdas van de slider
+        series = df.iloc[:, 0]
         vals = [series.get(ts, None) for ts in all_datetimes]
     else:
         vals = [None] * len(all_datetimes)
-
     idx0 = int(idx) if idx is not None else 0
-
-    mini = go.Figure(
-        go.Scatter(
-            x=list(range(len(all_datetimes))),  # 0..N-1
-            y=vals,
-            mode="lines",
-            line=dict(width=2),
-            hoverinfo="skip",
-            showlegend=False,
-        )
-    )
+    mini = go.Figure(go.Scatter(x=list(range(len(all_datetimes))), y=vals, mode="lines", line=dict(width=2),
+                                hoverinfo="skip", showlegend=False))
     mini.add_vline(x=idx0, line_width=2, line_dash="dash", line_color="#bbbbbb")
     mini.update_layout(
-        margin=dict(l=0, r=0, t=0, b=0),
-        height=50,         
-        plot_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=0, r=0, t=0, b=0), height=50, plot_bgcolor="rgba(0,0,0,0)",
         xaxis=dict(visible=False, range=[0, len(all_datetimes) - 1], fixedrange=True),
         yaxis=dict(visible=False, fixedrange=True),
     )
     return mini
-
 
 
 @app.callback(Output("playpause-button", "children"), Input("is-playing", "data"))
@@ -946,72 +799,51 @@ def toggle_interval(playing):
 
 @app.callback(
     Output("tijdslider", "value"),
-    [
-        Input("interval", "n_intervals"),
-        Input("combined-graph", "relayoutData"),
-    ],
-    [
-        State("interval", "disabled"),
-        State("tijdslider", "value"),
-    ],
+    [Input("interval", "n_intervals"), Input("combined-graph", "relayoutData")],
+    [State("interval", "disabled"), State("tijdslider", "value")],
 )
 def update_slider_from_interval_or_drag(n_intervals, relayoutData, disabled, current_idx):
-    # Bepaal welke input triggerde
     ctx = dash.callback_context
     if not ctx.triggered:
         raise PreventUpdate
     trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
-
-    # Case 1: autoplay via interval
     if trigger_id == "interval":
         if disabled or current_idx is None:
             raise PreventUpdate
         return (int(current_idx) + 1) % len(all_datetimes)
-
-    # Case 2: vline in grote grafiek versleept
     if trigger_id == "combined-graph":
         if not relayoutData:
             raise PreventUpdate
-
-        # Zoek een shapes[*].x0 of shapes[*].x1 update (line-shape verplaatst)
         new_x = None
         for k, v in relayoutData.items():
             if k.startswith("shapes[") and (k.endswith("].x0") or k.endswith("].x1")):
-                new_x = v
-                break
+                new_x = v; break
         if new_x is None:
-            # Zoom/pan e.d. negeren
             raise PreventUpdate
-
-        # Naar dichtstbijzijnde index op je gemeenschappelijke tijdas
         try:
             ts = pd.to_datetime(new_x)
         except Exception:
             raise PreventUpdate
-
         pos = bisect.bisect_left(all_datetimes, ts)
         if pos <= 0:
             nearest = 0
         elif pos >= len(all_datetimes):
             nearest = len(all_datetimes) - 1
         else:
-            before = all_datetimes[pos - 1]
-            after = all_datetimes[pos]
+            before = all_datetimes[pos - 1]; after = all_datetimes[pos]
             nearest = pos if (after - ts) <= (ts - before) else (pos - 1)
-
         if current_idx is not None and int(current_idx) == nearest:
             raise PreventUpdate
         return nearest
-
-    # Onbekende trigger → niets doen
     raise PreventUpdate
 
 
 @app.callback(
     Output("marker-mpn", "hideout"),
-    Input("pgb-dropdown", "value"),
+    [Input("pgb-dropdown", "value"),
+     Input("kaartvariabele-dropdown", "value")], 
 )
-def update_mpn_markers(selected_location_id):
+def update_mpn_markers(selected_location_id, _var):
     if not selected_location_id:
         return []
 
@@ -1020,10 +852,10 @@ def update_mpn_markers(selected_location_id):
 
     mask = df_locs_mpn["peilgebied_combi_attr"].astype(str) == str(selected_location_id)
     points = df_locs_mpn[mask]
-
     if points.empty:
         return []
 
+    # zelfde lijst teruggeven is prima; het triggert redraw van de laag
     return points["peilgebied_combi_attr"].astype(str).dropna().unique().tolist()
 
 
