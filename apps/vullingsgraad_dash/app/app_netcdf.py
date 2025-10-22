@@ -65,7 +65,7 @@ geojson_data, location_options, bounds = read_peilgebieden(
         "fillColor": "gray",
         "color": "#666",
         "weight": 0.3,
-        "fillOpacity": 1,  # mag vol blijven; stapeling lossen we op met pane voor punten
+        "fillOpacity": 1,  
     },
 )
 map_bounds, map_center = bounds_to_map(*bounds)
@@ -193,7 +193,7 @@ def get_kaartdata_for_datetime(dt, kaartvariabele):
             "fillColor": kleur_fn(val),
             "color": "#666",
             "weight": 0.3,
-            "fillOpacity": 1,  # laat gerust op 1; pane van punten regelt stapeling
+            "fillOpacity": 1,  
             kaartvariabele: val,
         }
         for loc, val in zip(ids, vals)
@@ -201,7 +201,7 @@ def get_kaartdata_for_datetime(dt, kaartvariabele):
 
 initial_stylemap = get_kaartdata_for_datetime(default_dt, initial_kaartvariabele)
 
-# Initiele options voor polygonen: géén pane → overlayPane (z≈400)
+# Initiele options voor polygonen: 
 initial_options = {
     "style": style_handle,
     "selected": default_pgb,
@@ -294,11 +294,9 @@ app.layout = html.Div(
                     zoom=10,
                     bounds=map_bounds,
                     style={"height": "100vh", "width": "100%"},
-                    preferCanvas=True,  # blijft prima; pane van punten > polygonen
+                    preferCanvas=True,  
                     children=[
-                        dl.TileLayer(),
-
-                        # POLYGONEN (blijven in overlayPane; géén pane meegeven)
+                        dl.TileLayer(),        
                         dl.GeoJSON(
                             id="geojson-pgb",
                             data=geojson_data,
@@ -306,8 +304,6 @@ app.layout = html.Div(
                             options=initial_options,
                             eventHandlers={"click": assign("function(e){return e?.target?.feature?.properties||{};}")},
                         ),
-
-                        # MEETPUNTEN (circleMarkers in markerPane, z≈600)
                         dl.GeoJSON(
                             id="marker-mpn",
                             data=json.loads(df_locs_mpn.to_json()),
@@ -326,7 +322,7 @@ app.layout = html.Div(
                             """),
                             hideout=dd_locs_mpn_default,
                             options={
-                                "pane": "markerPane",  # <<< KEY: punten altijd boven overlayPane
+                                "pane": "markerPane",  
                                 "onEachFeature": assign("function(f, layer){ if(layer && layer.bringToFront){ layer.bringToFront(); } }"),
                                 "pointToLayer": assign("""
                                     function(feature, latlng){
@@ -358,8 +354,6 @@ app.layout = html.Div(
                                 """)
                             },
                         ),
-
-                        # Klik-marker (L.Marker → zit in markerPane, al boven polygonen)
                         dl.LayerGroup(id="mpn-click-layer"),
                         dcc.Store(id="clicked-mpn-store", data=None),
                     ],
@@ -494,7 +488,7 @@ def show_clicked_mpn_marker(cd, selected_pgb):
 
     marker = dl.Marker(
         position=[lat, lng],
-        zIndexOffset=1000,  # Marker zit in markerPane en komt boven polygonen
+        zIndexOffset=1000,  
         children=[
             dl.Popup(
                 html.Div([html.B(naam), html.Br(), html.Span(f"ID: {mpn_id}")]),
@@ -522,7 +516,6 @@ def update_stylemap(idx, sel, var):
         dt = all_datetimes[int(idx)]
         stylemap = get_kaartdata_for_datetime(dt, var)
         label = dt.strftime("%Y-%m-%d %H:%M")
-        # >>> geen pane meegeven: polygonen blijven in overlayPane
         options = {
             "style": style_handle,
             "selected": sel,
@@ -600,7 +593,7 @@ def build_combined_figure(sel, var):
                 mode="lines",
                 line=dict(color="Orange", width=3),
                 opacity=1.0, hoverinfo="skip", showlegend=False,
-                name="__highlight__",  # herkenbare naam
+                name="__highlight__",  
             ),
             row=3, col=1,
         )
@@ -854,8 +847,6 @@ def update_mpn_markers(selected_location_id, _var):
     points = df_locs_mpn[mask]
     if points.empty:
         return []
-
-    # zelfde lijst teruggeven is prima; het triggert redraw van de laag
     return points["peilgebied_combi_attr"].astype(str).dropna().unique().tolist()
 
 
