@@ -15,6 +15,7 @@ vullingsgraad_bokeh = "bokeh serve apps\\vullingsgraad"
 vullingsgraad_dash = "python apps\\vullingsgraad_dash\\app\\app.py"
 vullingsgraad_dash_netcdf = "python apps\\vullingsgraad_dash\\app\\app_netcdf.py"
 fewspy-install-editable = "pip install --no-deps -e ../fewspy"
+share_app = "python apps\\share_app\\app.py"
 
 
 [dependencies]
