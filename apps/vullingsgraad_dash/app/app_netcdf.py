@@ -26,11 +26,13 @@ import dash_leaflet as dl
 import pandas as pd
 import plotly.graph_objs as go
 from dash import Input, Output, State, dcc, html
+from dash import callback_context as ctx
 from dash.exceptions import PreventUpdate
 from dash_extensions.javascript import assign
 from fewspy.cache import TimeSeriesCache
 from flask_caching import Cache
 from plotly.subplots import make_subplots
+from share_url import ShareURL
 
 from read import read_mpn_locs, read_peilgebieden
 
@@ -38,6 +40,7 @@ from read import read_mpn_locs, read_peilgebieden
 # ========== SETTINGS ==========
 # Zet IMPORTANT_LOG op True als je kerninteracties in stdout wilt zien.
 IMPORTANT_LOG = True
+
 
 def log(*args, **kwargs):
     """Conditional logger for important user interactions."""
@@ -50,6 +53,11 @@ app_dir = Path(__file__).parent
 data_dir = app_dir.parent / "data"
 assets_dir = app_dir / "assets"
 
+share_url = ShareURL(
+    mapping={"peilgebied": ("pgb-dropdown", "value")},
+    assets_folder=assets_dir,
+    allow_controls_update=False,
+)
 app = dash.Dash(__name__, assets_folder=str(assets_dir))
 
 # eenvoudige in-memory cache voor figuur-skeletten etc.
@@ -442,7 +450,6 @@ app.layout = html.Div(
                         dl.LayerGroup(id="mpn-click-layer"),
                     ],
                 ),
-
                 # Controlsbox linksboven (kaartvariabele + keuze peilgebied)
                 html.Div(
                     [
@@ -478,11 +485,11 @@ app.layout = html.Div(
                         dcc.Dropdown(
                             id="pgb-dropdown",
                             options=location_options,
-                            value=default_pgb,
                             placeholder="Selecteer peilgebied",
                             clearable=True,
                             style={"width": "240px"},
                         ),
+                        share_url.layout,
                     ],
                     style={
                         "position": "absolute",
@@ -495,7 +502,6 @@ app.layout = html.Div(
                         "boxShadow": "0 2px 8px rgba(0,0,0,0.15)",
                     },
                 ),
-
                 # Tijdslider + play/pause onderin de kaart
                 html.Div(
                     [
@@ -556,10 +562,8 @@ app.layout = html.Div(
                         "boxShadow": "0 2px 8px rgba(0,0,0,0.15)",
                     },
                 ),
-
                 # Interval voor autoplay
                 dcc.Interval(id="interval", interval=1000, disabled=True),
-
                 # Semi-transparante overlay bij laden
                 html.Div(
                     id="page-loader",
@@ -589,13 +593,11 @@ app.layout = html.Div(
                         "color": "#0f172a",
                     },
                 ),
-
                 # Stores voor click state
                 dcc.Store(id="clicked-mpn-store", data=None),
                 dcc.Store(id="clicked-trace-store", data=None),
             ],
         ),
-
         # ---------------- RECHTER KOLOM (Grafiek + info) ----------------
         html.Div(
             style=right_col_style,
@@ -643,6 +645,9 @@ app.layout = html.Div(
 
 # ========== CALLBACKS ==========
 
+share_url.register_callbacks(app)
+
+
 @app.callback(
     Output("page-loader", "style"),
     [Input("combined-fig-store", "data"), Input("geojson-pgb", "hideout")],
@@ -688,7 +693,6 @@ def highlight_selected_point(mpn_clickdata, clicked_trace_id, selected_pgb):
     - klik op trace in de grafiek
     - wisselen van peilgebied reset de highlight
     """
-    from dash import callback_context as ctx
 
     # Nieuwe selectie van peilgebied -> highlight weg
     if ctx.triggered and ctx.triggered[0]["prop_id"].startswith("pgb-dropdown"):
@@ -834,15 +838,27 @@ def update_stylemap(idx, sel, var):
 @app.callback(
     Output("pgb-dropdown", "value"),
     Input("geojson-pgb", "clickData"),
+    Input("url-state", "data"),
+    State("pgb-dropdown", "value"),
     prevent_initial_call=True,
 )
-def select_dropdown_on_click(clickData):
+def select_dropdown_on_click(clickData, url_state, current_value):
     """
     Klik op een polygon in de kaart -> zet dat peilgebied in de dropdown.
     """
-    loc = clickData["properties"]["location_id"]
-    log(f"[SELECT PGB] peilgebied gekozen: {loc}")
-    return loc
+    trig = ctx.triggered_id
+    print(trig)
+
+    if trig == "geojson-pgb" and clickData:
+        loc = clickData["properties"]["location_id"]
+        log(f"[SELECT PGB] peilgebied gekozen: {loc}")
+        return loc
+
+    elif url_state:
+        if "peilgebied" in url_state:
+            return url_state["peilgebied"]
+    else:
+        return default_pgb
 
 
 # --------- GROTE GRAFIEK BOUWEN (zonder cursor/highlight) ---------
@@ -1043,8 +1059,7 @@ def build_combined_figure(sel, var):
                 mode="lines",
                 line=dict(color="#1e40af", width=3),
                 hovertemplate=(
-                    "tijd: %{x|%Y-%m-%d %H:%M}<br>"
-                    "vulling: %{y:.1f} mm<extra></extra>"
+                    "tijd: %{x|%Y-%m-%d %H:%M}<br>vulling: %{y:.1f} mm<extra></extra>"
                 ),
                 showlegend=False,
                 name="vulling_lijn",
@@ -1074,7 +1089,7 @@ def build_combined_figure(sel, var):
         inundatiepeil_line_y = (
             inundatiepeil_val * 10 if inundatiepeil_val is not None else None
         )
-        nulpeil_line_y = (nulpeil_val * 10 if nulpeil_val is not None else None)
+        nulpeil_line_y = nulpeil_val * 10 if nulpeil_val is not None else None
 
         def add_hline_with_label(x_vals, yval, kleur, tekst):
             """Voeg horizontale drempel-lijn (=dot) + label toe op subplot 2."""
@@ -1115,17 +1130,15 @@ def build_combined_figure(sel, var):
             )
 
         add_hline_with_label(x_vals_berg, overlast_line_y, "red", "overlast")
-        add_hline_with_label(
-            x_vals_berg, inundatiepeil_line_y, "red", "inundatiepeil"
-        )
+        add_hline_with_label(x_vals_berg, inundatiepeil_line_y, "red", "inundatiepeil")
         add_hline_with_label(x_vals_berg, nulpeil_line_y, "green", "nulpeil")
 
         # ===== Subplot 3: WATERSTAND [mNAP] =====
         # individuele meetpunten (grijs)
         for location_id in df_mpn.columns.get_level_values("location_id"):
-            naam = df_locs_mpn.loc[
-                df_locs_mpn.location_id == location_id, "naam"
-            ].iat[0]
+            naam = df_locs_mpn.loc[df_locs_mpn.location_id == location_id, "naam"].iat[
+                0
+            ]
 
             fig.add_trace(
                 go.Scatter(
@@ -1184,10 +1197,7 @@ def build_combined_figure(sel, var):
                         line=dict(dash="dash", color="#facc15", width=2),
                         name="Streefpeil",
                         hoverinfo="text",
-                        hovertext=[
-                            f"Streefpeil: {y_val:.2f} mNAP"
-                        ]
-                        * len(x_vals_ws),
+                        hovertext=[f"Streefpeil: {y_val:.2f} mNAP"] * len(x_vals_ws),
                         showlegend=False,
                     ),
                     row=3,
@@ -1348,13 +1358,10 @@ def add_vline_and_highlight(fig_dict, idx, selected_mpn, selected_trace_id):
         )
     else:
         # gebruik laatste bekende selectie
-        sel_id = (
-            selected_trace_id
-            or (
-                selected_mpn
-                and selected_mpn.get("properties", {})
-                and selected_mpn["properties"].get("location_id")
-            )
+        sel_id = selected_trace_id or (
+            selected_mpn
+            and selected_mpn.get("properties", {})
+            and selected_mpn["properties"].get("location_id")
         )
 
     # Eerst alle meetpunt-traces dimmen qua kleur/width. Highlight de gekozen.
@@ -1403,7 +1410,7 @@ def add_vline_and_highlight(fig_dict, idx, selected_mpn, selected_trace_id):
 
     # Maak cursorlijnen (halo + kern) voor alle subplots
     cursor_shapes = []
-    core_col = "rgba(180,190,210,1.0)"   # dunne kern
+    core_col = "rgba(180,190,210,1.0)"  # dunne kern
     halo_col = "rgba(180,190,210,0.12)"  # brede halo
 
     # brede halo-lijn
@@ -1618,9 +1625,7 @@ def update_slider_from_interval_or_drag(
         # zoek nieuwe x-positie van de cursorlijn uit relayoutData
         new_x_val = None
         for k, v in relayoutData.items():
-            if k.startswith("shapes[") and (
-                k.endswith("].x0") or k.endswith("].x1")
-            ):
+            if k.startswith("shapes[") and (k.endswith("].x0") or k.endswith("].x1")):
                 new_x_val = v
                 break
 
@@ -1671,20 +1676,13 @@ def update_mpn_markers(selected_location_id, _var):
     if "peilgebied_combi_attr" not in df_locs_mpn.columns:
         return []
 
-    mask = (
-        df_locs_mpn["peilgebied_combi_attr"].astype(str)
-        == str(selected_location_id)
-    )
+    mask = df_locs_mpn["peilgebied_combi_attr"].astype(str) == str(selected_location_id)
     points = df_locs_mpn[mask]
     if points.empty:
         return []
 
     hideout_list = (
-        points["peilgebied_combi_attr"]
-        .astype(str)
-        .dropna()
-        .unique()
-        .tolist()
+        points["peilgebied_combi_attr"].astype(str).dropna().unique().tolist()
     )
     return hideout_list
 
