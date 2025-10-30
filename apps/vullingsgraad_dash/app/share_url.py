@@ -42,7 +42,7 @@ class ShareURL:
         self,
         mapping: dict,
         assets_folder: Path = Path(__file__).parent.joinpath("assets"),
-        allow_controls_update: bool = True,
+        block_control_update: list[str] = [],
     ):
         """Class to init the app from url parameters and share the current app state als url
 
@@ -55,7 +55,7 @@ class ShareURL:
             }
         """
         self.mapping = mapping
-        self.allow_controls_update = allow_controls_update
+        self.block_control_update = block_control_update
         _write_css(assets_folder)
 
     @property
@@ -119,9 +119,14 @@ class ShareURL:
             return ""
 
         # -------- 3. apply url-state -> controls
-        if self.allow_controls_update:
-            urlstate_to_control_outputs = [Output(*v) for v in mapping.values()]
-            urlstate_to_control_states = [State(*v) for v in mapping.values()]
+        urlstate_to_control_outputs = []
+        urlstate_to_control_states = []
+        for k, v in mapping.items():
+            if k not in self.block_control_update:
+                urlstate_to_control_outputs.append([Output(*v)])
+                urlstate_to_control_states.append([Output(*v)])
+
+        if urlstate_to_control_outputs:
 
             @app.callback(
                 urlstate_to_control_outputs,
