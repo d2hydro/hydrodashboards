@@ -17,6 +17,7 @@ import dash_leaflet as dl
 import pandas as pd
 import plotly.graph_objs as go
 from dash import Input, Output, State, dcc, html
+from dash import callback_context as ctx
 from dash.exceptions import PreventUpdate
 from dash_extensions.javascript import assign
 from fewspy.cache import TimeSeriesCache
@@ -584,7 +585,6 @@ def store_clicked_mpn(cd):
 )
 def highlight_selected_point(mpn_clickdata, clicked_trace_id, selected_pgb):
     """Plaats een gouden marker op het geselecteerde meetpunt (bron: kaart of grafiek)."""
-    from dash import callback_context as ctx
 
     # Nieuwe peilgebiedselectie -> reset highlight
     if ctx.triggered and ctx.triggered[0]["prop_id"].startswith("pgb-dropdown"):
@@ -679,13 +679,25 @@ def update_stylemap(idx, sel, var):
 @app.callback(
     Output("pgb-dropdown", "value"),
     Input("geojson-pgb", "clickData"),
+    Input("url-state", "data"),
+    State("pgb-dropdown", "value"),
     prevent_initial_call=True,
 )
-def select_dropdown_on_click(clickData):
+def select_dropdown_on_click(clickData, url_state, current_value):
     """Klik op polygon => zet location_id in de dropdown."""
-    loc = clickData["properties"]["location_id"]
-    log(f"[SELECT PGB] peilgebied: {loc}")
-    return loc
+
+    trig = ctx.triggered_id
+    if trig == "geojson-pgb" and clickData:
+        loc = clickData["properties"]["location_id"]
+        log(f"[SELECT PGB] peilgebied: {loc}")
+        return loc
+    elif trig == "url-state":
+        if url_state:
+            return url_state["peilgebied"]
+        else:
+            return default_pgb
+    else:
+        return default_pgb
 
 
 # --------- Figuur bouwen (zonder cursor/highlight) ---------
