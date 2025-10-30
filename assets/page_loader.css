@@ -1,0 +1,40 @@
+/* Fullscreen overlay */
+#page-loader {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.92);
+  z-index: 20000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Spinner die oogt als de standaard Dash dcc.Loading ring */
+#page-loader .spinner,
+#page-loader .dash-like-spinner {
+  width: 56px;
+  height: 56px;
+  border: 4px solid rgba(0,0,0,0.08);   /* lichte ring */
+  border-top-color: #119dff;             /* Dash-blauw */
+  border-radius: 50%;
+  animation: pageLoaderSpin 0.9s linear infinite;
+}
+
+@keyframes pageLoaderSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Optioneel: verberg "Loading.." fallback-tekst van andere dcc.Loading's */
+.dash-loading .loading { font-size: 0 !important; }
+
+/* Zet de Plotly modebar altijd volledig boven alle overlays */
+.js-plotly-plot .modebar {
+    position: relative !important;
+    z-index: 9999 !important;
+}
+
+/* Zorg dat de individuele knoppen ook zelf boven alles liggen */
+.js-plotly-plot .modebar-btn {
+    position: relative !important;
+    z-index: 10000 !important;
+}

@@ -1,11 +1,25 @@
-
 # %%
+"""
+Dash-app voor visualisatie van vullingsgraad, vulling en waterstand per peilgebied.
+
+Belangrijkste onderdelen:
+- Kaart (dash-leaflet) met peilgebieden en meetpunten (mpn).
+- Tijdsanimatie (slider + play/pause).
+- Interactieve grafiek met drempels/streefpeil en selectie van meetpunt.
+
+Data komt uit:
+- Shapefile peilgebieden (via read_peilgebieden).
+- Arrow met meetpunten (via read_mpn_locs).
+- TimeSeriesCache (fewspy.cache.TimeSeriesCache).
+"""
+
+# ========== IMPORTS ==========
+import bisect
 import json
-import sys
+import math
 import time
 from functools import lru_cache, wraps
 from pathlib import Path
-import bisect, math
 
 import dash
 import dash_leaflet as dl
@@ -17,41 +31,67 @@ from dash_extensions.javascript import assign
 from fewspy.cache import TimeSeriesCache
 from flask_caching import Cache
 from plotly.subplots import make_subplots
+
 from read import read_mpn_locs, read_peilgebieden
 
-# ====== PADEN / INIT ======
+
+# ========== SETTINGS ==========
+# Zet IMPORTANT_LOG op True als je kerninteracties in stdout wilt zien.
+IMPORTANT_LOG = True
+
+def log(*args, **kwargs):
+    """Conditional logger for important user interactions."""
+    if IMPORTANT_LOG:
+        print(*args, **kwargs)
+
+
+# ========== PADEN / APP INIT ==========
 app_dir = Path(__file__).parent
-data_dir = app_dir.parent.joinpath("data")
+data_dir = app_dir.parent / "data"
 assets_dir = app_dir / "assets"
 
 app = dash.Dash(__name__, assets_folder=str(assets_dir))
 
+# eenvoudige in-memory cache voor figuur-skeletten etc.
 cache = Cache(
     app.server,
     config={"CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": 3600},
 )
 
+
 def timed_callback(f):
+    """
+    Decorator om de looptijd van callbacks te meten.
+    Laat op dit moment niets zien, maar eenvoudig in te schakelen voor profiling.
+    """
+
     @wraps(f)
     def wrapper(*args, **kwargs):
         t0 = time.perf_counter()
         result = f(*args, **kwargs)
-        dt = time.perf_counter() - t0
-        print(f"[TIMING] {f.__name__} {dt:.3f}s")
+        _ = time.perf_counter() - t0  # duur wordt niet meer gelogd
         return result
+
     return wrapper
 
 
 def bounds_to_map(xmin, ymin, xmax, ymax):
+    """
+    Maak Leaflet-bounds + center op basis van shapefile extent.
+
+    We nemen een ruime bbox zodat alles mooi in beeld is.
+    Returns:
+        bounds  ( [[south,west],[north,east]] )
+        center  ( [lat,lon] )
+    """
     dx = xmax - xmin
     dy = ymax - ymin
     return [[ymin, xmin], [ymax + dy, xmin - 4 * dx]], [ymin + dy / 2, xmax - dx / 2]
 
 
-# ====== DATA LADEN ======
-t0 = time.time()
+# ========== DATA LADEN ==========
 geojson_data, location_options, bounds = read_peilgebieden(
-    file_path=data_dir.joinpath("peilgebieden_cso_combi.shp").as_posix(),
+    file_path=(data_dir / "peilgebieden_cso_combi.shp").as_posix(),
     code_col="CODE",
     columns=[
         "naam",
@@ -68,44 +108,51 @@ geojson_data, location_options, bounds = read_peilgebieden(
     },
 )
 map_bounds, map_center = bounds_to_map(*bounds)
-print("TIJD: shapefile/geodata ingelezen in", round(time.time() - t0, 2), "s")
 
-df_locs_mpn = read_mpn_locs(data_dir.joinpath("mpn_locations.arrow"))
+# meetpuntlocaties (Point features)
+df_locs_mpn = read_mpn_locs(data_dir / "mpn_locations.arrow")
 
+# timeseries-cache met alle tijdreeksen
 time_series_cache = TimeSeriesCache.from_manifest_file(
-    data_dir.joinpath("time_series", "manifest.json")
+    data_dir / "time_series" / "manifest.json"
 )
 
-t0 = time.time()
-all_datetimes = [pd.Timestamp(i) for i in time_series_cache.common_time_axis]
-print("TIJD: tijdas opgebouwd in", round(time.time() - t0, 2), "s")
-print("[DEBUG init] aantal timestamps:", len(all_datetimes))
-if len(all_datetimes) > 0:
-    print("[DEBUG init] eerste timestamp:", all_datetimes[0])
-    print("[DEBUG init] laatste  timestamp:", all_datetimes[-1])
+# gedeelde tijdas
+all_datetimes = [pd.Timestamp(ts) for ts in time_series_cache.common_time_axis]
 
+# dropdownopties voor kaartvariabele
 kaartvariabelen = [
     {"label": "vullingsgraad [%]", "value": "vullingsgraad"},
     {"label": "vulling [mm]", "value": "vulling"},
 ]
 
-# ===== CONSTANTE KLEUREN =====
+
+# ========== CONSTANTEN / KLEURSCHALEN ==========
+# Klassen voor vullingsgraad in procenten
 VULLINGSGRAAD_CLASSES = [
-    (0, 25,  "rgba(120,200,120,1.0)"),
+    (0, 25, "rgba(120,200,120,1.0)"),
     (25, 50, "rgba(255,255,100,1.0)"),
     (50, 75, "rgba(255,200,100,1.0)"),
-    (75, 100,"rgba(255,100,100,1.0)"),
+    (75, 100, "rgba(255,100,100,1.0)"),
 ]
 
+# Klassen voor absolute vulling in mm
 VULLING_MM_CLASSES = [
-    (0, 10,  "rgba(255,255,255,1.0)"),
+    (0, 10, "rgba(255,255,255,1.0)"),
     (10, 20, "rgba(180,211,231,1.0)"),
     (20, 30, "rgba(114,178,215,1.0)"),
     (30, 40, "rgba(62,145,196,1.0)"),
     (40, 60, "rgba(28,95,165,1.0)"),
 ]
 
+
 def _pick_color(val, classes):
+    """
+    Geef een kleur-RGBA string voor een waarde 'val' op basis van klassen.
+    Fallback:
+    - NaN => grijs
+    - boven hoogste klasse => hoogste kleur
+    """
     if pd.isna(val):
         return "gray"
     for low, high, color in classes:
@@ -113,15 +160,22 @@ def _pick_color(val, classes):
             return color
     return classes[-1][2]
 
+
 def kleur_bij_vullingsgraad(val):
+    """Mapping vullingsgraad [%] -> fillColor."""
     return _pick_color(val, VULLINGSGRAAD_CLASSES)
 
+
 def kleur_bij_vulling(val):
+    """Mapping vulling [mm] -> fillColor."""
     return _pick_color(val, VULLING_MM_CLASSES)
 
 
-# ====== DYNAMIC STYLE FUN VOOR DE KAART ======
-style_handle = assign("""
+# ========== DYNAMIC STYLE FUN VOOR DE KAART ==========
+# Deze functie draait client-side (JavaScript in de browser) om polygonen te stylen
+# op basis van 'hideout' en selectie.
+style_handle = assign(
+    """
 function(feature, context){
     const stylemap = context.hideout || {};
     const loc = feature.properties.location_id;
@@ -129,6 +183,7 @@ function(feature, context){
 
     let base = stylemap[loc] || feature.properties.style || {};
 
+    // basisstijl
     base = {
         ...base,
         color: base.color || "rgba(15,23,42,0.35)",
@@ -136,6 +191,7 @@ function(feature, context){
         fillOpacity: base.fillOpacity !== undefined ? base.fillOpacity : 0.7
     };
 
+    // highlight geselecteerd peilgebied
     if (sel && loc === sel) {
         base = {
             ...base,
@@ -147,14 +203,17 @@ function(feature, context){
 
     return base;
 }
-""")
+"""
+)
 
+# default states bij opstart
 default_index = len(all_datetimes) - 1
 default_dt = all_datetimes[default_index]
 default_pgb = location_options[0]["value"] if location_options else None
 initial_label = default_dt.strftime("%Y-%m-%d %H:%M")
 initial_kaartvariabele = "vullingsgraad"
 
+# standaard subset zichtbaar aan meetpunten (alleen die in het actieve peilgebied)
 if default_pgb is not None and "peilgebied_combi_attr" in df_locs_mpn.columns:
     dd_locs_mpn_default = (
         df_locs_mpn.loc[
@@ -169,14 +228,16 @@ if default_pgb is not None and "peilgebied_combi_attr" in df_locs_mpn.columns:
 else:
     dd_locs_mpn_default = []
 
-print("[DEBUG init] default_pgb:", default_pgb)
-print("[DEBUG init] dd_locs_mpn_default:", dd_locs_mpn_default[:5], "...")
 
 @lru_cache(maxsize=128)
 def get_kaartdata_for_datetime(dt, kaartvariabele):
-    """Geef per peilgebied kleurinfo/waarde op specifieke timestamp."""
+    """
+    Bouw een dict met stijl-informatie per peilgebied voor een bepaalde timestamp.
+    Dit gaat in 'hideout' van de GeoJSON laag.
+    Keys = location_id, value = dict(color, fillColor, etc).
+    """
     dt = pd.to_datetime(dt).to_pydatetime()
-    print(f"[DEBUG kaartdata] build kaartdata voor {dt} var={kaartvariabele}")
+
     if kaartvariabele == "vullingsgraad":
         df = time_series_cache.get_time_series(
             filter_id="VullingsgraadOutput",
@@ -194,12 +255,11 @@ def get_kaartdata_for_datetime(dt, kaartvariabele):
         )
         kleur_fn = kleur_bij_vulling
 
-    print("[DEBUG kaartdata] df shape:", df.shape if hasattr(df, "shape") else "geen df?")
+    # get_time_series output bevat een multiindex (time, location_id, ...).
+    # We pakken de rij op deze tijdstap en resetten voor makkelijke kolomnamen.
     df = df.loc[dt].reset_index()
     ids = df["location_id"].to_list()
     vals = df[dt].to_list()
-    print("[DEBUG kaartdata] first 5 ids:", ids[:5])
-    print("[DEBUG kaartdata] first 5 vals:", vals[:5])
 
     return {
         loc: {
@@ -212,8 +272,11 @@ def get_kaartdata_for_datetime(dt, kaartvariabele):
         for loc, val in zip(ids, vals)
     }
 
+
+# hideout voor eerste render van kaart
 initial_stylemap = get_kaartdata_for_datetime(default_dt, initial_kaartvariabele)
 
+# opties voor de GeoJSON laag
 initial_options = {
     "style": style_handle,
     "selected": default_pgb,
@@ -221,6 +284,7 @@ initial_options = {
     "bubblingMouseEvents": True,
 }
 
+# lege figuur voor placeholder rechts
 EMPTY_FIG = go.Figure()
 EMPTY_FIG.update_layout(
     paper_bgcolor="rgba(0,0,0,0)",
@@ -231,8 +295,8 @@ EMPTY_FIG.update_layout(
     showlegend=False,
 )
 
-# ====== LAYOUT STYLES ======
 
+# ========== LAYOUT CSS (inline styles als dicts) ==========
 page_wrapper_style = {
     "display": "flex",
     "flexDirection": "row",
@@ -264,14 +328,16 @@ right_col_style = {
     "overflow": "hidden",
 }
 
-# ====== APP LAYOUT ======
+
+# ========== APP LAYOUT ==========
 app.layout = html.Div(
     style=page_wrapper_style,
     children=[
-        # ========== LINKER KOLOM ==========
+        # ---------------- LINKER KOLOM (Kaart + controls) ----------------
         html.Div(
             style=left_col_style,
             children=[
+                # Kaart
                 dl.Map(
                     center=map_center,
                     zoom=10,
@@ -280,23 +346,28 @@ app.layout = html.Div(
                     preferCanvas=True,
                     children=[
                         dl.TileLayer(),
+                        # Peilgebieden
                         dl.GeoJSON(
                             id="geojson-pgb",
                             data=geojson_data,
                             hideout=initial_stylemap,
                             options=initial_options,
                             eventHandlers={
+                                # Klik op polygon => stuur feature.properties terug
                                 "click": assign(
                                     "function(e){return e?.target?.feature?.properties||{};}"
                                 )
                             },
                         ),
+                        # Meetpunten (circleMarkers, geen standaard Leaflet Marker)
                         dl.GeoJSON(
                             id="marker-mpn",
                             data=json.loads(df_locs_mpn.to_json()),
                             filter=assign(
                                 """
                                 function(feature, context){
+                                    // toon alleen geldige Points, én alleen
+                                    // als die bij het geselecteerde peilgebied horen
                                     const ok = feature && feature.geometry && feature.geometry.type === "Point"
                                         && Array.isArray(feature.geometry.coordinates)
                                         && feature.geometry.coordinates.length === 2
@@ -319,8 +390,11 @@ app.layout = html.Div(
                                 "pointToLayer": assign(
                                     """
                                     function(feature, latlng){
+                                        // circleMarker ipv default Leaflet Marker
                                         const naam = feature?.properties?.naam || "meetpunt";
-                                        const locId = feature?.properties?.location_id || feature?.properties?.id || "(onbekend id)";
+                                        const locId = feature?.properties?.location_id
+                                            || feature?.properties?.id
+                                            || "(onbekend id)";
 
                                         const tooltipHtml = "<b>" + naam + "</b><br/>" + locId;
 
@@ -346,6 +420,7 @@ app.layout = html.Div(
                                 "bubblingMouseEvents": True,
                             },
                             eventHandlers={
+                                # Klik op meetpunt => stuur props + lat/lng
                                 "click": assign(
                                     """
                                     function(e){
@@ -363,11 +438,12 @@ app.layout = html.Div(
                                 )
                             },
                         ),
+                        # Highlight-layer (gouden cirkel rond geselecteerd meetpunt)
                         dl.LayerGroup(id="mpn-click-layer"),
                     ],
                 ),
 
-                # Controlsbox linksboven
+                # Controlsbox linksboven (kaartvariabele + keuze peilgebied)
                 html.Div(
                     [
                         html.Label(
@@ -420,7 +496,7 @@ app.layout = html.Div(
                     },
                 ),
 
-                # Slider + play/pause onderin kaart
+                # Tijdslider + play/pause onderin de kaart
                 html.Div(
                     [
                         html.Button(
@@ -429,15 +505,14 @@ app.layout = html.Div(
                             style={"width": "72px"},
                         ),
                         dcc.Store(id="is-playing", data=False),
-
                         html.Div(
                             initial_label,
                             id="datum-label",
                             style={"fontWeight": "bold"},
                         ),
-
                         html.Div(
                             [
+                                # kleine "sparkline" grafiek boven de slider
                                 dcc.Graph(
                                     id="mini-tijdserie",
                                     config={"displayModeBar": False},
@@ -482,9 +557,10 @@ app.layout = html.Div(
                     },
                 ),
 
+                # Interval voor autoplay
                 dcc.Interval(id="interval", interval=1000, disabled=True),
 
-                # overlay loader
+                # Semi-transparante overlay bij laden
                 html.Div(
                     id="page-loader",
                     children=html.Div(
@@ -514,54 +590,38 @@ app.layout = html.Div(
                     },
                 ),
 
-                # stores
+                # Stores voor click state
                 dcc.Store(id="clicked-mpn-store", data=None),
                 dcc.Store(id="clicked-trace-store", data=None),
             ],
         ),
 
-        # ========== RECHTER KOLOM ==========
+        # ---------------- RECHTER KOLOM (Grafiek + info) ----------------
         html.Div(
             style=right_col_style,
             children=[
                 dcc.Store(id="combined-fig-store"),
-
-                dcc.Loading(
-                    id="loading-combined",
-                    type="default",
+                dcc.Graph(
+                    id="combined-graph",
+                    figure=EMPTY_FIG,
+                    config={
+                        "displayModeBar": True,
+                        "scrollZoom": True,
+                        "displaylogo": False,
+                        "modeBarButtonsToRemove": ["toImage"],
+                        "edits": {"shapePosition": True},
+                        "responsive": True,
+                    },
                     style={
                         "flex": "1 1 auto",
                         "minHeight": 0,
                         "minWidth": 0,
-                        "display": "flex",
-                        "flexDirection": "column",
+                        "margin": "10px",
+                        "height": "96vh",
+                        "width": "48vw",
                         "overflow": "hidden",
                     },
-                    children=[
-                        dcc.Graph(
-                            id="combined-graph",
-                            figure=EMPTY_FIG,
-                            config={
-                                "displayModeBar": True,
-                                "scrollZoom": True,
-                                "displaylogo": False,
-                                "modeBarButtonsToRemove": ["toImage"],
-                                "edits": {"shapePosition": True},
-                                "responsive": True,
-                            },
-                            style={
-                                "flex": "1 1 auto",
-                                "minHeight": 0,
-                                "minWidth": 0,
-                                "margin": "10px",
-                                "height": "96vh",
-                                "width": "48vw",
-                                "overflow": "hidden",
-                            },
-                        ),
-                    ],
                 ),
-
                 html.Div(
                     id="click-output",
                     style={
@@ -580,7 +640,8 @@ app.layout = html.Div(
     ],
 )
 
-# ====== CALLBACKS ======
+
+# ========== CALLBACKS ==========
 
 @app.callback(
     Output("page-loader", "style"),
@@ -588,6 +649,11 @@ app.layout = html.Div(
     prevent_initial_call=True,
 )
 def hide_page_loader(fig_dict, stylemap):
+    """
+    Verberg de loading-overlay zodra:
+    - we de basisfiguur rechts hebben opgebouwd
+    - en de kaart al een stylemap heeft.
+    """
     if not fig_dict or not stylemap:
         raise PreventUpdate
     return {"display": "none"}
@@ -599,7 +665,10 @@ def hide_page_loader(fig_dict, stylemap):
     prevent_initial_call=True,
 )
 def store_clicked_mpn(cd):
-    print("[DEBUG clicked-mpn-store] storing clickData:", cd)
+    """
+    Sla de laatst aangeklikte meetpunt-info op (locatie_id, coords).
+    """
+    # We loggen hier niet; highlight_selected_point doet al logging.
     return cd
 
 
@@ -612,15 +681,18 @@ def store_clicked_mpn(cd):
     ],
 )
 def highlight_selected_point(mpn_clickdata, clicked_trace_id, selected_pgb):
+    """
+    Laat een 'gouden' marker + popup zien op het geselecteerde meetpunt.
+    Bronnen van selectie:
+    - klik op meetpunt in kaart
+    - klik op trace in de grafiek
+    - wisselen van peilgebied reset de highlight
+    """
     from dash import callback_context as ctx
-    print("[DEBUG highlight_selected_point] trigger:", ctx.triggered)
-    print("[DEBUG highlight_selected_point] mpn_clickdata:", mpn_clickdata)
-    print("[DEBUG highlight_selected_point] clicked_trace_id:", clicked_trace_id)
-    print("[DEBUG highlight_selected_point] selected_pgb:", selected_pgb)
 
     # Nieuwe selectie van peilgebied -> highlight weg
     if ctx.triggered and ctx.triggered[0]["prop_id"].startswith("pgb-dropdown"):
-        print("[DEBUG highlight_selected_point] reset because pgb-dropdown changed")
+        log(f"[HIGHLIGHT RESET] nieuw peilgebied: {selected_pgb}")
         return []
 
     trigger_id = ctx.triggered[0]["prop_id"].split(".")[0] if ctx.triggered else None
@@ -631,8 +703,12 @@ def highlight_selected_point(mpn_clickdata, clicked_trace_id, selected_pgb):
     lng = None
 
     if trigger_id == "clicked-trace-store":
+        # gebruiker klikte in de grafiek op een trace met meta == location_id
         sel_id = clicked_trace_id
+        log(f"[HIGHLIGHT SOURCE] grafiek-click -> {sel_id}")
+
     elif trigger_id == "clicked-mpn-store":
+        # gebruiker klikte op een mpn-markering op de kaart
         if not mpn_clickdata:
             raise PreventUpdate
         props = mpn_clickdata.get("properties", {}) or {}
@@ -640,7 +716,10 @@ def highlight_selected_point(mpn_clickdata, clicked_trace_id, selected_pgb):
         naam = props.get("naam") or "meetpunt"
         lat = mpn_clickdata.get("lat")
         lng = mpn_clickdata.get("lng")
+        log(f"[HIGHLIGHT SOURCE] kaart-click -> {sel_id}")
+
     else:
+        # fallback: gebruik wat we hebben (bij redraw, slider-move, etc.)
         if clicked_trace_id:
             sel_id = clicked_trace_id
         elif mpn_clickdata:
@@ -650,15 +729,16 @@ def highlight_selected_point(mpn_clickdata, clicked_trace_id, selected_pgb):
             lat = mpn_clickdata.get("lat")
             lng = mpn_clickdata.get("lng")
 
-    print("[DEBUG highlight_selected_point] resolved sel_id:", sel_id, "lat/lng:", lat, lng, "naam:", naam)
+        if sel_id:
+            log(f"[HIGHLIGHT RESTORE] {sel_id}")
 
+    # niks geselecteerd? -> geen highlight
     if not sel_id:
         return []
 
-    # lookup coord als nodig
+    # als we geen lat/lng uit clickData hebben, kijk het meetpunt op in df_locs_mpn
     if lat is None or lng is None:
         row = df_locs_mpn.loc[df_locs_mpn["location_id"] == sel_id]
-        print("[DEBUG highlight_selected_point] lookup row empty?", row.empty)
         if row.empty:
             return []
 
@@ -673,7 +753,6 @@ def highlight_selected_point(mpn_clickdata, clicked_trace_id, selected_pgb):
             lat = geom.y
             lng = geom.x
         else:
-            print("[DEBUG highlight_selected_point] no coords in row columns", row.columns)
             return []
 
         if naam is None and "naam" in row.columns:
@@ -681,8 +760,7 @@ def highlight_selected_point(mpn_clickdata, clicked_trace_id, selected_pgb):
         if naam is None:
             naam = sel_id
 
-    print("[DEBUG highlight_selected_point] final marker lat/lng:", lat, lng)
-
+    # highlight marker (gouden cirkel + popup met naam/id)
     marker = dl.CircleMarker(
         center=[lat, lng],
         radius=7,
@@ -691,7 +769,7 @@ def highlight_selected_point(mpn_clickdata, clicked_trace_id, selected_pgb):
         fillColor="#ffe680",
         fillOpacity=0.9,
         children=[
-            dl.Tooltip(sel_id),
+            # geen Tooltip hier => geen hover-ID spam
             dl.Popup(
                 html.Div(
                     [
@@ -726,11 +804,21 @@ def highlight_selected_point(mpn_clickdata, clicked_trace_id, selected_pgb):
     prevent_initial_call=True,
 )
 def update_stylemap(idx, sel, var):
-    print(f"[DEBUG update_stylemap] idx={idx}, sel={sel}, var={var}")
+    """
+    Op elke wijziging in:
+    - tijdslider,
+    - geselecteerd peilgebied,
+    - kaartvariabele,
+    herbereken:
+      - kleur per polygon (hideout),
+      - label bij de tijd,
+      - en geef door welk polygon geselecteerd is.
+    """
     if idx is None or not sel or not var:
         raise PreventUpdate
+
     dt = all_datetimes[int(idx)]
-    print("[DEBUG update_stylemap] dt chosen:", dt)
+
     stylemap = get_kaartdata_for_datetime(dt, var)
     label = dt.strftime("%Y-%m-%d %H:%M")
     options = {
@@ -739,7 +827,7 @@ def update_stylemap(idx, sel, var):
         "interactive": True,
         "bubblingMouseEvents": True,
     }
-    print("[DEBUG update_stylemap] stylemap keys sample:", list(stylemap.keys())[:5])
+
     return stylemap, label, options
 
 
@@ -749,41 +837,53 @@ def update_stylemap(idx, sel, var):
     prevent_initial_call=True,
 )
 def select_dropdown_on_click(clickData):
-    print("[DEBUG select_dropdown_on_click] clickData:", clickData)
-    return clickData["properties"]["location_id"]
+    """
+    Klik op een polygon in de kaart -> zet dat peilgebied in de dropdown.
+    """
+    loc = clickData["properties"]["location_id"]
+    log(f"[SELECT PGB] peilgebied gekozen: {loc}")
+    return loc
 
 
-# ===== Grote grafiek -> opgeslagen basisfiguur =====
+# --------- GROTE GRAFIEK BOUWEN (zonder cursor/highlight) ---------
 @app.callback(
     Output("combined-fig-store", "data"),
-    [Input("pgb-dropdown", "value"),
-     Input("kaartvariabele-dropdown", "value")],
+    [Input("pgb-dropdown", "value"), Input("kaartvariabele-dropdown", "value")],
 )
 @timed_callback
 def build_combined_figure(sel, var):
-    # NOTE: bumped cache key to v3 so we always see debug prints when switching pgb
+    """
+    Bouw het 'basisfiguur' voor het geselecteerde peilgebied:
+    - subplot1: vullingsgraad [%] + gekleurde risicobanden
+    - subplot2: vulling [mm] + drempels (overlast/inundatie/nulpeil)
+    - subplot3: waterstand (peilgebied + individuele meetpunten)
+      incl. streefpeil-lijn
+
+    Slaat resultaat op in dcc.Store (combined-fig-store). Cursor en highlight
+    worden later in een aparte callback toegevoegd.
+    """
     if not sel:
-        print("[DEBUG build_combined_figure] geen sel -> PreventUpdate")
         raise PreventUpdate
 
+    # cache-key per peilgebied
     ckey = f"combined_v3_{sel}"
-    print(f"[DEBUG build_combined_figure] START sel={sel} var={var} cachekey={ckey}")
 
-    # probeer cache
+    # 1. Probeer uit cache
     fig = None
     try:
         if hasattr(cache, "cache") and cache.cache is not None:
             cached = cache.get(ckey)
             if cached is not None:
-                print("[DEBUG build_combined_figure] cache HIT")
                 fig = go.Figure(cached)
-    except Exception as e:
-        print(f"[CACHE WARN] cache.get('{ckey}'): {e}")
+                log(f"[FIG] cache hit voor peilgebied {sel}")
+    except Exception:
+        pass
 
+    # 2. Zo niet: alles nieuw opbouwen
     if fig is None:
-        print("[DEBUG build_combined_figure] cache MISS -> data ophalen")
+        log(f"[FIG] build nieuw figuur voor peilgebied {sel}")
 
-        # ===== data ophalen =====
+        # --- tijdseries ophalen
         df_vg = time_series_cache.get_time_series(
             filter_id="VullingsgraadOutput",
             parameter_id="vullingsgraad",
@@ -799,9 +899,10 @@ def build_combined_figure(sel, var):
             parameter_id="H.meting",
             location_ids=[sel],
         )
+
+        # alle meetpunten binnen dit peilgebied
         mpn_ids = df_locs_mpn.loc[
-            df_locs_mpn["peilgebied_combi_attr"] == sel,
-            "location_id"
+            df_locs_mpn["peilgebied_combi_attr"] == sel, "location_id"
         ].tolist()
         df_mpn = time_series_cache.get_time_series(
             filter_id="PeilgebiedWaterstandMeetpunt",
@@ -809,37 +910,31 @@ def build_combined_figure(sel, var):
             location_ids=mpn_ids,
         )
 
-        print("[DEBUG build_combined_figure] df_vg shape:", df_vg.shape if hasattr(df_vg,"shape") else None)
-        print("[DEBUG build_combined_figure] df_vul shape:", df_vul.shape if hasattr(df_vul,"shape") else None)
-        print("[DEBUG build_combined_figure] df_pgb shape:", df_pgb.shape if hasattr(df_pgb,"shape") else None)
-        print("[DEBUG build_combined_figure] df_mpn shape:", df_mpn.shape if hasattr(df_mpn,"shape") else None)
-        print("[DEBUG build_combined_figure] mpn_ids:", mpn_ids)
-
-        # haal eigenschappen van dit peilgebied (voor drempels)
+        # eigenschappen/drempels van dit peilgebied (uit de GeoJSON properties)
         pgb_props = {}
         for feat in geojson_data["features"]:
             if feat["properties"].get("location_id") == sel:
                 pgb_props = feat["properties"] or {}
                 break
 
-        print("[DEBUG build_combined_figure] pgb_props:", pgb_props)
-
-        # ===== figure skeleton =====
+        # --- figure skeleton met 3 rijen
         fig = make_subplots(
-            rows=3, cols=1,
+            rows=3,
+            cols=1,
             shared_xaxes=True,
             vertical_spacing=0.06,
-            subplot_titles=["Vullingsgraad [%]", "Vulling [mm]", "Waterstand [mNAP]"],
+            subplot_titles=[
+                "Vullingsgraad [%]",
+                "Vulling [mm]",
+                "Waterstand [mNAP]",
+            ],
         )
 
-        # -------------------------------------------------
-        # 1. VULLINGSGRAAD [%] (row=1)
-        # -------------------------------------------------
+        # ===== Subplot 1: VULLINGSGRAAD [%] =====
         x0_1 = df_vg.index.min()
         x1_1 = df_vg.index.max()
-        print("[DEBUG build_combined_figure] vullingsgraad x0_1,x1_1:", x0_1, x1_1)
 
-        # achtergrondbanden
+        # Achtergrondbanden per klasse
         for low, high, color in VULLINGSGRAAD_CLASSES:
             fig.add_trace(
                 go.Scatter(
@@ -853,10 +948,11 @@ def build_combined_figure(sel, var):
                     showlegend=False,
                     name="band_vg",
                 ),
-                row=1, col=1,
+                row=1,
+                col=1,
             )
 
-        # lijn vullingsgraad
+        # Vullingsgraad-lijn
         fig.add_trace(
             go.Scatter(
                 x=df_vg.index.to_list(),
@@ -870,21 +966,18 @@ def build_combined_figure(sel, var):
                 showlegend=False,
                 name="vullingsgraad_lijn",
             ),
-            row=1, col=1,
+            row=1,
+            col=1,
         )
 
-        # -------------------------------------------------
-        # 2. VULLING [mm] (row=2)
-        # -------------------------------------------------
-        # fallback x0_2/x1_2 op df_vg als df_vul leeg is
+        # ===== Subplot 2: VULLING [mm] =====
+        # fallback tijd-as als df_vul leeg is
         if df_vul is not None and not df_vul.empty:
             x0_2 = df_vul.index.min()
             x1_2 = df_vul.index.max()
         else:
             x0_2 = df_vg.index.min()
             x1_2 = df_vg.index.max()
-
-        print("[DEBUG build_combined_figure] vulling x0_2,x1_2:", x0_2, x1_2)
 
         if df_vul is not None and not df_vul.empty:
             series_vul = df_vul[df_vul.columns[0]]
@@ -893,11 +986,9 @@ def build_combined_figure(sel, var):
             series_vul = pd.Series(dtype=float)
             max_vulling_val = float("nan")
 
-        print("[DEBUG build_combined_figure] max_vulling_val:", max_vulling_val)
-
         has_vulling_data = pd.notna(max_vulling_val)
 
-        # standaardbanden
+        # Gekleurde banden (0-10,10-20,...) en evt >60 mm stuk
         if x0_2 is not None and x1_2 is not None:
             for low, high, color in VULLING_MM_CLASSES:
                 fig.add_trace(
@@ -912,12 +1003,12 @@ def build_combined_figure(sel, var):
                         showlegend=False,
                         name="band_vul",
                     ),
-                    row=2, col=1,
+                    row=2,
+                    col=1,
                 )
 
             if has_vulling_data:
                 axis_top = max(60, math.ceil(float(max_vulling_val) / 10.0) * 10)
-                print("[DEBUG build_combined_figure] axis_top:", axis_top)
                 if axis_top > 60:
                     _, _, dark_blue = VULLING_MM_CLASSES[-1]
                     fig.add_trace(
@@ -932,14 +1023,23 @@ def build_combined_figure(sel, var):
                             showlegend=False,
                             name="band_vul_hi",
                         ),
-                        row=2, col=1,
+                        row=2,
+                        col=1,
                     )
 
-        # blauwe lijn vulling
+        # Lijn met vulling [mm]
         fig.add_trace(
             go.Scatter(
-                x=df_vul.index.to_list() if df_vul is not None and not df_vul.empty else [],
-                y=df_vul[df_vul.columns[0]].to_list() if df_vul is not None and not df_vul.empty else [],
+                x=(
+                    df_vul.index.to_list()
+                    if df_vul is not None and not df_vul.empty
+                    else []
+                ),
+                y=(
+                    df_vul[df_vul.columns[0]].to_list()
+                    if df_vul is not None and not df_vul.empty
+                    else []
+                ),
                 mode="lines",
                 line=dict(color="#1e40af", width=3),
                 hovertemplate=(
@@ -949,53 +1049,41 @@ def build_combined_figure(sel, var):
                 showlegend=False,
                 name="vulling_lijn",
             ),
-            row=2, col=1,
+            row=2,
+            col=1,
         )
 
-        # -------- horizontale drempels subplot 2 --------
-        # kies tijdas
+        # --- horizontale drempels in subplot 2 ---
+        # Kies tijdas voor de labels/drempels
         if df_vul is not None and not df_vul.empty:
             x_vals_berg = df_vul.index.to_list()
-            x_src = "df_vul"
         elif df_vg is not None and not df_vg.empty:
             x_vals_berg = df_vg.index.to_list()
-            x_src = "df_vg"
         elif df_pgb is not None and not df_pgb.empty:
             x_vals_berg = df_pgb.index.to_list()
-            x_src = "df_pgb"
         elif df_mpn is not None and not df_mpn.empty:
             x_vals_berg = df_mpn.index.to_list()
-            x_src = "df_mpn"
         else:
             x_vals_berg = []
-            x_src = "none"
-
-        print("[DEBUG build_combined_figure] x_vals_berg source:", x_src,
-              "len:", len(x_vals_berg))
 
         overlast_line_y = pgb_props.get("berging_bij_inundatiepeil")
         inundatiepeil_val = pgb_props.get("inundatiepeil")
         nulpeil_val = pgb_props.get("peil_bij_nul_berging")
 
-        inundatiepeil_line_y = (inundatiepeil_val * 10) if inundatiepeil_val is not None else None
-        nulpeil_line_y = (nulpeil_val * 10) if nulpeil_val is not None else None
-
-        print("[DEBUG build_combined_figure] overlast_line_y:", overlast_line_y)
-        print("[DEBUG build_combined_figure] inundatiepeil_line_y:", inundatiepeil_line_y)
-        print("[DEBUG build_combined_figure] nulpeil_line_y:", nulpeil_line_y)
+        # conversie naar mm (berging-lijnen staan als meters waterpeil t.o.v. NAP)
+        inundatiepeil_line_y = (
+            inundatiepeil_val * 10 if inundatiepeil_val is not None else None
+        )
+        nulpeil_line_y = (nulpeil_val * 10 if nulpeil_val is not None else None)
 
         def add_hline_with_label(x_vals, yval, kleur, tekst):
+            """Voeg horizontale drempel-lijn (=dot) + label toe op subplot 2."""
             if not x_vals:
-                print(f"[DEBUG add_hline_with_label] {tekst}: geen x_vals -> skip")
                 return
             if yval is None or pd.isna(yval):
-                print(f"[DEBUG add_hline_with_label] {tekst}: yval None -> skip")
                 return
 
-            print(f"[DEBUG add_hline_with_label] ADD {tekst} y={yval} kleur={kleur}")
-            print(f"[DEBUG add_hline_with_label] tijdsrange {x_vals[0]} -> {x_vals[-1]}")
-
-            # lijn
+            # horizontale lijn
             fig.add_trace(
                 go.Scatter(
                     x=[x_vals[0], x_vals[-1]],
@@ -1006,9 +1094,11 @@ def build_combined_figure(sel, var):
                     showlegend=False,
                     name=f"{tekst}_hline",
                 ),
-                row=2, col=1,
+                row=2,
+                col=1,
             )
-            # label
+
+            # label naast lijn
             fig.add_annotation(
                 x=x_vals[0],
                 y=yval,
@@ -1024,17 +1114,17 @@ def build_combined_figure(sel, var):
                 borderpad=2,
             )
 
-        add_hline_with_label(x_vals_berg, overlast_line_y,      "red",   "overlast")
-        add_hline_with_label(x_vals_berg, inundatiepeil_line_y, "red",   "inundatiepeil")
-        add_hline_with_label(x_vals_berg, nulpeil_line_y,       "green", "nulpeil")
+        add_hline_with_label(x_vals_berg, overlast_line_y, "red", "overlast")
+        add_hline_with_label(
+            x_vals_berg, inundatiepeil_line_y, "red", "inundatiepeil"
+        )
+        add_hline_with_label(x_vals_berg, nulpeil_line_y, "green", "nulpeil")
 
-        # -------------------------------------------------
-        # 3. WATERSTAND [mNAP] (row=3)
-        # -------------------------------------------------
+        # ===== Subplot 3: WATERSTAND [mNAP] =====
+        # individuele meetpunten (grijs)
         for location_id in df_mpn.columns.get_level_values("location_id"):
             naam = df_locs_mpn.loc[
-                df_locs_mpn.location_id == location_id,
-                "naam"
+                df_locs_mpn.location_id == location_id, "naam"
             ].iat[0]
 
             fig.add_trace(
@@ -1043,7 +1133,7 @@ def build_combined_figure(sel, var):
                     y=df_mpn[location_id].iloc[:, 0].to_numpy(),
                     mode="lines",
                     line=dict(color="rgba(100,116,139,0.4)", width=2),
-                    meta=location_id,
+                    meta=location_id,  # belangrijk voor highlight
                     hovertemplate=(
                         "tijd: %{x|%Y-%m-%d %H:%M}<br>"
                         "waterstand: %{y:.3f} mNAP<br>"
@@ -1053,9 +1143,11 @@ def build_combined_figure(sel, var):
                     showlegend=False,
                     name=f"mpn_{location_id}",
                 ),
-                row=3, col=1,
+                row=3,
+                col=1,
             )
 
+        # peilgebied-lijn (blauw)
         if not df_pgb.empty:
             fig.add_trace(
                 go.Scatter(
@@ -1070,11 +1162,12 @@ def build_combined_figure(sel, var):
                     showlegend=False,
                     name="peilgebied",
                 ),
-                row=3, col=1,
+                row=3,
+                col=1,
             )
 
+        # streefpeil horizontale lijn + label
         streefpeil = pgb_props.get("streefpeil")
-        print("[DEBUG build_combined_figure] streefpeil:", streefpeil)
         if streefpeil is not None and pd.notnull(streefpeil):
             if not df_pgb.empty:
                 x_vals_ws = list(df_pgb.index)
@@ -1091,10 +1184,14 @@ def build_combined_figure(sel, var):
                         line=dict(dash="dash", color="#facc15", width=2),
                         name="Streefpeil",
                         hoverinfo="text",
-                        hovertext=[f"Streefpeil: {y_val:.2f} mNAP"] * len(x_vals_ws),
+                        hovertext=[
+                            f"Streefpeil: {y_val:.2f} mNAP"
+                        ]
+                        * len(x_vals_ws),
                         showlegend=False,
                     ),
-                    row=3, col=1,
+                    row=3,
+                    col=1,
                 )
 
                 fig.add_annotation(
@@ -1112,11 +1209,9 @@ def build_combined_figure(sel, var):
                     borderpad=2,
                 )
 
-        # -------------------------------------------------
-        # ASSEN + GRID
-        # -------------------------------------------------
+        # ===== AS-INSTELLINGEN & LAYOUT =====
 
-        # y-as vullingsgraad (vaste ticks)
+        # y-as vullingsgraad met vaste schaal (0-100%)
         fig.update_yaxes(
             range=[0, 100],
             tickformat=".0f",
@@ -1132,7 +1227,7 @@ def build_combined_figure(sel, var):
             col=1,
         )
 
-        # y-as vulling (autoschaal)
+        # y-as vulling [mm] autoschaal
         fig.update_yaxes(
             fixedrange=False,
             tickformat=".0f",
@@ -1144,7 +1239,7 @@ def build_combined_figure(sel, var):
             col=1,
         )
 
-        # y-as waterstand (autoschaal)
+        # y-as waterstand [mNAP] autoschaal
         fig.update_yaxes(
             fixedrange=False,
             tickformat=".2f",
@@ -1157,7 +1252,7 @@ def build_combined_figure(sel, var):
             automargin=False,
         )
 
-        # x-assen
+        # x-as instellingen
         fig.update_xaxes(
             title_text="Tijd",
             showgrid=True,
@@ -1170,7 +1265,7 @@ def build_combined_figure(sel, var):
 
         x_min = df_vg.index.min()
         x_max = df_vg.index.max()
-        print("[DEBUG build_combined_figure] x-range final:", x_min, x_max)
+
         for r in [1, 2, 3]:
             fig.update_xaxes(
                 range=[x_min, x_max],
@@ -1183,9 +1278,9 @@ def build_combined_figure(sel, var):
                 col=1,
             )
 
-        # layout algemeen
+        # algemene layout
         fig.update_layout(
-            uirevision=sel,
+            uirevision=sel,  # zorg dat zoom/position niet reset bij hover etc.
             margin=dict(l=40, r=10, t=60, b=40),
             plot_bgcolor="white",
             hovermode="closest",
@@ -1193,7 +1288,7 @@ def build_combined_figure(sel, var):
             showlegend=False,
         )
 
-        # lege highlight-trace voor geselecteerde mpn
+        # lege trace die later gebruikt wordt als highlight-overlay
         fig.add_trace(
             go.Scatter(
                 x=[],
@@ -1204,23 +1299,21 @@ def build_combined_figure(sel, var):
                 name="__highlight__",
                 showlegend=False,
             ),
-            row=3, col=1,
+            row=3,
+            col=1,
         )
 
-        # cache proberen te vullen
+        # naar cache schrijven
         try:
             if hasattr(cache, "cache") and cache.cache is not None:
                 cache.set(ckey, fig.to_dict())
-        except Exception as e:
-            print(f"[CACHE WARN] cache.set('{ckey}'): {e}")
-        print(f"[CACHE MISS] built fig for {sel}")
-    else:
-        print(f"[CACHE HIT] reuse fig for {sel}")
+        except Exception:
+            pass
 
     return fig.to_dict()
 
 
-# ===== finale figuur (cursor + highlight) =====
+# --------- CURSORLIJN + HIGHLIGHT TOEVOEGEN AAN FIGUUR ---------
 @app.callback(
     Output("combined-graph", "figure"),
     [
@@ -1231,13 +1324,18 @@ def build_combined_figure(sel, var):
     ],
 )
 def add_vline_and_highlight(fig_dict, idx, selected_mpn, selected_trace_id):
+    """
+    Neem de basisfiguur uit combined-fig-store en voeg toe:
+    - verticale cursorlijn (op huidige tijdslider-index)
+    - highlight van geselecteerde meetpunt (gouden lijn)
+    """
     if fig_dict is None or idx is None:
         raise PreventUpdate
 
     fig = go.Figure(fig_dict)
-
     current_dt = all_datetimes[int(idx)]
 
+    # bepalen wie er geselecteerd is
     ctx = dash.callback_context
     trigger_id = ctx.triggered[0]["prop_id"].split(".")[0] if ctx.triggered else None
     if trigger_id == "clicked-trace-store":
@@ -1249,6 +1347,7 @@ def add_vline_and_highlight(fig_dict, idx, selected_mpn, selected_trace_id):
             and selected_mpn["properties"].get("location_id")
         )
     else:
+        # gebruik laatste bekende selectie
         sel_id = (
             selected_trace_id
             or (
@@ -1258,46 +1357,40 @@ def add_vline_and_highlight(fig_dict, idx, selected_mpn, selected_trace_id):
             )
         )
 
-    print("[DEBUG add_vline_and_highlight] trigger_id:", trigger_id)
-    print("[DEBUG add_vline_and_highlight] sel_id:", sel_id)
-    print("[DEBUG add_vline_and_highlight] idx/time:", idx, current_dt)
-
-    # dim alle mpn-traces, highlight de gekozen
+    # Eerst alle meetpunt-traces dimmen qua kleur/width. Highlight de gekozen.
+    # Belangrijk: we gaan GEEN .opacity meer aanpassen -> dit houdt lijnen leesbaar,
+    # ook terwijl je de cursorlijn sleept.
     x_sel, y_sel = [], []
     selected_trace_idx = None
 
     for i_tr, tr in enumerate(fig.data):
         meta_val = getattr(tr, "meta", None)
         if meta_val:
-            # dim standaard
+            # default dim
             tr.line.color = "rgba(100,116,139,0.25)"
             tr.line.width = 2
-            tr.opacity = 1.0
 
+            # highlight gekozen trace
             if sel_id and meta_val == sel_id:
-                print("[DEBUG add_vline_and_highlight] highlight trace index", i_tr, "meta", meta_val)
                 tr.line.color = "rgba(251,191,36,1)"
                 tr.line.width = 4
-                tr.opacity = 1.0
                 selected_trace_idx = i_tr
                 x_sel = list(tr.x)
                 y_sel = list(tr.y)
 
-    # gekozen mpn-trace bovenop
+    # Zet de geselecteerde trace helemaal bovenop in de render-volgorde
     if selected_trace_idx is not None:
         data_list = list(fig.data)
         sel_trace = data_list.pop(selected_trace_idx)
         data_list.append(sel_trace)
         fig.data = tuple(data_list)
 
-    # highlight overlay-trace vullen en bovenop leggen
+    # Vul de __highlight__-trace met dezelfde x/y van de geselecteerde meetpunt-trace
     hl_idx = None
     for i in range(len(fig.data) - 1, -1, -1):
         if getattr(fig.data[i], "name", None) == "__highlight__":
             hl_idx = i
             break
-
-    print("[DEBUG add_vline_and_highlight] hl_idx:", hl_idx)
 
     if hl_idx is not None:
         fig.data[hl_idx].x = x_sel
@@ -1308,12 +1401,12 @@ def add_vline_and_highlight(fig_dict, idx, selected_mpn, selected_trace_id):
         data_list.append(hl_trace)
         fig.data = tuple(data_list)
 
-    # cursor shapes
+    # Maak cursorlijnen (halo + kern) voor alle subplots
     cursor_shapes = []
-    core_col = "rgba(180,190,210,1.0)"   # dunne kernlijn
+    core_col = "rgba(180,190,210,1.0)"   # dunne kern
     halo_col = "rgba(180,190,210,0.12)"  # brede halo
 
-    # Halo
+    # brede halo-lijn
     for xref in ["x1", "x2", "x3"]:
         cursor_shapes.append(
             go.layout.Shape(
@@ -1332,7 +1425,7 @@ def add_vline_and_highlight(fig_dict, idx, selected_mpn, selected_trace_id):
             )
         )
 
-    # Kern
+    # dunne kernlijn
     for xref in ["x1", "x2", "x3"]:
         cursor_shapes.append(
             go.layout.Shape(
@@ -1352,7 +1445,6 @@ def add_vline_and_highlight(fig_dict, idx, selected_mpn, selected_trace_id):
         )
 
     fig.layout.shapes = tuple(cursor_shapes)
-
     return fig
 
 
@@ -1365,7 +1457,11 @@ def add_vline_and_highlight(fig_dict, idx, selected_mpn, selected_trace_id):
     ],
 )
 def update_mini_graph(sel, var, idx):
-    print("[DEBUG update_mini_graph] sel, var, idx:", sel, var, idx)
+    """
+    Kleine grafiek boven de tijdslider:
+    toont dezelfde variabele als op de kaart (vulling of vullingsgraad)
+    over de hele tijdas. Plus een verticale marker bij de huidige index.
+    """
     if not sel:
         raise PreventUpdate
 
@@ -1377,18 +1473,17 @@ def update_mini_graph(sel, var, idx):
             parameter_id=parameter_id,
             location_ids=[sel],
         )
-    except Exception as e:
-        print("[DEBUG update_mini_graph] error get_time_series:", e)
+    except Exception:
         df = pd.DataFrame()
 
     if df is not None and not df.empty:
         series = df.iloc[:, 0]
+        # Map alle tijdstappen naar waardes voor consistente x (= index 0..N)
         vals = [series.get(ts, None) for ts in all_datetimes]
     else:
         vals = [None] * len(all_datetimes)
 
     idx0 = int(idx) if idx is not None else 0
-    print("[DEBUG update_mini_graph] idx0:", idx0, "vals_sample:", vals[idx0:idx0+3])
 
     mini = go.Figure(
         go.Scatter(
@@ -1400,12 +1495,18 @@ def update_mini_graph(sel, var, idx):
             showlegend=False,
         )
     )
+
     mini.add_vline(x=idx0, line_width=2, line_dash="dash", line_color="#bbbbbb")
+
     mini.update_layout(
         margin=dict(l=0, r=0, t=0, b=0),
         height=50,
         plot_bgcolor="rgba(0,0,0,0)",
-        xaxis=dict(visible=False, range=[0, len(all_datetimes) - 1], fixedrange=True),
+        xaxis=dict(
+            visible=False,
+            range=[0, len(all_datetimes) - 1],
+            fixedrange=True,
+        ),
         yaxis=dict(visible=False, fixedrange=True),
     )
     return mini
@@ -1416,6 +1517,7 @@ def update_mini_graph(sel, var, idx):
     Input("is-playing", "data"),
 )
 def set_playpause(is_playing):
+    """Knoptekst: Play of Pause."""
     return "⏸️ Pause" if is_playing else "▶️ Play"
 
 
@@ -1426,7 +1528,9 @@ def set_playpause(is_playing):
     prevent_initial_call=True,
 )
 def toggle_playpause(n, playing):
-    print("[DEBUG toggle_playpause] clicked n:", n, "was playing:", playing)
+    """
+    Toggle de animatie-state. Wordt gebruikt om interval aan/uit te zetten.
+    """
     return not playing if n else playing
 
 
@@ -1435,7 +1539,7 @@ def toggle_playpause(n, playing):
     Input("is-playing", "data"),
 )
 def toggle_interval(playing):
-    print("[DEBUG toggle_interval] playing:", playing)
+    """Interval draait alleen als we 'aan het afspelen' zijn."""
     return not playing
 
 
@@ -1446,7 +1550,11 @@ def toggle_interval(playing):
     prevent_initial_call=True,
 )
 def remember_clicked_trace(graph_click, current_fig_dict):
-    print("[DEBUG remember_clicked_trace] graph_click:", graph_click)
+    """
+    Als je in de grafiek klikt op een meetpunt-trace (sub-plot 3),
+    onthoud dan welke location_id (trace.meta).
+    Dat gebruiken we om kaart-highlight te syncen.
+    """
     if (
         graph_click is None
         or current_fig_dict is None
@@ -1460,9 +1568,10 @@ def remember_clicked_trace(graph_click, current_fig_dict):
     point = graph_click["points"][0]
     trace = fig.data[point["curveNumber"]]
     sel_id = getattr(trace, "meta", None)
-    print("[DEBUG remember_clicked_trace] selected meta:", sel_id)
     if sel_id is None:
         raise PreventUpdate
+
+    log(f"[CLICK GRAPH] trace geselecteerd: {sel_id}")
     return sel_id
 
 
@@ -1477,47 +1586,53 @@ def remember_clicked_trace(graph_click, current_fig_dict):
         State("tijdslider", "value"),
     ],
 )
-def update_slider_from_interval_or_drag(n_intervals, relayoutData, disabled, current_idx):
+def update_slider_from_interval_or_drag(
+    n_intervals, relayoutData, disabled, current_idx
+):
+    """
+    Twee manieren waarop de slider kan bewegen:
+    1. Autoplay: interval tikt door -> volgende index
+    2. Gebruiker sleept de cursorlijn in de grote grafiek
+       (via drag van 'shapes'), en we zoeken dichtstbijzijnde timestep.
+    """
     ctx = dash.callback_context
-    print("[DEBUG update_slider] trigger:", ctx.triggered)
-    print("[DEBUG update_slider] relayoutData:", relayoutData)
-    print("[DEBUG update_slider] disabled:", disabled, "current_idx:", current_idx)
 
     if not ctx.triggered:
         raise PreventUpdate
 
     trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
 
-    # autoplay vooruit
+    # (1) autoplay vooruit
     if trigger_id == "interval":
         if disabled or current_idx is None:
             raise PreventUpdate
         new_idx = (int(current_idx) + 1) % len(all_datetimes)
-        print("[DEBUG update_slider] autoplay ->", new_idx)
+        log(f"[TIME STEP] autoplay -> idx {new_idx}")
         return new_idx
 
-    # cursor-drag
+    # (2) cursor-drag in grafiek
     if trigger_id == "combined-graph":
         if not relayoutData:
             raise PreventUpdate
 
+        # zoek nieuwe x-positie van de cursorlijn uit relayoutData
         new_x_val = None
         for k, v in relayoutData.items():
-            if k.startswith("shapes[") and (k.endswith("].x0") or k.endswith("].x1")):
+            if k.startswith("shapes[") and (
+                k.endswith("].x0") or k.endswith("].x1")
+            ):
                 new_x_val = v
                 break
-
-        print("[DEBUG update_slider] drag new_x_val:", new_x_val)
 
         if new_x_val is None:
             raise PreventUpdate
 
         try:
             ts = pd.to_datetime(new_x_val)
-        except Exception as e:
-            print("[DEBUG update_slider] cannot parse ts:", e)
+        except Exception:
             raise PreventUpdate
 
+        # zoek dichtstbijzijnde index in all_datetimes
         pos = bisect.bisect_left(all_datetimes, ts)
 
         if pos <= 0:
@@ -1529,11 +1644,10 @@ def update_slider_from_interval_or_drag(n_intervals, relayoutData, disabled, cur
             after = all_datetimes[pos]
             nearest = pos if (after - ts) <= (ts - before) else (pos - 1)
 
-        print("[DEBUG update_slider] nearest index:", nearest)
-
         if current_idx is not None and int(current_idx) == nearest:
             raise PreventUpdate
 
+        log(f"[TIME STEP] drag -> idx {nearest} (≈ {ts})")
         return nearest
 
     raise PreventUpdate
@@ -1547,19 +1661,24 @@ def update_slider_from_interval_or_drag(n_intervals, relayoutData, disabled, cur
     ],
 )
 def update_mpn_markers(selected_location_id, _var):
-    print("[DEBUG update_mpn_markers] selected_location_id:", selected_location_id)
+    """
+    Toon alleen meetpunten die horen bij het geselecteerde peilgebied.
+    Dit sturen we als 'hideout' naar de GeoJSON-laag met de cirkelmarkertjes.
+    """
     if not selected_location_id:
         return []
 
     if "peilgebied_combi_attr" not in df_locs_mpn.columns:
-        print("[DEBUG update_mpn_markers] kolom peilgebied_combi_attr ontbreekt")
         return []
 
-    mask = df_locs_mpn["peilgebied_combi_attr"].astype(str) == str(selected_location_id)
+    mask = (
+        df_locs_mpn["peilgebied_combi_attr"].astype(str)
+        == str(selected_location_id)
+    )
     points = df_locs_mpn[mask]
-    print("[DEBUG update_mpn_markers] aantal punten:", len(points))
     if points.empty:
         return []
+
     hideout_list = (
         points["peilgebied_combi_attr"]
         .astype(str)
@@ -1567,10 +1686,10 @@ def update_mpn_markers(selected_location_id, _var):
         .unique()
         .tolist()
     )
-    print("[DEBUG update_mpn_markers] hideout_list:", hideout_list)
     return hideout_list
 
 
+# ========== MAIN ==========
 if __name__ == "__main__":
     app.title = "Vullingsgraad"
     app.run(port=5005, debug=True)
