@@ -119,12 +119,15 @@ class ShareURL:
             return ""
 
         # -------- 3. apply url-state -> controls
+        keys = [k for k in mapping.keys() if k not in self.block_control_update]
+
         urlstate_to_control_outputs = []
         urlstate_to_control_states = []
-        for k, v in mapping.items():
-            if k not in self.block_control_update:
-                urlstate_to_control_outputs.append([Output(*v)])
-                urlstate_to_control_states.append([Output(*v)])
+
+        for k in keys:
+            comp_id, comp_prop = mapping[k]
+            urlstate_to_control_outputs.append(Output(comp_id, comp_prop))
+            urlstate_to_control_states.append(State(comp_id, comp_prop))
 
         if urlstate_to_control_outputs:
 

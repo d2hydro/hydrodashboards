@@ -47,9 +47,10 @@ assets_dir = app_dir / "assets"
 share_url = ShareURL(
     mapping={
         "peilgebied": ("pgb-dropdown", "value"),
+        "tijdstap": ("tijdslider", "value"),
     },
     assets_folder=assets_dir,
-    block_control_update=["peilgebied"],
+    block_control_update=["peilgebied", "tijdstap"],
 )
 app = dash.Dash(__name__, assets_folder=str(assets_dir))
 
@@ -1284,11 +1285,15 @@ def remember_clicked_trace(graph_click, current_fig_dict):
 
 @app.callback(
     Output("tijdslider", "value"),
-    [Input("interval", "n_intervals"), Input("combined-graph", "relayoutData")],
+    [
+        Input("interval", "n_intervals"),
+        Input("combined-graph", "relayoutData"),
+        Input("url-state", "data"),
+    ],
     [State("interval", "disabled"), State("tijdslider", "value")],
 )
 def update_slider_from_interval_or_drag(
-    n_intervals, relayoutData, disabled, current_idx
+    n_intervals, relayoutData, url_state, disabled, current_idx
 ):
     """
     1) Autoplay via interval -> volgende index.
@@ -1336,6 +1341,12 @@ def update_slider_from_interval_or_drag(
             raise PreventUpdate
         log(f"[TIME STEP] drag -> idx {nearest} (≈ {ts})")
         return nearest
+
+    if trigger_id == "url-state":
+        if url_state:
+            return int(url_state["tijdstap"])
+        else:
+            return default_index
 
     raise PreventUpdate
 
