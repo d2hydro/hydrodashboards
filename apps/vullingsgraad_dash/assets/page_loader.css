@@ -1,5 +1,3 @@
-/* ===== Transparante overlay met lichte blur ===== */
-/* Transparante overlay met lichte blur */
 #page-loader{
   position: fixed; inset: 0; z-index: 2000;
   display: flex; align-items: center; justify-content: center;
@@ -7,8 +5,6 @@
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 }
-
-/* Compact “cardje” voor contrast */
 #page-loader .loader-inner{
   display: flex; flex-direction: column; align-items: center; gap: 10px;
   padding: 18px 20px;
@@ -17,29 +13,16 @@
   border-radius: 14px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.06);
 }
-
-/* ===== Pure CSS ring-spinner (Material-achtig, grijs) ===== */
 .spinner-ring{
   width: 64px; height: 64px;
   border-radius: 50%;
-  border: 6px solid #e5e7eb;   /* lichtgrijs */
-  border-top-color: #6b7280;   /* grijs accent */
+  border: 6px solid #e5e7eb;
+  border-top-color: #6b7280;
   animation: spin 1s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-
-/* Tekst onder de spinner */
 .loader-text{
   font: 600 14px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-  color: #1f2937;
-  letter-spacing: .02em;
+  color: #1f2937; letter-spacing: .02em;
 }
-
-/* Respecteer 'prefers-reduced-motion' */
-@media (prefers-reduced-motion: reduce){
-  .spinner-ring{ animation: none !important; }
-}
-
-/* Verberg de "Loading.." tekst van dcc.Loading */
-.dash-loading .loading { font-size: 0 !important; }
-
+@media (prefers-reduced-motion: reduce){ .spinner-ring{ animation: none !important; } }
