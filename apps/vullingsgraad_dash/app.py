@@ -13,7 +13,6 @@ from flask_caching import Cache
 
 # ==== Projectmodules ====
 from utils.data_loader import load_all_data
-from utils.map_utils import get_kaartdata_for_datetime
 from utils.generate_styles import ensure_assets_css
 from utils.style import(
     kaartvariabelen,
@@ -128,7 +127,10 @@ map_component = MapWithControls(
     style_handle=style_handle,
     initial_stylemap=initial_stylemap,
     initial_options=initial_options,
+    all_datetimes=all_datetimes,         
+    time_series_cache=time_series_cache, 
 )
+
 
 combined_graph = CombinedGraph(
     df_locs_mpn=df_locs_mpn,
@@ -178,7 +180,7 @@ combined_graph.register_callbacks(app)
 
 
 # ========================================================================
-# ⚙️ Cross-component callbacks
+# ⚙️ callbacks
 # ========================================================================
 @app.callback(
     Output("page-loader", "style"),
@@ -190,36 +192,6 @@ def hide_page_loader(fig_dict, stylemap):
     if not fig_dict or not stylemap:
         raise PreventUpdate
     return {"display": "none"}
-
-
-@app.callback(
-    Output("geojson-pgb", "hideout"),
-    Output("geojson-pgb", "options"),
-    [
-        Input("tijdslider", "value"),
-        Input("pgb-dropdown", "value"),
-        Input("kaartvariabele-dropdown", "value"),
-    ],
-    prevent_initial_call=True,
-)
-def update_geojson_map(idx, selected_pgb, kaartvariabele):
-    """Werk kaartkleuren bij bij wijziging tijd, peilgebied of variabele."""
-    if idx is None or not selected_pgb or not kaartvariabele:
-        raise PreventUpdate
-
-    dt = all_datetimes[int(idx)]
-    stylemap = get_kaartdata_for_datetime(time_series_cache, dt, kaartvariabele)
-    stylemap["selected"] = selected_pgb
-
-    options = {
-        "style": style_handle,
-        "selected": selected_pgb,
-        "interactive": True,
-        "bubblingMouseEvents": True,
-    }
-
-    logging.debug(f"🗺️ Kaart bijgewerkt: {kaartvariabele}, tijd={dt}, geselecteerd={selected_pgb}")
-    return stylemap, options
 
 
 # ========================================================================
