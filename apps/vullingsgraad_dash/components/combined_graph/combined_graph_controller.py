@@ -17,7 +17,7 @@ from utils.style import combined_graph_style
 # ============================================================
 
 class CombinedGraphFigure:
-    """Bouwt de gecombineerde grafiek met drie subplots (zonder callbacks)."""
+    """Bouwt de gecombineerde grafiek met drie subplots."""
 
     def __init__(self, df_locs_mpn, geojson_data, cache, time_series_cache,
                  vullingsgraad_classes, vulling_classes):
@@ -30,7 +30,7 @@ class CombinedGraphFigure:
         self.ws_plot = WaterstandPlot(df_locs_mpn)
 
     def build(self, sel, kaartvariabele):
-        """Genereer volledige gecombineerde figuur."""
+        """Genereer de gecombineerde grafiek."""
         if not sel:
             return go.Figure()
 
@@ -58,7 +58,7 @@ class CombinedGraphFigure:
             {},
         )
 
-        # --- Subplots aanmaken ---
+        # Subplots
         fig = make_subplots(
             rows=3,
             cols=1,
@@ -71,6 +71,7 @@ class CombinedGraphFigure:
         self.vul_plot.build(fig, df_vul, df_vg, pgb_props, row=2)
         self.ws_plot.build(fig, df_pgb, df_mpn, pgb_props, row=3)
 
+        # Layout
         fig.update_xaxes(title_text="Tijd", row=3, col=1)
         fig.update_layout(
             uirevision=sel,
@@ -81,7 +82,7 @@ class CombinedGraphFigure:
             showlegend=False,
         )
 
-        # Opslaan in cache
+        # Cache
         try:
             if getattr(self.cache, "cache", None) is not None:
                 self.cache.set(cache_key, fig.to_dict())
@@ -96,7 +97,7 @@ class CombinedGraphFigure:
 # ============================================================
 
 class CombinedGraph:
-    """Dash-component die de gecombineerde grafiek met callbacks aanstuurt."""
+    """Dash-component die de gecombineerde grafiek aanstuurt."""
 
     def __init__(self, df_locs_mpn, geojson_data, cache, time_series_cache,
                  all_datetimes, vullingsgraad_classes, vulling_classes):
@@ -112,10 +113,10 @@ class CombinedGraph:
     # ------------------------------------------------------------
     @property
     def layout(self):
-        """UI component."""
+        """UI-component met lege initiële grafiek."""
         empty_fig = go.Figure()
-        empty_fig.update_xaxes(visible=False, showgrid=False, showticklabels=False, zeroline=False)
-        empty_fig.update_yaxes(visible=False, showgrid=False, showticklabels=False, zeroline=False)
+        empty_fig.update_xaxes(visible=False)
+        empty_fig.update_yaxes(visible=False)
         empty_fig.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
@@ -148,24 +149,25 @@ class CombinedGraph:
     # Callbacks
     # ------------------------------------------------------------
     def register_callbacks(self, app):
-        """Registreer alle Dash-callbacks."""
+        """Registreert alle callbacks voor de gecombineerde grafiek."""
 
-        # --- Callback: figuur opbouwen bij start en bij wijziging ---
+        # --- Callback: figuur opbouwen bij start en wijziging ---
         @app.callback(
             Output("combined-fig-store", "data"),
             [Input("pgb-dropdown", "value"), Input("kaartvariabele-dropdown", "value")],
-            prevent_initial_call=False,  # ✅ draait ook bij eerste load
+            prevent_initial_call=False,
         )
         def update_combined_figure(sel, var):
+            if not sel:
+                from app import default_pgb as sel
+            if not var:
+                from app import initial_kaartvariabele as var
+
             if not sel or not var:
                 raise PreventUpdate
-            try:
-                fig = self.figure_builder.build(sel, var)
-                # Marker direct tonen bij start
-                fig = self.time_marker.apply(fig, 0)
-            except Exception as e:
-                print(f"[ERROR] CombinedGraphFigure.build fout: {e}")
-                raise PreventUpdate
+
+            fig = self.figure_builder.build(sel, var)
+            fig = self.time_marker.apply(fig, 0)
             return fig.to_dict()
 
         # --- Callback: update + highlight + tijdlijn ---
@@ -188,23 +190,18 @@ class CombinedGraph:
             ctx = callback_context
             trigger = ctx.triggered_id
 
-            print("\n=== [DEBUG] update_and_highlight ===")
-            print(f"Triggered by: {trigger}")
-            print(f"Idx value: {idx}")
-            print(f"RelayoutData: {relayout}")
-            print(f"Fig_dict present: {fig_dict is not None}, Current_fig present: {current_fig is not None}")
-
-            # ✅ Variant 1: behoud zoom/pan
+            # Figuurselectie met fallback
             if trigger == "combined-graph" and relayout:
-                print("[DEBUG] Using current_fig (preserve zoom state)")
                 fig = go.Figure(current_fig)
+                if (not fig.data or len(fig.data) == 0) and fig_dict:
+                    fig = go.Figure(fig_dict)
             else:
                 fig = go.Figure(fig_dict or current_fig)
 
-            if not fig or not fig.data:
-                print("[DEBUG] -> Empty fig, skipping update")
-                raise PreventUpdate
+            if not fig.data:
+                fig = go.Figure(fig_dict or {})
 
+            # Selectie bepalen
             sel_id = None
             if trigger == "clicked-trace-store" and clicked_trace:
                 sel_id = clicked_trace.get("id")
@@ -212,7 +209,7 @@ class CombinedGraph:
                 props = (marker_click or clicked_mpn or {}).get("properties", {})
                 sel_id = props.get("location_id")
 
-            # Highlight
+            # Highlight toepassen
             if sel_id:
                 for tr in fig.data:
                     meta_val = getattr(tr, "meta", None)
@@ -225,25 +222,17 @@ class CombinedGraph:
                             tr.line.width = 2
 
             # Tijdlijn tekenen
-            redraw = False
             if idx is not None:
                 fig = self.time_marker.apply(fig, idx)
-                redraw = True
-
-            if relayout and isinstance(relayout, dict) and len(relayout) > 0:
+            elif relayout and isinstance(relayout, dict) and len(relayout) > 0:
                 fig = self.time_marker.apply(fig, idx)
-                redraw = True
-
-            if not redraw:
-                print("[DEBUG] TimeMarker not redrawn (no trigger match)")
 
             if trigger == "clicked-trace-store":
                 return fig, None
 
-            print("=== [DEBUG] END callback ===\n")
             return fig, no_update
 
-        # --- Callback: sync tijdslider via relayout (lijn slepen) ---
+        # --- Callback: sync tijdslider bij vline-slepen ---
         @app.callback(
             Output("tijdslider", "value", allow_duplicate=True),
             Input("combined-graph", "relayoutData"),
@@ -251,7 +240,7 @@ class CombinedGraph:
         )
         def sync_slider_from_vline(relayout):
             if not relayout:
-                raise PreventUpdate       
+                raise PreventUpdate
             x_vals = [
                 pd.to_datetime(v)
                 for k, v in relayout.items()
