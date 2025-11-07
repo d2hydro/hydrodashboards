@@ -1,9 +1,0 @@
-starttime = 2017-01-01 00:00:00
-endtime = 2018-01-01 00:00:00
-crs = "EPSG:28992"
-input_dir = "."
-results_dir = "results"
-ribasim_version = "2025.4.0"
-
-[solver]
-saveat = 86400.0

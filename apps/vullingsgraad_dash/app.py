@@ -1,4 +1,4 @@
-#%%
+# %%
 """
 🌊 Vullingsgraad app
 """
@@ -6,15 +6,14 @@
 from pathlib import Path
 import os
 import logging
-import pandas as pd
-from dash import Dash, Input, Output, State, html
+from dash import Dash, Input, Output, html
 from dash.exceptions import PreventUpdate
 from flask_caching import Cache
 
 # ==== Projectmodules ====
 from utils.data_loader import load_all_data
 from utils.generate_styles import ensure_assets_css
-from utils.style import(
+from utils.style import (
     kaartvariabelen,
     vullingsgraad_classes,
     vulling_mm_classes,
@@ -31,7 +30,6 @@ from components.combined_graph.combined_graph_controller import CombinedGraph
 from components.video_graph.video_graph_controller import TimeControls
 
 
-
 # ========================================================================
 # 🏗️ App setup
 # ========================================================================
@@ -41,8 +39,12 @@ def create_app():
     data_dir = app_dir / "data"
     assets_dir = app_dir / "assets"
 
-    app = Dash(__name__, assets_folder=str(assets_dir), suppress_callback_exceptions=True)
-    cache = Cache(app.server, config={"CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": 3600})
+    app = Dash(
+        __name__, assets_folder=str(assets_dir), suppress_callback_exceptions=True
+    )
+    cache = Cache(
+        app.server, config={"CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": 3600}
+    )
     return app, cache, data_dir, assets_dir
 
 
@@ -127,8 +129,8 @@ map_component = MapWithControls(
     style_handle=style_handle,
     initial_stylemap=initial_stylemap,
     initial_options=initial_options,
-    all_datetimes=all_datetimes,         
-    time_series_cache=time_series_cache, 
+    all_datetimes=all_datetimes,
+    time_series_cache=time_series_cache,
 )
 
 
@@ -201,4 +203,4 @@ if __name__ == "__main__":
     app.title = "Vullingsgraad"
     port = int(os.getenv("PORT", 5005))
     logging.info(f"🌍 App draaien op http://127.0.0.1:{port}")
-    app.run(port=port, debug=True)  
+    app.run(port=port, debug=True)
