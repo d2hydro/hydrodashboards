@@ -17,7 +17,6 @@ from utils.style import (
     kaartvariabelen,
     vullingsgraad_classes,
     vulling_mm_classes,
-    style_handle,
     page_wrapper_style,
     left_col_style,
     right_col_style,
@@ -114,7 +113,6 @@ dropdowns = DropdownControls(
 )
 
 initial_options = {
-    "style": style_handle,
     "selected": default_pgb,
     "interactive": True,
     "bubblingMouseEvents": True,
@@ -126,11 +124,11 @@ map_component = MapWithControls(
     dd_locs_mpn_default=dd_locs_mpn_default,
     map_center=map_center,
     map_bounds=map_bounds,
-    style_handle=style_handle,
     initial_stylemap=initial_stylemap,
     initial_options=initial_options,
     all_datetimes=all_datetimes,
     time_series_cache=time_series_cache,
+    assets_dir=assets_dir,
 )
 
 

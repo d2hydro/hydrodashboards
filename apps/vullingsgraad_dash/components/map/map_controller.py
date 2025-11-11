@@ -1,7 +1,7 @@
 import dash_leaflet as dl
 from dash import html, dcc, Input, Output, State
 from dash.exceptions import PreventUpdate
-import pandas as pd
+from dash_extensions.javascript import Namespace
 import logging
 
 from .peilgebieden_layers import PeilgebiedenLayer
@@ -21,29 +21,70 @@ class MapWithControls:
         dd_locs_mpn_default,
         map_center,
         map_bounds,
-        style_handle,
         initial_stylemap,
         initial_options,
         all_datetimes,
         time_series_cache,
+        assets_dir,
     ):
         self.geojson_data = geojson_data
         self.df_locs_mpn = df_locs_mpn
         self.dd_locs_mpn_default = dd_locs_mpn_default
         self.map_center = map_center
         self.map_bounds = map_bounds
-        self.style_handle = style_handle
         self.initial_stylemap = initial_stylemap
         self.initial_options = initial_options
         self.all_datetimes = all_datetimes
         self.time_series_cache = time_series_cache
+        self.assets_dir = assets_dir
+        self.assets_dir.mkdir(parents=True, exist_ok=True)
 
+        # JavaScript namespace voor clientside functies
+        self.ns = Namespace(self.__class__.__name__)
+        self.ns.add(
+            """
+                    function(feature, context){
+                    const stylemap = context.hideout || {};
+                    const loc = feature.properties.location_id;
+                    const sel = context.selected;
+
+                    // basisstijl
+                    let base = stylemap[loc] || feature.properties.style || {};
+                    base = {
+                        ...base,
+                        color: "rgba(15,23,42,0.35)",
+                        weight: 1,
+                        fillOpacity: base.fillOpacity ?? 0.7
+                    };
+
+                    // bij selectie: dikke zwarte rand
+                    if (sel && loc === sel) {
+                        base = {
+                        ...base,
+                        color: "rgba(0,0,0,1.0)",       // zwarte rand
+                        weight: 4,                      // dikker
+                        fillOpacity: 0.85               // iets meer vulling
+                        };
+                    }
+
+                    return base;
+                    }
+                    """,
+            name="styleHandle",
+        )
+
+        self.ns.dump(assets_folder=self.assets_dir.as_posix())
+        self.style_handle = self.ns("styleHandle")
         # Subcomponenten
         self.base_layer = BaseMapLayer(basemap="osm", opacity=0.5)
+        initial_options["style"] = self.style_handle
         self.peil_layer = PeilgebiedenLayer(
-            geojson_data, style_handle, initial_stylemap, initial_options
+            geojson_data=geojson_data,
+            initial_stylemap=initial_stylemap,
+            initial_options=initial_options,
+            assets_dir=self.assets_dir,
         )
-        self.mpn_layer = MPNMarkers(df_locs_mpn)
+        self.mpn_layer = MPNMarkers(df_locs_mpn, assets_dir=self.assets_dir)
 
     # ------------------------------------------------------------
     # Layout
@@ -62,10 +103,12 @@ class MapWithControls:
                     style=map_style,
                     preferCanvas=False,
                     children=[
-                        dl.Pane(id="pane-top", name="veryTopPane", style={"zIndex": 650}),
+                        dl.Pane(
+                            id="pane-top", name="veryTopPane", style={"zIndex": 650}
+                        ),
                         self.base_layer.layout,  # Achtergrondkaart
                         self.peil_layer.layout,  # Peilgebieden
-                        self.mpn_layer.layout,   # Meetpunten
+                        self.mpn_layer.layout,  # Meetpunten
                         dl.LayerGroup(id="mpn-click-layer", pane="veryTopPane"),
                     ],
                 ),
@@ -134,9 +177,12 @@ class MapWithControls:
             ],
             prevent_initial_call="initial_duplicate",
         )
-        def select_controls(click_data, url_state, current_pgb, current_idx, current_var):
+        def select_controls(
+            click_data, url_state, current_pgb, current_idx, current_var
+        ):
             """Synchroniseer UI-controls vanuit kaartklik of URL."""
             from dash import callback_context as ctx
+
             trigger = ctx.triggered_id if ctx.triggered_id else None
 
             # URL herstel bij opstart
@@ -184,12 +230,18 @@ class MapWithControls:
                 Input("clicked-trace-store", "data"),
             ],
         )
-        def update_mpn_markers(selected_location_id, idx, mpn_clickdata, clicked_trace_id):
+        def update_mpn_markers(
+            selected_location_id, idx, mpn_clickdata, clicked_trace_id
+        ):
             """Bepaalt welke meetpunten zichtbaar zijn en markeert selectie."""
             df = self.df_locs_mpn
 
             if not selected_location_id or "peilgebied_combi_attr" not in df.columns:
-                return {"allowed": [], "sel": None, "tick": int(idx) if idx is not None else 0}
+                return {
+                    "allowed": [],
+                    "sel": None,
+                    "tick": int(idx) if idx is not None else 0,
+                }
 
             mask = df["peilgebied_combi_attr"].astype(str) == str(selected_location_id)
             points = df[mask]
@@ -201,10 +253,9 @@ class MapWithControls:
 
             sel_id = None
             if mpn_clickdata and mpn_clickdata.get("properties"):
-                sel_id = (
-                    mpn_clickdata["properties"].get("location_id")
-                    or mpn_clickdata["properties"].get("id")
-                )
+                sel_id = mpn_clickdata["properties"].get(
+                    "location_id"
+                ) or mpn_clickdata["properties"].get("id")
             elif clicked_trace_id:
                 sel_id = (
                     clicked_trace_id.get("id")
